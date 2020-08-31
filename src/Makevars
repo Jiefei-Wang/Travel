@@ -1,0 +1,2 @@
+PKG_CPPFLAGS = `pkg-config fuse --cflags`
+PKG_LIBS = `pkg-config fuse --libs`
