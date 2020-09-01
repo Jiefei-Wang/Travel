@@ -3,33 +3,22 @@
 #include <cstdarg>
 #include <iostream>
 #include <fstream>
-#include <string>
+#include "package_settings.h"
 
-using std::string;
 
 int verbose_level = 1;
 
 #define BUFFER_SIZE 1024 * 1024
 static bool print_file_initialed = false;
-static string print_location;
 static std::mutex output_mutex;
 static char buffer[BUFFER_SIZE];
 static std::ofstream print_file;
 
 
 // [[Rcpp::export]]
-void set_print_location(SEXP x){
-	print_location = CHAR(Rf_asChar(x));
-	print_location = print_location + "/debug_output";
-}
-// [[Rcpp::export]]
-SEXP get_print_location(){
-	return Rf_mkString(print_location.c_str());
-}
-// [[Rcpp::export]]
 void initial_print_file(){
 	if(!print_file_initialed){
-  		print_file.open (print_location.c_str(),std::ios_base::openmode::_S_out);
+  		print_file.open (get_print_location().c_str(),std::ios_base::openmode::_S_out);
 		print_file_initialed = true;
 	}
 }
@@ -39,11 +28,6 @@ void close_print_file(){
 	print_file_initialed =false;
 }
 
-// [[Rcpp::export]]
-void test_print(){
-	debug_print("This is a test print");
-	print_file.flush();
-}
 
 void debug_print(const char* format, ...) {
     if(verbose_level >= 1){

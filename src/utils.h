@@ -1,5 +1,5 @@
 #include <Rcpp.h>
-
+#define DEBUG_ALTREP(x) x
 
 void debug_print(const char* format, ...);
 

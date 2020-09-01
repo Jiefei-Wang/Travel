@@ -5,12 +5,15 @@
 #include <string.h>
 #include <thread>
 #include <signal.h>
-#include <sys/syscall.h>
+#ifndef _WIN32
+ #include <sys/syscall.h>
+#endif
 
 #include <Rcpp.h>
 #include <map>
 #include <mutex>
 #include "utils.h"
+#include "package_settings.h"
 
 #define BUFFER_SIZE (1024 * 1024)
 
@@ -30,8 +33,6 @@ static std::mutex mutex;
 pid_t tid;
 std::thread *thread;
 
-// mount point
-string mount_point;
 
 #define HAS_KEY(path) (altrep_map.find(path) != altrep_map.end())
 #define GET_VALUE(path) ((SEXP)altrep_map.at(path))
@@ -186,7 +187,9 @@ void run_fuse()
             free(gb);
             free_list(children);};
     */
+   #ifndef _WIN32
     tid = syscall(SYS_gettid);
+    #endif
     operations.getattr = do_getattr;
     operations.readdir = do_readdir;
     operations.read = do_read;
@@ -198,7 +201,7 @@ void run_fuse()
     fuse_opt_add_arg(&args, "-o");
     fuse_opt_add_arg(&args, "fsname=AltPtr");
     //fuse_opt_add_arg(&args, "/home/jiefei/Documents/mp");
-    fuse_opt_add_arg(&args, mount_point.c_str());
+    fuse_opt_add_arg(&args, get_mountpoint().c_str());
     fuse_main(args.argc, args.argv, &operations, NULL);
     //TODO: check if this function will be called after exist
     fuse_opt_free_args(&args);
@@ -217,11 +220,6 @@ void stop_thread()
     thread->join();
 }
 
-// [[Rcpp::export]]
-void set_mountpoint(SEXP path)
-{
-    mount_point = CHAR(Rf_asChar(path));
-}
 
 // [[Rcpp::export]]
 void add_altrep(SEXP x, SEXP name){
