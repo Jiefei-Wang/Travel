@@ -41,3 +41,4 @@ vignettes/*.pdf
 
 
 src/.vscode/
+debug_output

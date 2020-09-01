@@ -23,10 +23,96 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// set_mountpoint
+void set_mountpoint(SEXP path);
+RcppExport SEXP _AltPtr_set_mountpoint(SEXP pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type path(pathSEXP);
+    set_mountpoint(path);
+    return R_NilValue;
+END_RCPP
+}
+// add_altrep
+void add_altrep(SEXP x, SEXP name);
+RcppExport SEXP _AltPtr_add_altrep(SEXP xSEXP, SEXP nameSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type name(nameSEXP);
+    add_altrep(x, name);
+    return R_NilValue;
+END_RCPP
+}
+// list_altrep
+SEXP list_altrep();
+RcppExport SEXP _AltPtr_list_altrep() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(list_altrep());
+    return rcpp_result_gen;
+END_RCPP
+}
+// set_print_location
+void set_print_location(SEXP x);
+RcppExport SEXP _AltPtr_set_print_location(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    set_print_location(x);
+    return R_NilValue;
+END_RCPP
+}
+// get_print_location
+SEXP get_print_location();
+RcppExport SEXP _AltPtr_get_print_location() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(get_print_location());
+    return rcpp_result_gen;
+END_RCPP
+}
+// initial_print_file
+void initial_print_file();
+RcppExport SEXP _AltPtr_initial_print_file() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    initial_print_file();
+    return R_NilValue;
+END_RCPP
+}
+// close_print_file
+void close_print_file();
+RcppExport SEXP _AltPtr_close_print_file() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    close_print_file();
+    return R_NilValue;
+END_RCPP
+}
+// test_print
+void test_print();
+RcppExport SEXP _AltPtr_test_print() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    test_print();
+    return R_NilValue;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_AltPtr_run_thread", (DL_FUNC) &_AltPtr_run_thread, 0},
     {"_AltPtr_stop_thread", (DL_FUNC) &_AltPtr_stop_thread, 0},
+    {"_AltPtr_set_mountpoint", (DL_FUNC) &_AltPtr_set_mountpoint, 1},
+    {"_AltPtr_add_altrep", (DL_FUNC) &_AltPtr_add_altrep, 2},
+    {"_AltPtr_list_altrep", (DL_FUNC) &_AltPtr_list_altrep, 0},
+    {"_AltPtr_set_print_location", (DL_FUNC) &_AltPtr_set_print_location, 1},
+    {"_AltPtr_get_print_location", (DL_FUNC) &_AltPtr_get_print_location, 0},
+    {"_AltPtr_initial_print_file", (DL_FUNC) &_AltPtr_initial_print_file, 0},
+    {"_AltPtr_close_print_file", (DL_FUNC) &_AltPtr_close_print_file, 0},
+    {"_AltPtr_test_print", (DL_FUNC) &_AltPtr_test_print, 0},
     {NULL, NULL, 0}
 };
 

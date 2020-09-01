@@ -3,23 +3,57 @@
 #include <cstdarg>
 #include <iostream>
 #include <fstream>
+#include <string>
+
+using std::string;
 
 int verbose_level = 1;
 
 #define BUFFER_SIZE 1024 * 1024
+static bool print_file_initialed = false;
+static string print_location;
 static std::mutex output_mutex;
 static char buffer[BUFFER_SIZE];
+static std::ofstream print_file;
+
+
+// [[Rcpp::export]]
+void set_print_location(SEXP x){
+	print_location = CHAR(Rf_asChar(x));
+	print_location = print_location + "/debug_output";
+}
+// [[Rcpp::export]]
+SEXP get_print_location(){
+	return Rf_mkString(print_location.c_str());
+}
+// [[Rcpp::export]]
+void initial_print_file(){
+	if(!print_file_initialed){
+  		print_file.open (print_location.c_str(),std::ios_base::openmode::_S_out);
+		print_file_initialed = true;
+	}
+}
+// [[Rcpp::export]]
+void close_print_file(){
+	print_file.close();
+	print_file_initialed =false;
+}
+
+// [[Rcpp::export]]
+void test_print(){
+	debug_print("This is a test print");
+	print_file.flush();
+}
 
 void debug_print(const char* format, ...) {
-    if(verbose_level > 1){
+    if(verbose_level >= 1){
+		initial_print_file();
         output_mutex.lock();
 		va_list args;
 		va_start(args, format);
 		vsnprintf(buffer, BUFFER_SIZE, format, args);
-		std::ofstream myfile;
-  		myfile.open ("debug_output.txt");
-		myfile << buffer;
- 		myfile.close();
+		print_file << buffer;
+		print_file.flush();
 		output_mutex.unlock();
     }
 }

@@ -9,3 +9,35 @@ stop_thread <- function() {
     invisible(.Call(`_AltPtr_stop_thread`))
 }
 
+set_mountpoint <- function(path) {
+    invisible(.Call(`_AltPtr_set_mountpoint`, path))
+}
+
+add_altrep <- function(x, name) {
+    invisible(.Call(`_AltPtr_add_altrep`, x, name))
+}
+
+list_altrep <- function() {
+    .Call(`_AltPtr_list_altrep`)
+}
+
+set_print_location <- function(x) {
+    invisible(.Call(`_AltPtr_set_print_location`, x))
+}
+
+get_print_location <- function() {
+    .Call(`_AltPtr_get_print_location`)
+}
+
+initial_print_file <- function() {
+    invisible(.Call(`_AltPtr_initial_print_file`))
+}
+
+close_print_file <- function() {
+    invisible(.Call(`_AltPtr_close_print_file`))
+}
+
+test_print <- function() {
+    invisible(.Call(`_AltPtr_test_print`))
+}
+
