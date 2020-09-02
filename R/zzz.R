@@ -3,5 +3,9 @@
 NULL
 
 .onLoad<- function(libname, pkgname){
-    set_print_location(getwd())
+    C_set_print_location(getwd())
+}
+
+.onUnload<- function(libname, pkgname){
+    C_stop_fuse_thread()
 }

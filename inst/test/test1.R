@@ -1,12 +1,32 @@
 mp <- "/home/jiefei/Documents/mp"
-set_mountpoint(mp)
-run_thread()
+C_set_mountpoint(mp)
+C_run_fuse_thread()
 x <- 1:100
-add_altrep(x, "test")
+y <- C_make_altPtr(x,NULL)
 
-list_altrep()
+x
+y
 
-stop_thread()
+.Internal(inspect(x))
+.Internal(inspect(C_getAltData1(y)))
+.Internal(inspect(y))
+
+get_int_value(y, 50)
+.Internal(inspect(x))
+.Internal(inspect(C_getAltData1(y)))
+.Internal(inspect(y))
+
+get_int_value(x, 1)
+.Internal(inspect(x))
+.Internal(inspect(C_getAltData1(y)))
+
+
+
+
+
+C_list_altrep()
+
+C_stop_fuse_thread()
 
 
 initial_print_file()

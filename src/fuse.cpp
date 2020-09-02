@@ -6,7 +6,7 @@
 #include <thread>
 #include <signal.h>
 #ifndef _WIN32
- #include <sys/syscall.h>
+#include <sys/syscall.h>
 #endif
 
 #include <Rcpp.h>
@@ -14,28 +14,37 @@
 #include <mutex>
 #include "utils.h"
 #include "package_settings.h"
+#include "fuse.h"
+#include "altrep_operations.h"
 
 #define BUFFER_SIZE (1024 * 1024)
 
+struct file_info
+{
+    SEXP x;
+    SEXP x_internal;
+    size_t size;
+    size_t elt_size;
+};
+
 using std::map;
 using std::string;
-typedef std::pair<const string, void *> value_type;
+typedef std::pair<const string, file_info> value_type;
 
 //A struct to store all fuse operations
 static struct fuse_operations operations;
 //A map to the altrep objects
 static size_t counter = 0;
-static map<const string, void *> altrep_map;
+static map<const string, file_info> altrep_map;
 //A shared mutex that is used for accessing map
 static std::mutex mutex;
 
 //process id and thread that the fuse will be running on
 pid_t tid;
-std::thread *thread;
-
+std::thread *thread = nullptr;
 
 #define HAS_KEY(path) (altrep_map.find(path) != altrep_map.end())
-#define GET_VALUE(path) ((SEXP)altrep_map.at(path))
+#define GET_VALUE(path) altrep_map.at(path)
 
 static int do_getattr(const char *path, struct stat *st)
 {
@@ -63,7 +72,7 @@ static int do_getattr(const char *path, struct stat *st)
     {
         st->st_mode = S_IFREG | 0644;
         st->st_nlink = 1;
-        st->st_size = get_object_size(GET_VALUE(name));
+        st->st_size = GET_VALUE(name).size;
     }
     mutex.unlock();
     return 0;
@@ -114,18 +123,19 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, of
 
 static int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi)
 {
-    if (size == 0)
-    {
-        return 0;
-    }
-    size_t read_size = size;
+    debug_print("--> Reading file %s, offset: %llu, size: %llu\n", path, offset, size);
+
     string name(path + 1L);
-    SEXP x;
+    SEXP x_internal;
+    size_t elt_size;
+    size_t file_size;
     mutex.lock();
     bool key_exist = HAS_KEY(name);
     if (key_exist)
     {
-        x = GET_VALUE(name);
+        x_internal = GET_VALUE(name).x_internal;
+        elt_size = GET_VALUE(name).elt_size;
+        file_size = GET_VALUE(name).size;
     }
     mutex.unlock();
     if (!key_exist)
@@ -133,13 +143,25 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         return -1;
     }
 
-    size_t elt_size = get_type_size(TYPEOF(x));
+    if (offset + size > file_size)
+    {
+        if ((size_t)offset < file_size)
+            size = file_size - offset;
+        else
+            size = 0;
+        debug_print("Size truncated to %llu\n", size);
+    }
+    if (size == 0)
+        return 0;
+    size_t read_size = size;
+
     size_t start_offset = offset / elt_size;
     size_t start_intra_elt_offset = offset - start_offset * elt_size;
     if (start_intra_elt_offset != 0)
     {
         size_t copy_size = std::max(elt_size - start_intra_elt_offset, size);
-        fill_mismatched_data(x, start_offset, start_intra_elt_offset, copy_size, buffer, size);
+        debug_print("Filling start %llu,%llu,%llu,%llu\n", start_offset, start_intra_elt_offset, copy_size, size);
+        fill_mismatched_data(x_internal, start_offset, start_intra_elt_offset, copy_size, buffer, size);
         size = size - copy_size;
         buffer = buffer + copy_size;
         offset = offset + copy_size;
@@ -154,7 +176,8 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
     if (end_intra_elt_len != 4)
     {
         char *temp_buffer = buffer + end_offset * elt_size;
-        fill_mismatched_data(x, end_offset, 0, end_intra_elt_len, temp_buffer, size);
+        debug_print("Filling end %llu,%llu,%llu,%llu\n", end_offset, end_intra_elt_len, size);
+        fill_mismatched_data(x_internal, end_offset, 0, end_intra_elt_len, temp_buffer, size);
         size = size - end_intra_elt_len;
         end_offset--;
     }
@@ -164,73 +187,111 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
     }
     size_t len = end_offset - start_offset + 1;
 
-    switch (TYPEOF(x))
+     debug_print("Filling rest %llu,%llu\n", start_offset, len);
+    switch (TYPEOF(x_internal))
     {
     case INTSXP:
-        INTEGER_GET_REGION(x, start_offset, len, (int *)buffer);
+        INTEGER_GET_REGION(x_internal, start_offset, len, (int *)buffer);
         break;
     case LGLSXP:
-        LOGICAL_GET_REGION(x, start_offset, len, (int *)buffer);
+        LOGICAL_GET_REGION(x_internal, start_offset, len, (int *)buffer);
         break;
     case REALSXP:
-        REAL_GET_REGION(x, start_offset, len, (double *)buffer);
+        REAL_GET_REGION(x_internal, start_offset, len, (double *)buffer);
         break;
     }
 
     return read_size;
 }
 
+struct fuse_args args;
 void run_fuse()
 {
-    /*
-     Scope_guard const final_action = []{
-            free(gb);
-            free_list(children);};
-    */
-   #ifndef _WIN32
     tid = syscall(SYS_gettid);
-    #endif
     operations.getattr = do_getattr;
     operations.readdir = do_readdir;
     operations.read = do_read;
-    struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
+    fuse_main(args.argc, args.argv, &operations, NULL);
+}
+
+// [[Rcpp::export]]
+void C_run_fuse_thread()
+{
+    if (thread != nullptr)
+    {
+        Rf_error("The fuse has been running!\n");
+    }
+    args = FUSE_ARGS_INIT(0, NULL);
     fuse_opt_add_arg(&args, "AltPtr");
     fuse_opt_add_arg(&args, "-f");
     fuse_opt_add_arg(&args, "-o");
     fuse_opt_add_arg(&args, "auto_unmount");
     fuse_opt_add_arg(&args, "-o");
     fuse_opt_add_arg(&args, "fsname=AltPtr");
-    //fuse_opt_add_arg(&args, "/home/jiefei/Documents/mp");
     fuse_opt_add_arg(&args, get_mountpoint().c_str());
-    fuse_main(args.argc, args.argv, &operations, NULL);
-    //TODO: check if this function will be called after exist
-    fuse_opt_free_args(&args);
-}
-
-// [[Rcpp::export]]
-void run_thread()
-{
     thread = new std::thread(run_fuse);
 }
 
 // [[Rcpp::export]]
-void stop_thread()
+void C_stop_fuse_thread()
 {
+    if (thread == nullptr)
+    {
+        return;
+    }
+    fuse_opt_free_args(&args);
     kill(tid, SIGTERM);
     thread->join();
-}
-
-
-// [[Rcpp::export]]
-void add_altrep(SEXP x, SEXP name){
-    altrep_map.insert(value_type(CHAR(Rf_asChar(name)),x));
+    delete thread;
+    thread = nullptr;
 }
 
 // [[Rcpp::export]]
-SEXP list_altrep(){
-    Rcpp::List x;
-    for(auto i : altrep_map){
-        x.push_back((SEXP)i.second,i.first);
+void C_add_altrep_to_fuse(SEXP x, SEXP name)
+{
+    add_altrep_to_fuse(x, name);
+}
+
+string add_altrep_to_fuse(SEXP x, SEXP name)
+{
+    string altrep_name;
+
+    if (name != R_NilValue)
+    {
+        altrep_name = CHAR(Rf_asChar(name));
     }
+    else
+    {
+        altrep_name = "AP_" + std::to_string(counter);
+        counter++;
+    }
+    file_info info = {x, GET_ALT_DATA(x), get_object_size(x), get_type_size(TYPEOF(x))};
+    mutex.lock();
+    altrep_map.insert(value_type(altrep_name, info));
+    mutex.unlock();
+    return altrep_name;
+}
+
+void remove_altrep_from_fuse(SEXP name)
+{
+    string altrep_name(CHAR(Rf_asChar(name)));
+    mutex.lock();
+    if (HAS_KEY(altrep_name))
+    {
+        altrep_map.erase(altrep_name);
+    }
+    mutex.unlock();
+}
+
+// [[Rcpp::export]]
+SEXP C_list_altrep()
+{
+    mutex.lock();
+    Rcpp::List x;
+    for (auto i : altrep_map)
+    {
+        x.push_back((SEXP)i.second.x, i.first);
+    }
+    mutex.unlock();
     return x;
 }

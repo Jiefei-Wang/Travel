@@ -5,72 +5,128 @@
 
 using namespace Rcpp;
 
-// run_thread
-void run_thread();
-RcppExport SEXP _AltPtr_run_thread() {
+// C_make_altPtr
+SEXP C_make_altPtr(SEXP x, SEXP name);
+RcppExport SEXP _AltPtr_C_make_altPtr(SEXP xSEXP, SEXP nameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type name(nameSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_make_altPtr(x, name));
+    return rcpp_result_gen;
+END_RCPP
+}
+// C_getAltData1
+SEXP C_getAltData1(SEXP x);
+RcppExport SEXP _AltPtr_C_getAltData1(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_getAltData1(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// C_getAltData2
+SEXP C_getAltData2(SEXP x);
+RcppExport SEXP _AltPtr_C_getAltData2(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_getAltData2(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_int_value
+int get_int_value(SEXP x, int i);
+RcppExport SEXP _AltPtr_get_int_value(SEXP xSEXP, SEXP iSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type i(iSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_int_value(x, i));
+    return rcpp_result_gen;
+END_RCPP
+}
+// C_run_fuse_thread
+void C_run_fuse_thread();
+RcppExport SEXP _AltPtr_C_run_fuse_thread() {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    run_thread();
+    C_run_fuse_thread();
     return R_NilValue;
 END_RCPP
 }
-// stop_thread
-void stop_thread();
-RcppExport SEXP _AltPtr_stop_thread() {
+// C_stop_fuse_thread
+void C_stop_fuse_thread();
+RcppExport SEXP _AltPtr_C_stop_fuse_thread() {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    stop_thread();
+    C_stop_fuse_thread();
     return R_NilValue;
 END_RCPP
 }
-// set_mountpoint
-void set_mountpoint(SEXP path);
-RcppExport SEXP _AltPtr_set_mountpoint(SEXP pathSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type path(pathSEXP);
-    set_mountpoint(path);
-    return R_NilValue;
-END_RCPP
-}
-// add_altrep
-void add_altrep(SEXP x, SEXP name);
-RcppExport SEXP _AltPtr_add_altrep(SEXP xSEXP, SEXP nameSEXP) {
+// C_add_altrep_to_fuse
+void C_add_altrep_to_fuse(SEXP x, SEXP name);
+RcppExport SEXP _AltPtr_C_add_altrep_to_fuse(SEXP xSEXP, SEXP nameSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
     Rcpp::traits::input_parameter< SEXP >::type name(nameSEXP);
-    add_altrep(x, name);
+    C_add_altrep_to_fuse(x, name);
     return R_NilValue;
 END_RCPP
 }
-// list_altrep
-SEXP list_altrep();
-RcppExport SEXP _AltPtr_list_altrep() {
+// C_list_altrep
+SEXP C_list_altrep();
+RcppExport SEXP _AltPtr_C_list_altrep() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(list_altrep());
+    rcpp_result_gen = Rcpp::wrap(C_list_altrep());
     return rcpp_result_gen;
 END_RCPP
 }
-// set_print_location
-void set_print_location(SEXP x);
-RcppExport SEXP _AltPtr_set_print_location(SEXP xSEXP) {
+// C_set_print_location
+void C_set_print_location(SEXP x);
+RcppExport SEXP _AltPtr_C_set_print_location(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    set_print_location(x);
+    C_set_print_location(x);
     return R_NilValue;
 END_RCPP
 }
-// get_print_location
-SEXP get_print_location();
-RcppExport SEXP _AltPtr_get_print_location() {
+// C_get_print_location
+SEXP C_get_print_location();
+RcppExport SEXP _AltPtr_C_get_print_location() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(get_print_location());
+    rcpp_result_gen = Rcpp::wrap(C_get_print_location());
+    return rcpp_result_gen;
+END_RCPP
+}
+// C_set_mountpoint
+void C_set_mountpoint(SEXP path);
+RcppExport SEXP _AltPtr_C_set_mountpoint(SEXP pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type path(pathSEXP);
+    C_set_mountpoint(path);
+    return R_NilValue;
+END_RCPP
+}
+// C_get_mountpoint
+SEXP C_get_mountpoint();
+RcppExport SEXP _AltPtr_C_get_mountpoint() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(C_get_mountpoint());
     return rcpp_result_gen;
 END_RCPP
 }
@@ -92,31 +148,32 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// test_print
-void test_print();
-RcppExport SEXP _AltPtr_test_print() {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    test_print();
-    return R_NilValue;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_AltPtr_run_thread", (DL_FUNC) &_AltPtr_run_thread, 0},
-    {"_AltPtr_stop_thread", (DL_FUNC) &_AltPtr_stop_thread, 0},
-    {"_AltPtr_set_mountpoint", (DL_FUNC) &_AltPtr_set_mountpoint, 1},
-    {"_AltPtr_add_altrep", (DL_FUNC) &_AltPtr_add_altrep, 2},
-    {"_AltPtr_list_altrep", (DL_FUNC) &_AltPtr_list_altrep, 0},
-    {"_AltPtr_set_print_location", (DL_FUNC) &_AltPtr_set_print_location, 1},
-    {"_AltPtr_get_print_location", (DL_FUNC) &_AltPtr_get_print_location, 0},
+    {"_AltPtr_C_make_altPtr", (DL_FUNC) &_AltPtr_C_make_altPtr, 2},
+    {"_AltPtr_C_getAltData1", (DL_FUNC) &_AltPtr_C_getAltData1, 1},
+    {"_AltPtr_C_getAltData2", (DL_FUNC) &_AltPtr_C_getAltData2, 1},
+    {"_AltPtr_get_int_value", (DL_FUNC) &_AltPtr_get_int_value, 2},
+    {"_AltPtr_C_run_fuse_thread", (DL_FUNC) &_AltPtr_C_run_fuse_thread, 0},
+    {"_AltPtr_C_stop_fuse_thread", (DL_FUNC) &_AltPtr_C_stop_fuse_thread, 0},
+    {"_AltPtr_C_add_altrep_to_fuse", (DL_FUNC) &_AltPtr_C_add_altrep_to_fuse, 2},
+    {"_AltPtr_C_list_altrep", (DL_FUNC) &_AltPtr_C_list_altrep, 0},
+    {"_AltPtr_C_set_print_location", (DL_FUNC) &_AltPtr_C_set_print_location, 1},
+    {"_AltPtr_C_get_print_location", (DL_FUNC) &_AltPtr_C_get_print_location, 0},
+    {"_AltPtr_C_set_mountpoint", (DL_FUNC) &_AltPtr_C_set_mountpoint, 1},
+    {"_AltPtr_C_get_mountpoint", (DL_FUNC) &_AltPtr_C_get_mountpoint, 0},
     {"_AltPtr_initial_print_file", (DL_FUNC) &_AltPtr_initial_print_file, 0},
     {"_AltPtr_close_print_file", (DL_FUNC) &_AltPtr_close_print_file, 0},
-    {"_AltPtr_test_print", (DL_FUNC) &_AltPtr_test_print, 0},
     {NULL, NULL, 0}
 };
 
+void init_logical_class(DllInfo *dll);
+void init_integer_class(DllInfo *dll);
+void init_real_class(DllInfo *dll);
 RcppExport void R_init_AltPtr(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
+    init_logical_class(dll);
+    init_integer_class(dll);
+    init_real_class(dll);
 }
