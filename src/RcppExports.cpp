@@ -51,6 +51,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// get_double_value
+int get_double_value(SEXP x, int i);
+RcppExport SEXP _AltPtr_get_double_value(SEXP xSEXP, SEXP iSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type i(iSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_double_value(x, i));
+    return rcpp_result_gen;
+END_RCPP
+}
 // C_run_fuse_thread
 void C_run_fuse_thread();
 RcppExport SEXP _AltPtr_C_run_fuse_thread() {
@@ -154,6 +166,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_AltPtr_C_getAltData1", (DL_FUNC) &_AltPtr_C_getAltData1, 1},
     {"_AltPtr_C_getAltData2", (DL_FUNC) &_AltPtr_C_getAltData2, 1},
     {"_AltPtr_get_int_value", (DL_FUNC) &_AltPtr_get_int_value, 2},
+    {"_AltPtr_get_double_value", (DL_FUNC) &_AltPtr_get_double_value, 2},
     {"_AltPtr_C_run_fuse_thread", (DL_FUNC) &_AltPtr_C_run_fuse_thread, 0},
     {"_AltPtr_C_stop_fuse_thread", (DL_FUNC) &_AltPtr_C_stop_fuse_thread, 0},
     {"_AltPtr_C_add_altrep_to_fuse", (DL_FUNC) &_AltPtr_C_add_altrep_to_fuse, 2},

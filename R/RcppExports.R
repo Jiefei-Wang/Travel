@@ -17,6 +17,10 @@ get_int_value <- function(x, i) {
     .Call(`_AltPtr_get_int_value`, x, i)
 }
 
+get_double_value <- function(x, i) {
+    .Call(`_AltPtr_get_double_value`, x, i)
+}
+
 C_run_fuse_thread <- function() {
     invisible(.Call(`_AltPtr_C_run_fuse_thread`))
 }

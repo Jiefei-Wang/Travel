@@ -137,6 +137,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         elt_size = GET_VALUE(name).elt_size;
         file_size = GET_VALUE(name).size;
     }
+    debug_print("elt_size: %llu, file_size: %llu\n",elt_size,file_size);
     mutex.unlock();
     if (!key_exist)
     {
@@ -173,10 +174,10 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
     }
     size_t end_offset = (offset + size - 1) / elt_size;
     size_t end_intra_elt_len = offset + size - end_offset * elt_size;
-    if (end_intra_elt_len != 4)
+    if (end_intra_elt_len != elt_size)
     {
         char *temp_buffer = buffer + end_offset * elt_size;
-        debug_print("Filling end %llu,%llu,%llu,%llu\n", end_offset, end_intra_elt_len, size);
+        debug_print("Filling end %llu,%llu,%llu\n", end_offset, end_intra_elt_len, size);
         fill_mismatched_data(x_internal, end_offset, 0, end_intra_elt_len, temp_buffer, size);
         size = size - end_intra_elt_len;
         end_offset--;
@@ -231,7 +232,8 @@ void C_run_fuse_thread()
     fuse_opt_add_arg(&args, get_mountpoint().c_str());
     thread = new std::thread(run_fuse);
 }
-
+#include <fuse_lowlevel.h>
+fuse_ino_t ino;
 // [[Rcpp::export]]
 void C_stop_fuse_thread()
 {

@@ -215,3 +215,7 @@ SEXP C_getAltData2(SEXP x)
 int get_int_value(SEXP x, int i){
     return ((int*)DATAPTR(x))[i];
 }
+// [[Rcpp::export]]
+int get_double_value(SEXP x, int i){
+    return ((double*)DATAPTR(x))[i];
+}
