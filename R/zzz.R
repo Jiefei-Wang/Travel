@@ -1,4 +1,4 @@
-#' @useDynLib AltPtr, .registration = TRUE
+#' @useDynLib Travel, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
 NULL
 

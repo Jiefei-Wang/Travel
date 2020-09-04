@@ -2,62 +2,62 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 C_make_altPtr <- function(x, name) {
-    .Call(`_AltPtr_C_make_altPtr`, x, name)
+    .Call(`_Travel_C_make_altPtr`, x, name)
 }
 
 C_getAltData1 <- function(x) {
-    .Call(`_AltPtr_C_getAltData1`, x)
+    .Call(`_Travel_C_getAltData1`, x)
 }
 
 C_getAltData2 <- function(x) {
-    .Call(`_AltPtr_C_getAltData2`, x)
+    .Call(`_Travel_C_getAltData2`, x)
 }
 
 get_int_value <- function(x, i) {
-    .Call(`_AltPtr_get_int_value`, x, i)
+    .Call(`_Travel_get_int_value`, x, i)
 }
 
 get_double_value <- function(x, i) {
-    .Call(`_AltPtr_get_double_value`, x, i)
+    .Call(`_Travel_get_double_value`, x, i)
 }
 
 C_run_fuse_thread <- function() {
-    invisible(.Call(`_AltPtr_C_run_fuse_thread`))
+    invisible(.Call(`_Travel_C_run_fuse_thread`))
 }
 
 C_stop_fuse_thread <- function() {
-    invisible(.Call(`_AltPtr_C_stop_fuse_thread`))
+    invisible(.Call(`_Travel_C_stop_fuse_thread`))
 }
 
 C_add_altrep_to_fuse <- function(x, name) {
-    invisible(.Call(`_AltPtr_C_add_altrep_to_fuse`, x, name))
+    invisible(.Call(`_Travel_C_add_altrep_to_fuse`, x, name))
 }
 
 C_list_altrep <- function() {
-    .Call(`_AltPtr_C_list_altrep`)
+    .Call(`_Travel_C_list_altrep`)
 }
 
 C_set_print_location <- function(x) {
-    invisible(.Call(`_AltPtr_C_set_print_location`, x))
+    invisible(.Call(`_Travel_C_set_print_location`, x))
 }
 
 C_get_print_location <- function() {
-    .Call(`_AltPtr_C_get_print_location`)
+    .Call(`_Travel_C_get_print_location`)
 }
 
 C_set_mountpoint <- function(path) {
-    invisible(.Call(`_AltPtr_C_set_mountpoint`, path))
+    invisible(.Call(`_Travel_C_set_mountpoint`, path))
 }
 
 C_get_mountpoint <- function() {
-    .Call(`_AltPtr_C_get_mountpoint`)
+    .Call(`_Travel_C_get_mountpoint`)
 }
 
 initial_print_file <- function() {
-    invisible(.Call(`_AltPtr_initial_print_file`))
+    invisible(.Call(`_Travel_initial_print_file`))
 }
 
 close_print_file <- function() {
-    invisible(.Call(`_AltPtr_close_print_file`))
+    invisible(.Call(`_Travel_close_print_file`))
 }
 
