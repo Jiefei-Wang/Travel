@@ -21,20 +21,12 @@ get_double_value <- function(x, i) {
     .Call(`_Travel_get_double_value`, x, i)
 }
 
-C_run_fuse_thread <- function() {
-    invisible(.Call(`_Travel_C_run_fuse_thread`))
+C_stop_filesystem_thread <- function() {
+    invisible(.Call(`_Travel_C_stop_filesystem_thread`))
 }
 
-C_stop_fuse_thread <- function() {
-    invisible(.Call(`_Travel_C_stop_fuse_thread`))
-}
-
-C_add_altrep_to_fuse <- function(x, name) {
-    invisible(.Call(`_Travel_C_add_altrep_to_fuse`, x, name))
-}
-
-C_list_altrep <- function() {
-    .Call(`_Travel_C_list_altrep`)
+C_run_filesystem_thread <- function() {
+    invisible(.Call(`_Travel_C_run_filesystem_thread`))
 }
 
 C_set_print_location <- function(x) {

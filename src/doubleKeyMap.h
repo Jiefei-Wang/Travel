@@ -1,0 +1,67 @@
+#include <map>
+
+
+template <class KEY1, class KEY2, class VALUE> 
+class double_key_map { 
+private: 
+    std::map<const KEY1, VALUE> coreMap;
+    std::map<const KEY2, KEY1> key2_key1_Map;
+    std::map<const KEY1, KEY2> key1_key2_Map;
+    void erase(const KEY1 key1, const KEY2 key2){
+        coreMap.erase(key1);
+        key2_key1_Map.erase(key2);
+        key1_key2_Map.erase(key1);
+    }
+public: 
+    void insert(KEY1 key1, KEY2 key2, VALUE value){
+        if(has_key1(key1)){
+            erase_value_by_key1(key1);
+        }
+        if(has_key2(key2)){
+            erase_value_by_key2(key2);
+        }
+        coreMap.insert(std::pair<const KEY1, VALUE>(key1, value));
+        key2_key1_Map.insert(std::pair<const KEY2, KEY1>(key2, key1));
+        key1_key2_Map.insert(std::pair<const KEY1, KEY2>(key1, key2));
+    }
+    VALUE& get_value_by_key1(const KEY1 key1){
+        return coreMap.at(key1);
+    }
+    VALUE& get_value_by_key2(const KEY2 key2){
+        return get_value_by_key1(key2_key1_Map.at(key2));
+    }
+    bool has_key1(const KEY1 key1){
+        return key1_key2_Map.find(key1)!=key1_key2_Map.end();
+    }
+    bool has_key2(const KEY2 key2){
+        return key2_key1_Map.find(key2)!=key2_key1_Map.end();
+    }
+    bool erase_value_by_key1(const KEY1 key1){
+        if(!has_key1(key1)){
+            return false;
+        }
+        erase(key1, key1_key2_Map.at(key1));
+        return true;
+    }
+    bool erase_value_by_key2(const KEY2 key2){
+        if(!has_key2(key2)){
+            return false;
+        }
+        erase(key2_key1_Map.at(key2), key2);
+        return true;
+    }
+    const KEY2 get_key2(const KEY1 key1){
+        return key1_key2_Map[key1];
+    }
+    const KEY1 get_key1(const KEY2 key2){
+        return key2_key1_Map[key2];
+    }
+    typename std::map<const KEY1, KEY2>::iterator begin_key(){
+        return key1_key2_Map.begin();
+    }
+    typename std::map<const KEY1, KEY2>::iterator end_key(){
+        return key1_key2_Map.end();
+    }
+}; 
+
+

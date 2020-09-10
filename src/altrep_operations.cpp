@@ -159,7 +159,7 @@ static void ptr_finalizer(SEXP extPtr)
     void* ptr = R_ExternalPtrAddr(GET_PTR(props));
     DEBUG_ALTPTR(Rprintf("Finalizer, name:%s, size:%llu\n", name.c_str(), size));
     munmap(ptr, size);
-    remove_altrep_from_fuse(GET_NAME(props));
+    //remove_altrep_from_fuse(GET_NAME(props));
 }
 
 
@@ -173,7 +173,7 @@ SEXP C_make_altPtr(SEXP x, SEXP name)
     GET_SIZE(altPtr_options) = Rf_ScalarReal(get_object_size(x));
     R_altrep_class_t alt_class = getAltClass(TYPEOF(x));
     SEXP result = PROTECT(R_new_altrep(alt_class, x, altPtr_options));
-    std::string file_name = add_altrep_to_fuse(result, name);
+    std::string file_name = "";//add_altrep_to_fuse(result, name);
     GET_NAME(altPtr_options) = file_name;
     sleep(1);
     //Do the file mapping

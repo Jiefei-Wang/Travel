@@ -63,43 +63,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// C_run_fuse_thread
-void C_run_fuse_thread();
-RcppExport SEXP _Travel_C_run_fuse_thread() {
+// C_stop_filesystem_thread
+void C_stop_filesystem_thread();
+RcppExport SEXP _Travel_C_stop_filesystem_thread() {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    C_run_fuse_thread();
+    C_stop_filesystem_thread();
     return R_NilValue;
 END_RCPP
 }
-// C_stop_fuse_thread
-void C_stop_fuse_thread();
-RcppExport SEXP _Travel_C_stop_fuse_thread() {
+// C_run_filesystem_thread
+void C_run_filesystem_thread();
+RcppExport SEXP _Travel_C_run_filesystem_thread() {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    C_stop_fuse_thread();
+    C_run_filesystem_thread();
     return R_NilValue;
-END_RCPP
-}
-// C_add_altrep_to_fuse
-void C_add_altrep_to_fuse(SEXP x, SEXP name);
-RcppExport SEXP _Travel_C_add_altrep_to_fuse(SEXP xSEXP, SEXP nameSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type name(nameSEXP);
-    C_add_altrep_to_fuse(x, name);
-    return R_NilValue;
-END_RCPP
-}
-// C_list_altrep
-SEXP C_list_altrep();
-RcppExport SEXP _Travel_C_list_altrep() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(C_list_altrep());
-    return rcpp_result_gen;
 END_RCPP
 }
 // C_set_print_location
@@ -167,10 +146,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_getAltData2", (DL_FUNC) &_Travel_C_getAltData2, 1},
     {"_Travel_get_int_value", (DL_FUNC) &_Travel_get_int_value, 2},
     {"_Travel_get_double_value", (DL_FUNC) &_Travel_get_double_value, 2},
-    {"_Travel_C_run_fuse_thread", (DL_FUNC) &_Travel_C_run_fuse_thread, 0},
-    {"_Travel_C_stop_fuse_thread", (DL_FUNC) &_Travel_C_stop_fuse_thread, 0},
-    {"_Travel_C_add_altrep_to_fuse", (DL_FUNC) &_Travel_C_add_altrep_to_fuse, 2},
-    {"_Travel_C_list_altrep", (DL_FUNC) &_Travel_C_list_altrep, 0},
+    {"_Travel_C_stop_filesystem_thread", (DL_FUNC) &_Travel_C_stop_filesystem_thread, 0},
+    {"_Travel_C_run_filesystem_thread", (DL_FUNC) &_Travel_C_run_filesystem_thread, 0},
     {"_Travel_C_set_print_location", (DL_FUNC) &_Travel_C_set_print_location, 1},
     {"_Travel_C_get_print_location", (DL_FUNC) &_Travel_C_get_print_location, 0},
     {"_Travel_C_set_mountpoint", (DL_FUNC) &_Travel_C_set_mountpoint, 1},
