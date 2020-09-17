@@ -59,6 +59,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// filesystem_thread_func
+void filesystem_thread_func();
+RcppExport SEXP _Travel_filesystem_thread_func() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    filesystem_thread_func();
+    return R_NilValue;
+END_RCPP
+}
 // C_list_virtual_files
 Rcpp::DataFrame C_list_virtual_files();
 RcppExport SEXP _Travel_C_list_virtual_files() {
@@ -115,6 +124,16 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// C_make_fake_file
+void C_make_fake_file(size_t size);
+RcppExport SEXP _Travel_C_make_fake_file(SEXP sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< size_t >::type size(sizeSEXP);
+    C_make_fake_file(size);
+    return R_NilValue;
+END_RCPP
+}
 // C_set_print_location
 void C_set_print_location(SEXP x);
 RcppExport SEXP _Travel_C_set_print_location(SEXP xSEXP) {
@@ -155,21 +174,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// initial_print_file
-void initial_print_file();
-RcppExport SEXP _Travel_initial_print_file() {
+// initial_filesystem_log
+void initial_filesystem_log();
+RcppExport SEXP _Travel_initial_filesystem_log() {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    initial_print_file();
+    initial_filesystem_log();
     return R_NilValue;
 END_RCPP
 }
-// close_print_file
-void close_print_file();
-RcppExport SEXP _Travel_close_print_file() {
+// close_filesystem_log
+void close_filesystem_log();
+RcppExport SEXP _Travel_close_filesystem_log() {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    close_print_file();
+    close_filesystem_log();
     return R_NilValue;
 END_RCPP
 }
@@ -180,18 +199,20 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_getAltData2", (DL_FUNC) &_Travel_C_getAltData2, 1},
     {"_Travel_print_value", (DL_FUNC) &_Travel_print_value, 1},
     {"_Travel_C_get_ptr", (DL_FUNC) &_Travel_C_get_ptr, 1},
+    {"_Travel_filesystem_thread_func", (DL_FUNC) &_Travel_filesystem_thread_func, 0},
     {"_Travel_C_list_virtual_files", (DL_FUNC) &_Travel_C_list_virtual_files, 0},
     {"_Travel_run_filesystem_thread_func", (DL_FUNC) &_Travel_run_filesystem_thread_func, 0},
     {"_Travel_C_run_filesystem_thread", (DL_FUNC) &_Travel_C_run_filesystem_thread, 0},
     {"_Travel_C_stop_filesystem_thread", (DL_FUNC) &_Travel_C_stop_filesystem_thread, 0},
     {"_Travel_is_filesystem_running", (DL_FUNC) &_Travel_is_filesystem_running, 0},
     {"_Travel_show_thread_status", (DL_FUNC) &_Travel_show_thread_status, 0},
+    {"_Travel_C_make_fake_file", (DL_FUNC) &_Travel_C_make_fake_file, 1},
     {"_Travel_C_set_print_location", (DL_FUNC) &_Travel_C_set_print_location, 1},
     {"_Travel_C_get_print_location", (DL_FUNC) &_Travel_C_get_print_location, 0},
     {"_Travel_C_set_mountpoint", (DL_FUNC) &_Travel_C_set_mountpoint, 1},
     {"_Travel_C_get_mountpoint", (DL_FUNC) &_Travel_C_get_mountpoint, 0},
-    {"_Travel_initial_print_file", (DL_FUNC) &_Travel_initial_print_file, 0},
-    {"_Travel_close_print_file", (DL_FUNC) &_Travel_close_print_file, 0},
+    {"_Travel_initial_filesystem_log", (DL_FUNC) &_Travel_initial_filesystem_log, 0},
+    {"_Travel_close_filesystem_log", (DL_FUNC) &_Travel_close_filesystem_log, 0},
     {NULL, NULL, 0}
 };
 

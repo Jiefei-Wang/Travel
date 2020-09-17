@@ -1,3 +1,5 @@
+#ifndef HEADER_DOUBLE_KEY_MAP
+#define HEADER_DOUBLE_KEY_MAP
 #include <map>
 
 
@@ -68,8 +70,9 @@ public:
         return key1_key2_Map.end();
     }
     size_t size(){
-        coreMap.size();
+        return coreMap.size();
     }
 }; 
 
 
+#endif

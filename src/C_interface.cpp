@@ -32,6 +32,12 @@ SEXP C_make_altPtr_from_altrep(SEXP x)
 }
 
 
+
+
+
+
+
+
 // [[Rcpp::export]]
 SEXP C_getAltData1(SEXP x)
 {
@@ -77,6 +83,12 @@ SEXP C_get_ptr(SEXP x){
 
 
 
+
+
+
+
+
+
 /*
 //C_make_altPtr_internal(int type, void *data, size_t size, file_data_func read_func, unsigned int unit_size);
 struct mydata{
@@ -105,7 +117,7 @@ SEXP make_seq(size_t from, size_t by, size_t length){
 
 size_t read_SEXP(filesystem_file_data &file_data, void *buffer, size_t offset, size_t length)
 {
-    print_to_file("Called, offset:%llu, length:%llu\n",offset, length);
+    filesystem_log("Called, offset:%llu, length:%llu\n",offset, length);
     SEXP wrapped_object = (SEXP)file_data.private_data;
     SEXP data = VECTOR_ELT(wrapped_object, 0);
     Rcpp::Function func = VECTOR_ELT(wrapped_object, 1);

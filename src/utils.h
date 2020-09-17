@@ -1,30 +1,52 @@
-#include <Rcpp.h>
+#ifndef HEADER_UTILS
+#define HEADER_UTILS
+
 #define DEBUG_ALTREP(x)
 #define DEBUG_ALTPTR(x) x
 
-void print_to_file(const char* format, ...);
+#ifdef _WIN32
+#undef ERROR
+#endif
 
-
-void debug_print(const char* format, ...);
-
+#ifdef UTILS_ENABLE_R
+#include <Rcpp.h>
 size_t get_object_size(SEXP x);
+class PROTECT_GUARD
+{
+private:
+  int protect_num = 0;
+
+public:
+  PROTECT_GUARD() {}
+  ~PROTECT_GUARD()
+  {
+    if (protect_num != 0)
+      UNPROTECT(protect_num);
+  }
+  SEXP protect(SEXP x)
+  {
+    protect_num++;
+    return PROTECT(x);
+  }
+};
+#endif
+
+void initial_filesystem_log();
+void close_filesystem_log();
+void filesystem_log(const char *format, ...);
+void debug_print(const char *format, ...);
+void filesystem_print(const char *format, ...);
+void altrep_print(const char *format, ...);
 size_t get_type_size(int type);
-
-
 void mySleep(int sleepMs);
 
 
-class PROTECT_GUARD{
-  private:
-    int protect_num = 0;
-  public:
-    PROTECT_GUARD(){}
-    ~PROTECT_GUARD(){
-      if(protect_num!=0)
-        UNPROTECT(protect_num);
-    }
-    SEXP protect(SEXP x){
-      protect_num ++;
-      return PROTECT(x);
-    }
-};
+#ifdef _WIN32
+std::wstring stringToWstring(const char *utf8Bytes);
+std::string wstringToString(const wchar_t *utf16Bytes);
+std::wstring stringToWstring(std::string utf8Bytes);
+std::string wstringToString(std::wstring utf16Bytes);
+std::string get_file_name_in_path(std::string path);
+#endif
+
+#endif

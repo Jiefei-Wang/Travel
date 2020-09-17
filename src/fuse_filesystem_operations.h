@@ -2,5 +2,5 @@
 #define HEADER_FILESYSTEM_OPERATIONS
 void filesystem_thread_func();
 void filesystem_stop();
-bool is_filesystem_alive();
+bool is_filesystem_ok();
 #endif

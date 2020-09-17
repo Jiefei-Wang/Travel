@@ -1,4 +1,6 @@
 //#include <sys/types.h>
+//Include Rcpp header in utils.h
+#define UTILS_ENABLE_R
 #include <string>
 #include "Rcpp.h"
 #include "R_ext/Altrep.h"
@@ -40,13 +42,13 @@ Rboolean altPtr_Inspect(SEXP x, int pre, int deep, int pvec,
 R_xlen_t altPtr_length(SEXP x)
 {
     R_xlen_t size = Rcpp::as<size_t>(GET_ALT_LENGTH(x));
-    DEBUG_ALTREP(Rprintf("accessing length: %d\n", size));
+    altrep_print("accessing length: %d\n", size);
     return size;
 }
 
 void *altPtr_dataptr(SEXP x, Rboolean writeable)
 {
-    DEBUG_ALTREP(Rprintf("accessing data pointer\n"));
+    altrep_print("accessing data pointer\n");
     if (!is_filesystem_running())
     {
         Rf_error("The filesystem is not running!\n");
@@ -63,7 +65,7 @@ void *altPtr_dataptr(SEXP x, Rboolean writeable)
 }
 const void *altPtr_dataptr_or_null(SEXP x)
 {
-    DEBUG_ALTREP(Rprintf("accessing data pointer or null\n"));
+    altrep_print("accessing data pointer or null\n");
     if (is_filesystem_running())
     {
         return altPtr_dataptr(x, Rboolean::TRUE);

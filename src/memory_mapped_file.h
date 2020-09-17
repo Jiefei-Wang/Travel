@@ -15,5 +15,5 @@ std::string memory_map(file_map_handle *&handle, const filesystem_file_info file
 std::string memory_unmap(file_map_handle *handle);
 
 bool has_mapped_file_handle(void* handle);
-void unmap_all_files();
+std::string unmap_all_files();
 

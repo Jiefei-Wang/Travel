@@ -1,3 +1,4 @@
+#ifndef _WIN32 
 #define FUSE_USE_VERSION 26
 
 #include <fuse/fuse_lowlevel.h>
@@ -18,8 +19,7 @@
 
 static size_t print_counter = 0;
 
-extern double_key_map<fuse_ino_t, std::string, filesystem_file_data> file_list;
-std::shared_mutex filesystem_shared_mutex;
+extern std::shared_mutex filesystem_shared_mutex;
 /*
 Fuse specific objects
 */
@@ -66,7 +66,7 @@ void filesystem_stop()
 {
     if (channel != NULL && session != NULL)
     {
-        debug_print("exiting\n");
+        filesystem_print("exiting\n");
         fuse_session_exit(session);
         /*
         clock_t begin_time = clock();
@@ -78,18 +78,18 @@ void filesystem_stop()
             }
         }
         */
-        debug_print("Unmounting\n");
+        filesystem_print("Unmounting\n");
         fuse_unmount(get_mountpoint().c_str(), channel);
-        debug_print("removing channel\n");
+        filesystem_print("removing channel\n");
         fuse_session_remove_chan(channel);
-        debug_print("destroying session\n");
+        filesystem_print("destroying session\n");
         fuse_session_destroy(session);
         session = NULL;
         channel = NULL;
     }
 }
 
-bool is_filesystem_alive(){
+bool is_filesystem_ok(){
     return session !=NULL && channel !=NULL;
 
 }
@@ -131,7 +131,7 @@ static void filesystem_getattr(fuse_req_t req, fuse_ino_t ino,
                                struct fuse_file_info *fi)
 {
 
-    print_to_file("%lu: getattr, ino %lu\n", print_counter++, ino);
+    filesystem_log("%lu: getattr, ino %lu\n", print_counter++, ino);
     struct stat stbuf;
     (void)fi;
     memset(&stbuf, 0, sizeof(stbuf));
@@ -142,7 +142,7 @@ static void filesystem_getattr(fuse_req_t req, fuse_ino_t ino,
     else
     {
         fuse_reply_attr(req, &stbuf, 1.0);
-        print_to_file("%lu: getattr, file name: %s\n", print_counter, get_file_name(ino).c_str());
+        filesystem_log("%lu: getattr, file name: %s\n", print_counter, get_file_name(ino).c_str());
     }
 }
 
@@ -150,17 +150,17 @@ static void filesystem_getattr(fuse_req_t req, fuse_ino_t ino,
 static void filesystem_loopup(fuse_req_t req, fuse_ino_t parent, const char *name)
 {
 
-    print_to_file("%lu: lookup, parent %lu, name %s\n", print_counter++, parent, name);
+    filesystem_log("%lu: lookup, parent %lu, name %s\n", print_counter++, parent, name);
     struct fuse_entry_param e;
     {
         std::shared_lock<std::shared_mutex> shared_lock(filesystem_shared_mutex);
         if (parent != FUSE_ROOT_ID || !file_list.has_key2(name))
         {
-            print_to_file("File is not found\n");
+            filesystem_log("File is not found\n");
             fuse_reply_err(req, ENOENT);
             return;
         }
-        print_to_file("File is found\n");
+        filesystem_log("File is found\n");
 
         memset(&e, 0, sizeof(e));
         e.ino = file_list.get_key1(name);
@@ -171,7 +171,7 @@ static void filesystem_loopup(fuse_req_t req, fuse_ino_t parent, const char *nam
     int result = fuse_reply_entry(req, &e);
     if (result != 0)
     {
-        print_to_file("Fail to send reply, error: %d\n", result);
+        filesystem_log("Fail to send reply, error: %d\n", result);
     }
 }
 
@@ -211,7 +211,7 @@ static void filesystem_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
                                off_t off, struct fuse_file_info *fi)
 {
 
-    print_to_file("%lu: readdir, ino %lu\n", print_counter++, ino);
+    filesystem_log("%lu: readdir, ino %lu\n", print_counter++, ino);
     (void)fi;
 
     if (ino != 1)
@@ -226,7 +226,7 @@ static void filesystem_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
         std::shared_lock<std::shared_mutex> shared_lock(filesystem_shared_mutex);
         for (auto i = file_list.begin_key(); i != file_list.end_key(); ++i)
         {
-            print_to_file("File Added: %s\n", i->second.c_str());
+            filesystem_log("File Added: %s\n", i->second.c_str());
             dirbuf_add(req, &b, i->second.c_str(), i->first);
         }
         reply_buf_limited(req, b.p, b.size, off, size);
@@ -238,7 +238,7 @@ static void filesystem_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
 static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
                             fuse_file_info *fi)
 {
-    print_to_file("%lu: open, ino %lu\n", print_counter++, ino);
+    filesystem_log("%lu: open, ino %lu\n", print_counter++, ino);
     {
         std::shared_lock<std::shared_mutex> shared_lock(filesystem_shared_mutex);
         if (!file_list.has_key1(ino))
@@ -252,7 +252,7 @@ static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
         fuse_reply_err(req, EACCES);
         return;
     }
-    print_to_file("%lu: open, name %s\n", print_counter++, get_file_name(ino).c_str());
+    filesystem_log("%lu: open, name %s\n", print_counter++, get_file_name(ino).c_str());
     fuse_reply_open(req, fi);
 }
 
@@ -260,26 +260,15 @@ static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
 static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
                             off_t offset, fuse_file_info *fi)
 {
-    print_to_file("%lu: Read, ino %lu, name %s\n", print_counter++, ino, file_list.get_key2(ino).c_str());
+    filesystem_log("%lu: Read, ino %lu, name %s\n", print_counter++, ino, file_list.get_key2(ino).c_str());
 
     std::shared_lock<std::shared_mutex> shared_lock(filesystem_shared_mutex);
-    const size_t file_size = file_list.get_value_by_key1(ino).file_size;
-    //Out-of-bound check;
-    if ((size_t)offset + size > file_size)
-    {
-        if ((size_t)offset >= file_size)
-        {
-            fuse_reply_buf(req, NULL, 0);
-            return;
-        }
-        else
-        {
-            size = file_size - offset;
-        }
-    }
     std::unique_ptr<char[]> buffer(new char[size]);
     filesystem_file_data &file_data = file_list.get_value_by_key1(ino);
     size_t read_size = general_read_func(file_data, buffer.get(), offset, size);
-    print_to_file("%lu: Request read %llu, true read:%llu", size, read_size);
+    filesystem_log("%lu: Request read %llu, true read:%llu", size, read_size);
     fuse_reply_buf(req, buffer.get(), read_size);
 }
+
+
+#endif

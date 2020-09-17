@@ -3,9 +3,7 @@
 #include <chrono>
 #include <future>
 #include <thread>
-#include <fuse/fuse_lowlevel.h>
 #include <shared_mutex>
-#include <set>
 #include <time.h>
 #include "filesystem_manager.h"
 #include "fuse_filesystem_operations.h"
@@ -14,9 +12,11 @@
 #include "utils.h"
 #include "memory_mapped_file.h"
 
-static fuse_ino_t file_inode_counter = 1;
-extern std::shared_mutex filesystem_shared_mutex;
-double_key_map<fuse_ino_t, std::string, filesystem_file_data> file_list;
+
+
+static inode_type file_inode_counter = 1;
+std::shared_mutex filesystem_shared_mutex;
+double_key_map<inode_type, std::string, filesystem_file_data> file_list;
 
 
 /*
@@ -99,6 +99,7 @@ void C_run_filesystem_thread()
   {
     Rf_error("The filesystem thread has been running!");
   }
+  initial_filesystem_log();
   filesystem_thread.reset(new std::thread(run_filesystem_thread_func));
 }
 //#include <unistd.h>
@@ -109,11 +110,14 @@ void C_stop_filesystem_thread()
   if (filesystem_thread != nullptr)
   {
     // We must release the file handle before stopping the thread
-    unmap_all_files();
+    std::string status = unmap_all_files();
+    if(status!=""){
+      Rf_warning(status.c_str());
+    }
     //stop the filesystem
     filesystem_stop();
     //Check if the thread can be stopped
-    debug_print("thread:%d\n",(int)thread_stopped);
+    filesystem_print("is thread ended: %s\n",thread_stopped?"TRUE":"FALSE");
     clock_t begin_time = clock();
     while (!thread_stopped)
     {
@@ -125,18 +129,40 @@ void C_stop_filesystem_thread()
     }
     filesystem_thread->join();
     filesystem_thread.reset(nullptr);
-    print_to_file("unmount\n");
+    filesystem_log("unmount\n");
+    close_filesystem_log();
   }
 }
 
 // [[Rcpp::export]]
 bool is_filesystem_running()
 {
-  return filesystem_thread != nullptr && is_filesystem_alive();
+  return filesystem_thread != nullptr && is_filesystem_ok();
 }
 
 // [[Rcpp::export]]
 void show_thread_status(){
-    Rprintf("Is thread stopped:%d\n", thread_stopped);
-    Rprintf("Is filesystem alive:%d\n",  is_filesystem_alive());
+    Rprintf("Thread stop marker:%d\n", thread_stopped);
+    Rprintf("Is filesystem thread running:%s\n",  is_filesystem_running()?"true":"false");
+    Rprintf("Is filesystem ok:%s\n",  is_filesystem_ok()?"true":"false");
+}
+
+
+
+size_t fake_read(filesystem_file_data &file_data, void *buffer, size_t offset, size_t length){
+    std::string data = "fake read data\n";
+    for(size_t i =0;i<length;i++){
+        ((char*)buffer)[i+offset] = data.c_str()[(i+offset)%(data.length())];
+    }
+    return length;
+}
+
+//[[Rcpp::export]]
+void C_make_fake_file(size_t size)
+{
+    filesystem_file_data file_data;
+    file_data.data_func =fake_read;
+    file_data.file_size = size;
+    file_data.unit_size =1;
+    add_virtual_file(file_data);
 }

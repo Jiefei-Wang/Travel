@@ -21,6 +21,10 @@ C_get_ptr <- function(x) {
     .Call(`_Travel_C_get_ptr`, x)
 }
 
+filesystem_thread_func <- function() {
+    invisible(.Call(`_Travel_filesystem_thread_func`))
+}
+
 C_list_virtual_files <- function() {
     .Call(`_Travel_C_list_virtual_files`)
 }
@@ -45,6 +49,10 @@ show_thread_status <- function() {
     invisible(.Call(`_Travel_show_thread_status`))
 }
 
+C_make_fake_file <- function(size) {
+    invisible(.Call(`_Travel_C_make_fake_file`, size))
+}
+
 C_set_print_location <- function(x) {
     invisible(.Call(`_Travel_C_set_print_location`, x))
 }
@@ -61,11 +69,11 @@ C_get_mountpoint <- function() {
     .Call(`_Travel_C_get_mountpoint`)
 }
 
-initial_print_file <- function() {
-    invisible(.Call(`_Travel_initial_print_file`))
+initial_filesystem_log <- function() {
+    invisible(.Call(`_Travel_initial_filesystem_log`))
 }
 
-close_print_file <- function() {
-    invisible(.Call(`_Travel_close_print_file`))
+close_filesystem_log <- function() {
+    invisible(.Call(`_Travel_close_filesystem_log`))
 }
 
