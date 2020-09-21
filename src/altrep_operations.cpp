@@ -158,6 +158,9 @@ static void ptr_finalizer(SEXP handle_extptr)
 
 SEXP make_altptr(int type, void *data, size_t length, unsigned int unit_size, file_data_func read_func, SEXP protect)
 {
+    if(!is_filesystem_running()){
+        Rf_error("The filesystem is not running!\n");
+    }
     PROTECT_GUARD guard;
     R_altrep_class_t alt_class = getAltClass(type);
     Rcpp::List altptr_options(SLOT_NUM);
@@ -167,11 +170,7 @@ SEXP make_altptr(int type, void *data, size_t length, unsigned int unit_size, fi
     size_t size = length*unit_size;
     GET_SIZE(altptr_options) = size;
     //Fill the file data that is required by the filesystem
-    filesystem_file_data file_data;
-    file_data.data_func = read_func;
-    file_data.unit_size = unit_size;
-    file_data.file_size = size;
-    file_data.private_data = data;
+    filesystem_file_data file_data(read_func,data,size,unit_size);
     filesystem_file_info file_info = add_virtual_file(file_data);
     std::string file_name = file_info.file_name;
     GET_NAME(altptr_options) = file_name;

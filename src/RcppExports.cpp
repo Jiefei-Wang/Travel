@@ -59,6 +59,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// C_make_fake_file
+void C_make_fake_file(size_t size);
+RcppExport SEXP _Travel_C_make_fake_file(SEXP sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< size_t >::type size(sizeSEXP);
+    C_make_fake_file(size);
+    return R_NilValue;
+END_RCPP
+}
 // filesystem_thread_func
 void filesystem_thread_func();
 RcppExport SEXP _Travel_filesystem_thread_func() {
@@ -105,13 +115,13 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// is_filesystem_running
-bool is_filesystem_running();
-RcppExport SEXP _Travel_is_filesystem_running() {
+// C_is_filesystem_running
+bool C_is_filesystem_running();
+RcppExport SEXP _Travel_C_is_filesystem_running() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(is_filesystem_running());
+    rcpp_result_gen = Rcpp::wrap(C_is_filesystem_running());
     return rcpp_result_gen;
 END_RCPP
 }
@@ -124,14 +134,14 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// C_make_fake_file
-void C_make_fake_file(size_t size);
-RcppExport SEXP _Travel_C_make_fake_file(SEXP sizeSEXP) {
+// C_get_file_handle_number
+size_t C_get_file_handle_number();
+RcppExport SEXP _Travel_C_get_file_handle_number() {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< size_t >::type size(sizeSEXP);
-    C_make_fake_file(size);
-    return R_NilValue;
+    rcpp_result_gen = Rcpp::wrap(C_get_file_handle_number());
+    return rcpp_result_gen;
 END_RCPP
 }
 // C_set_print_location
@@ -199,14 +209,15 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_getAltData2", (DL_FUNC) &_Travel_C_getAltData2, 1},
     {"_Travel_print_value", (DL_FUNC) &_Travel_print_value, 1},
     {"_Travel_C_get_ptr", (DL_FUNC) &_Travel_C_get_ptr, 1},
+    {"_Travel_C_make_fake_file", (DL_FUNC) &_Travel_C_make_fake_file, 1},
     {"_Travel_filesystem_thread_func", (DL_FUNC) &_Travel_filesystem_thread_func, 0},
     {"_Travel_C_list_virtual_files", (DL_FUNC) &_Travel_C_list_virtual_files, 0},
     {"_Travel_run_filesystem_thread_func", (DL_FUNC) &_Travel_run_filesystem_thread_func, 0},
     {"_Travel_C_run_filesystem_thread", (DL_FUNC) &_Travel_C_run_filesystem_thread, 0},
     {"_Travel_C_stop_filesystem_thread", (DL_FUNC) &_Travel_C_stop_filesystem_thread, 0},
-    {"_Travel_is_filesystem_running", (DL_FUNC) &_Travel_is_filesystem_running, 0},
+    {"_Travel_C_is_filesystem_running", (DL_FUNC) &_Travel_C_is_filesystem_running, 0},
     {"_Travel_show_thread_status", (DL_FUNC) &_Travel_show_thread_status, 0},
-    {"_Travel_C_make_fake_file", (DL_FUNC) &_Travel_C_make_fake_file, 1},
+    {"_Travel_C_get_file_handle_number", (DL_FUNC) &_Travel_C_get_file_handle_number, 0},
     {"_Travel_C_set_print_location", (DL_FUNC) &_Travel_C_set_print_location, 1},
     {"_Travel_C_get_print_location", (DL_FUNC) &_Travel_C_get_print_location, 0},
     {"_Travel_C_set_mountpoint", (DL_FUNC) &_Travel_C_set_mountpoint, 1},

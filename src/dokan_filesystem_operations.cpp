@@ -14,7 +14,7 @@
 using std::string;
 using std::wstring;
 
-bool is_filesystem_ok() { return true;}
+bool is_filesystem_alive() { return true;}
 
 
 

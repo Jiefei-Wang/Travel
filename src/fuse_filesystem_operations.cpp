@@ -11,7 +11,7 @@
 
 #include <shared_mutex>
 #include "read_operations.h"
-#include "fuse_filesystem_operations.h"
+#include "filesystem_operations.h"
 #include "filesystem_manager.h"
 #include "double_key_map.h"
 #include "package_settings.h"

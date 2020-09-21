@@ -1,6 +1,6 @@
 #include "altrep_operations.h"
 #include "utils.h"
-
+#include "filesystem_manager.h"
 
 size_t read_altrep(filesystem_file_data &file_data, void *buffer, size_t offset, size_t length)
 {
@@ -30,11 +30,6 @@ SEXP C_make_altPtr_from_altrep(SEXP x)
     SEXP altptr_object = make_altptr(TYPEOF(x), x, XLENGTH(x), get_type_size(TYPEOF(x)),read_altrep, x);
     return altptr_object;
 }
-
-
-
-
-
 
 
 
@@ -83,6 +78,22 @@ SEXP C_get_ptr(SEXP x){
 
 
 
+
+
+size_t fake_read(filesystem_file_data &file_data, void *buffer, size_t offset, size_t length){
+    std::string data = "fake read data\n";
+    for(size_t i =0;i<length;i++){
+        ((char*)buffer)[i+offset] = data.c_str()[(i+offset)%(data.length())];
+    }
+    return length;
+}
+
+//[[Rcpp::export]]
+void C_make_fake_file(size_t size)
+{
+    filesystem_file_data file_data(fake_read,nullptr,size,1);
+    add_virtual_file(file_data);
+}
 
 
 

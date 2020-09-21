@@ -38,5 +38,3 @@ std::string get_mountpoint(){
     return mount_point;
 }
 
-
-

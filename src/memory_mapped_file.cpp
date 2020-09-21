@@ -42,6 +42,10 @@ bool has_mapped_file_handle(void *handle)
 {
     return mapped_file_handle_list.find(handle) != mapped_file_handle_list.end();
 }
+// [[Rcpp::export]]
+size_t C_get_file_handle_number(){
+    return mapped_file_handle_list.size();
+}
 
 #ifndef _WIN32
 std::string memory_map(file_map_handle *&handle, const filesystem_file_info file_info, const size_t size)
@@ -50,10 +54,10 @@ std::string memory_map(file_map_handle *&handle, const filesystem_file_info file
     //Wait until the file exist or timeout(5s)
     clock_t begin_time = clock();
     int fd = -1;
-    while (float(clock() - begin_time) / CLOCKS_PER_SEC < 5)
+    while (fd == -1)
     {
         fd = open(file_full_path.c_str(), O_RDONLY); //read only
-        if (fd != -1)
+        if (float(clock() - begin_time) / CLOCKS_PER_SEC > FILESYSTEM_WAIT_TIME)
             break;
     }
     if (fd == -1)
@@ -93,14 +97,13 @@ std::string memory_unmap(file_map_handle *handle)
 #else
 std::string memory_map(file_map_handle *&handle, const filesystem_file_info file_info, const size_t size)
 {
-
     clock_t begin_time = clock();
     HANDLE file_handle = INVALID_HANDLE_VALUE;
     while (file_handle == INVALID_HANDLE_VALUE)
     {
         file_handle = CreateFileA(file_info.file_full_path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL,
                                   OPEN_EXISTING, 0, NULL);
-        if (float(clock() - begin_time) / CLOCKS_PER_SEC > 5)
+        if (float(clock() - begin_time) / CLOCKS_PER_SEC > FILESYSTEM_WAIT_TIME)
         {
             return "Fail to open the file " + file_info.file_full_path +
                    ", error:" + std::to_string(GetLastError());
@@ -129,10 +132,13 @@ std::string memory_map(file_map_handle *&handle, const filesystem_file_info file
     handle->map_handle = map_handle;
     handle->ptr = ptr;
     handle->size = size;
+    filesystem_print("Creating file handle:%s--%p\n", handle->file_info.file_name.c_str(), handle->ptr);
+    insert_mapped_file_handle(handle);
     return "";
 }
 std::string memory_unmap(file_map_handle *handle)
 {
+    filesystem_print("releasing file handle:%s--%p\n", handle->file_info.file_name.c_str(), handle->ptr);
     bool status;
     std::string msg;
     status = UnmapViewOfFile(handle->ptr);
@@ -153,6 +159,7 @@ std::string memory_unmap(file_map_handle *handle)
         msg = "Fail to close the file handle for the file " +
               handle->file_info.file_full_path + ", error:" + std::to_string(GetLastError());
     }
+    erase_mapped_file_handle(handle);
     return "";
 }
 #endif
@@ -161,11 +168,11 @@ std::string unmap_all_files()
 {
     filesystem_print("handle size:%d\n", mapped_file_handle_list.size());
     std::set<void *> coped_set = mapped_file_handle_list;
+    
     std::string msg;
-    for (auto i : coped_set)
+    for (auto it = mapped_file_handle_list.begin(); it != mapped_file_handle_list.end();)
     {
-        file_map_handle *handle = (file_map_handle *)i;
-        filesystem_print("releasing:%s--%p\n", handle->file_info.file_name.c_str(), handle->ptr);
+        file_map_handle *handle = (file_map_handle *)*(it++);
         std::string status = memory_unmap(handle);
         if (status != "")
         {
