@@ -1,3 +1,4 @@
+#ifdef _WIN32
 #include <string>
 #include "dokan/dokan.h"
 #include "utils.h"
@@ -297,3 +298,4 @@ void filesystem_thread_func()
 void filesystem_stop() {
 	DokanRemoveMountPoint(mountpoint);
 }
+#endif
