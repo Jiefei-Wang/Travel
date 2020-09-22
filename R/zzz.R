@@ -7,5 +7,5 @@ NULL
 }
 
 .onUnload<- function(libname, pkgname){
-    C_stop_filesystem_thread()
+    stop_filesystem()
 }

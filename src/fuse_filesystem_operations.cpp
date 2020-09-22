@@ -1,7 +1,7 @@
 #ifndef _WIN32 
 #define FUSE_USE_VERSION 26
 
-#include <fuse/fuse_lowlevel.h>
+#include <fuse_lowlevel.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -89,7 +89,7 @@ void filesystem_stop()
     }
 }
 
-bool is_filesystem_ok(){
+bool is_filesystem_alive(){
     return session !=NULL && channel !=NULL;
 
 }

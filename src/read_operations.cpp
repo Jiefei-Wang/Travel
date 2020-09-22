@@ -7,7 +7,7 @@
 size_t general_read_func(filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
 {
     //Out-of-bound check;
-    size_t& file_size = file_data.file_size;
+    unsigned long long& file_size = file_data.file_size;
      if ((size_t)offset + size > file_size)
     {
         if ((size_t)offset >= file_size)
