@@ -13,7 +13,6 @@
 #include "memory_mapped_file.h"
 
 static inode_type file_inode_counter = 1;
-std::shared_mutex filesystem_shared_mutex;
 double_key_map<inode_type, std::string, filesystem_file_data> file_list;
 
 /*
@@ -24,7 +23,12 @@ Insert or delete files from the filesystem
 
 filesystem_file_info add_virtual_file(filesystem_file_data file_data, std::string name)
 {
-  std::lock_guard<std::shared_mutex> guard(filesystem_shared_mutex);
+  if(file_data.file_size%file_data.unit_size!=0){
+    Rf_error("The file size and unit size does not match!\n");
+  }
+  if(file_data.file_size<file_data.unit_size){
+    Rf_error("The file size is less than unit size!\n");
+  }
   file_inode_counter++;
   if (name == "")
   {
@@ -38,7 +42,6 @@ filesystem_file_info add_virtual_file(filesystem_file_data file_data, std::strin
 
 bool remove_virtual_file(std::string name)
 {
-  std::lock_guard<std::shared_mutex> guard(filesystem_shared_mutex);
   return file_list.erase_value_by_key2(name);
 }
 
@@ -108,7 +111,7 @@ void C_run_filesystem_thread()
   initial_filesystem_log();
   filesystem_thread.reset(new std::thread(run_filesystem_thread_func));
   clock_t begin_time = clock();
-  while (!thread_finished)
+  while (thread_finished||!is_filesystem_alive())
     {
       if (float(clock() - begin_time) / CLOCKS_PER_SEC > FILESYSTEM_WAIT_TIME)
       {
@@ -129,6 +132,7 @@ void C_stop_filesystem_thread()
     {
       Rf_warning(status.c_str());
     }
+    mySleep(1);
     //stop the filesystem
     filesystem_stop();
     //Check if the thread can be stopped

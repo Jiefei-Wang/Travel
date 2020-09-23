@@ -1,10 +1,4 @@
-get_mountpoint<- function(){
-    C_get_mountpoint()
-}
-set_mountpoint <- function(path){
-    if(is_filesystem_running()){
-        stop("The filesystem is running, you cannot change the mountpoint")
-    }
+validate_path <-function(path){
     path <- normalizePath(path, mustWork = FALSE, winslash = "/")
     is_driver_path <- regexpr("^[a-zA-Z]:/$",path)==1
     path <- normalizePath(path, mustWork = FALSE)
@@ -23,9 +17,21 @@ set_mountpoint <- function(path){
             dir.create(path, recursive = TRUE)
         }
     }
-    C_set_mountpoint(path)
+    path
+}
+
+
+get_mountpoint<- function(){
+    C_get_mountpoint()
+}
+set_mountpoint <- function(path){
+    if(is_filesystem_running()){
+        stop("The filesystem is running, you cannot change the mountpoint")
+    }
+    C_set_mountpoint(validate_path(path))
 }
 run_filesystem <- function(){
+    validate_path(get_mountpoint())
     C_run_filesystem_thread()
 }
 stop_filesystem <- function(){

@@ -145,6 +145,10 @@ NTSTATUS DOKAN_CALLBACK dokan_read_file(LPCWSTR wide_file_path, LPVOID buffer,
 	filesystem_log("ReadFile: %s, ", file_path.c_str());
 
 	filesystem_file_data &file_data = file_list.get_value_by_key2(file_name);
+    unsigned int &unit_size = file_data.unit_size;
+    size_t &file_size = file_data.file_size;
+    *read_length = get_read_size(file_size, offset, buffer_length);
+
 	size_t read_size = general_read_func(file_data, buffer, offset, buffer_length);
 	filesystem_log("offset:%llu, request read %llu, true read:%llu\n", offset,buffer_length, read_size);
 	*read_length = read_size;
@@ -247,7 +251,6 @@ MirrorFindFiles(LPCWSTR wide_file_path,
 }
 
 static WCHAR mountpoint[DOKAN_MAX_PATH] = L"M:\\";
-//[[Rcpp::export]]
 void filesystem_thread_func()
 {
 	DOKAN_OPERATIONS dokanOperations;

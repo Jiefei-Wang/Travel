@@ -6,20 +6,6 @@
 
 size_t general_read_func(filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
 {
-    //Out-of-bound check;
-    unsigned long long& file_size = file_data.file_size;
-     if ((size_t)offset + size > file_size)
-    {
-        if ((size_t)offset >= file_size)
-        {
-            return 0;
-        }
-        else
-        {
-            size = file_size - offset;
-        }
-    }
-
     unsigned int &unit_size = file_data.unit_size;
     // If the unit size is 1, there is nothing to do
     if (unit_size == 1)

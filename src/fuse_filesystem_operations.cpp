@@ -1,4 +1,4 @@
-#ifndef _WIN32 
+#ifndef _WIN32
 #define FUSE_USE_VERSION 26
 
 #include <fuse_lowlevel.h>
@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <memory>
 
 #include <shared_mutex>
 #include "read_operations.h"
@@ -19,13 +20,16 @@
 
 static size_t print_counter = 0;
 
-extern std::shared_mutex filesystem_shared_mutex;
 /*
 Fuse specific objects
 */
 static fuse_chan *channel = NULL;
 static fuse_session *session = NULL;
 static fuse_lowlevel_ops filesystem_operations;
+
+//Data buffer
+size_t data_buf_size = 2 * sysconf(_SC_PAGESIZE);
+std::unique_ptr<char[]> data_buf(new char[data_buf_size]);
 
 /*
 Declare the callback functions
@@ -49,7 +53,6 @@ void filesystem_thread_func()
     filesystem_operations.read = filesystem_read;
     struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
     channel = fuse_mount(get_mountpoint().c_str(), &args);
-    int err = -1;
     if (channel != NULL)
     {
         session = fuse_lowlevel_new(&args, &filesystem_operations,
@@ -57,41 +60,28 @@ void filesystem_thread_func()
         if (session != NULL)
         {
             fuse_session_add_chan(session, channel);
-            err = fuse_session_loop(session);
+            fuse_session_loop(session);
+            fuse_session_remove_chan(channel);
         }
+        fuse_session_destroy(session);
     }
+    session = NULL;
+    channel = NULL;
+    fuse_opt_free_args(&args);
 }
 
 void filesystem_stop()
 {
-    if (channel != NULL && session != NULL)
+    if (channel != NULL)
     {
-        filesystem_print("exiting\n");
-        fuse_session_exit(session);
-        /*
-        clock_t begin_time = clock();
-        while (!fuse_session_exited(session))
-        {
-            if (float(clock() - begin_time) / CLOCKS_PER_SEC > 3)
-            {
-                Rf_warning("Session exist timeout, force exist instead\n");
-            }
-        }
-        */
         filesystem_print("Unmounting\n");
         fuse_unmount(get_mountpoint().c_str(), channel);
-        filesystem_print("removing channel\n");
-        fuse_session_remove_chan(channel);
-        filesystem_print("destroying session\n");
-        fuse_session_destroy(session);
-        session = NULL;
-        channel = NULL;
     }
 }
 
-bool is_filesystem_alive(){
-    return session !=NULL && channel !=NULL;
-
+bool is_filesystem_alive()
+{
+    return session != NULL && channel != NULL;
 }
 
 std::string get_file_name(fuse_ino_t ino)
@@ -119,7 +109,6 @@ static int fill_file_stat(fuse_ino_t ino, struct stat *stbuf)
         stbuf->st_mode = S_IFREG | 0444;
         stbuf->st_nlink = 1;
 
-        std::shared_lock<std::shared_mutex> shared_lock(filesystem_shared_mutex);
         stbuf->st_size = file_list.get_value_by_key1(ino).file_size;
         return 0;
     }
@@ -153,7 +142,6 @@ static void filesystem_loopup(fuse_req_t req, fuse_ino_t parent, const char *nam
     filesystem_log("%lu: lookup, parent %lu, name %s\n", print_counter++, parent, name);
     struct fuse_entry_param e;
     {
-        std::shared_lock<std::shared_mutex> shared_lock(filesystem_shared_mutex);
         if (parent != FUSE_ROOT_ID || !file_list.has_key2(name))
         {
             filesystem_log("File is not found\n");
@@ -223,7 +211,6 @@ static void filesystem_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
         memset(&b, 0, sizeof(b));
         dirbuf_add(req, &b, ".", 1);
         dirbuf_add(req, &b, "..", 1);
-        std::shared_lock<std::shared_mutex> shared_lock(filesystem_shared_mutex);
         for (auto i = file_list.begin_key(); i != file_list.end_key(); ++i)
         {
             filesystem_log("File Added: %s\n", i->second.c_str());
@@ -240,7 +227,6 @@ static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
 {
     filesystem_log("%lu: open, ino %lu\n", print_counter++, ino);
     {
-        std::shared_lock<std::shared_mutex> shared_lock(filesystem_shared_mutex);
         if (!file_list.has_key1(ino))
         {
             fuse_reply_err(req, ENOENT);
@@ -260,15 +246,78 @@ static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
 static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
                             off_t offset, fuse_file_info *fi)
 {
-    filesystem_log("%lu: Read, ino %lu, name %s\n", print_counter++, ino, file_list.get_key2(ino).c_str());
+    size_t current_counter = print_counter++;
+    filesystem_log("%lu: Read, ino %lu, name %s, offset:%llu, size:%llu\n",
+                   current_counter, ino, file_list.get_key2(ino).c_str(),
+                   offset, size);
 
-    std::shared_lock<std::shared_mutex> shared_lock(filesystem_shared_mutex);
-    std::unique_ptr<char[]> buffer(new char[size]);
     filesystem_file_data &file_data = file_list.get_value_by_key1(ino);
-    size_t read_size = general_read_func(file_data, buffer.get(), offset, size);
-    filesystem_log("%lu: Request read %llu, true read:%llu", size, read_size);
-    fuse_reply_buf(req, buffer.get(), read_size);
-}
+    unsigned int &unit_size = file_data.unit_size;
+    size_t &file_size = file_data.file_size;
+    size = get_read_size(file_size, offset, size);
+    if (size == 0)
+        return;
+    /*
+    Compute the misalignment.
+    E.g. Data is int[3], 12 bytes in total, request to read from offset 3 and size 2
+    unit_size = 4;
+    misalignment_begin = 3;
+    misalignment_end = 3;
+    desired_read_offset = 0;
+    desired_read_size = 8;
+    */
+    size_t misalignment_begin;
+    size_t misalignment_end;
+    size_t desired_read_offset;
+    size_t desired_read_size;
+    if (unit_size <= data_buf_size)
+    {
+        misalignment_begin = offset % unit_size;
+        misalignment_end = unit_size - (offset + size) % unit_size;
+        desired_read_offset = offset - misalignment_begin;
+        desired_read_size = size + misalignment_begin + misalignment_end;
+    }
+    else
+    {
+        misalignment_begin = 0;
+        misalignment_end = 0;
+        desired_read_offset = offset;
+        desired_read_size = size;
+    }
+    size_t block_num = desired_read_size / data_buf_size + (desired_read_size % data_buf_size != 0);
+    for (size_t i = 0; i < block_num; i++)
+    {
+        size_t block_size = (i == block_num - 1) ? (desired_read_size % data_buf_size) : data_buf_size;
+        size_t read_size = general_read_func(file_data, data_buf.get(),
+                                             desired_read_offset + data_buf_size * i,
+                                             block_size);
+        filesystem_log("%lu: Reading block %llu/%llu, Request read %llu, true read:%llu\n",
+                       current_counter, i, block_num, block_size, read_size);
+        //compute which region in the block is actually required
+        size_t intra_block_offset_begin = (i == 0 ? misalignment_begin : 0);
+        if (intra_block_offset_begin >= read_size)
+        {
+            filesystem_log("%lu: error in read! code offset_begin:%llu\n",
+                           current_counter, intra_block_offset_begin);
+            return;
+        }
+        size_t intra_block_offset_end = block_size - (i == (block_num - 1) ? misalignment_end : 0);
+        intra_block_offset_end = intra_block_offset_end > read_size ? read_size : intra_block_offset_end;
+        size_t true_block_size = intra_block_offset_end - intra_block_offset_begin;
+        int status = fuse_reply_buf(req, data_buf.get() + intra_block_offset_begin, true_block_size);
+        if (status != 0)
+        {
+            filesystem_log("%lu: error in read! code %llu\n", current_counter, status);
+            return;
+        }
+        if (block_size != read_size)
+        {
+            filesystem_log("%lu: Block size and read size do not match!\n");
+            return;
+        }
+    }
 
+    //size_t read_size = general_read_func(file_data, buffer.get(), offset, size);
+}
 
 #endif

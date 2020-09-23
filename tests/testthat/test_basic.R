@@ -13,7 +13,7 @@ test_that("Nonstandard path", {
     set_mountpoint(tmp_dir)
     expect_error(run_filesystem(),NA)
     expect_true(is_filesystem_running())
-    Sys.sleep(5)
+    Sys.sleep(2)
     expect_error(stop_filesystem(),NA)
     
     ## driver letter
@@ -21,7 +21,7 @@ test_that("Nonstandard path", {
     set_mountpoint(tmp_dir)
     expect_error(run_filesystem(),NA)
     expect_true(is_filesystem_running())
-    Sys.sleep(5)
+    Sys.sleep(2)
     expect_error(stop_filesystem(),NA)
 })
 

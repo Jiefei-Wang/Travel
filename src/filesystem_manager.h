@@ -13,7 +13,7 @@ struct filesystem_file_data
   filesystem_file_data():unit_size(1){}
   filesystem_file_data(file_data_func data_func,
                                              void *private_data,
-                                             long long file_size,
+                                             size_t file_size,
                                              unsigned int unit_size = 1):
                                              data_func(data_func),
                                              private_data(private_data),
@@ -24,7 +24,7 @@ struct filesystem_file_data
   //The size of an unit of the data is specified in unit_size
   file_data_func data_func;
   void *private_data;
-  unsigned long long file_size;
+  size_t file_size;
   unsigned int unit_size;
 };
 

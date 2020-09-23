@@ -80,6 +80,7 @@ std::string memory_map(file_map_handle *&handle, const filesystem_file_info file
 }
 std::string memory_unmap(file_map_handle *handle)
 {
+    filesystem_print("releasing file handle:%s--%p\n", handle->file_info.file_name.c_str(), handle->ptr);
     if (!has_mapped_file_handle(handle))
     {
         return "The handle has been released";

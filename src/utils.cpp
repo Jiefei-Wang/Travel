@@ -1,6 +1,5 @@
 #define UTILS_ENABLE_R
 #include "utils.h"
-#include <mutex>
 #include <cstdarg>
 #include <iostream>
 #include <fstream>
@@ -12,7 +11,6 @@ bool filesystem_print_enabled = true;
 bool filesystem_log_enabled = true;
 
 #define BUFFER_SIZE 1024 * 1024
-static std::mutex output_mutex;
 static char buffer[BUFFER_SIZE];
 static std::ofstream filesystem_log_stream;
 
@@ -37,7 +35,6 @@ void filesystem_log(const char *format, ...)
 {
 	if (filesystem_log_enabled >= 1)
 	{
-		std::lock_guard guard(output_mutex);
 		//initial_filesystem_log();
 		va_list args;
 		va_start(args, format);
@@ -51,7 +48,6 @@ void debug_print(const char *format, ...)
 {
 	if (debug_print_enabled)
 	{
-		std::lock_guard guard(output_mutex);
 		va_list args;
 		va_start(args, format);
 		vsnprintf(buffer, BUFFER_SIZE, format, args);
@@ -63,7 +59,6 @@ void filesystem_print(const char *format, ...)
 {
 	if (filesystem_print_enabled)
 	{
-		std::lock_guard guard(output_mutex);
 		va_list args;
 		va_start(args, format);
 		vsnprintf(buffer, BUFFER_SIZE, format, args);
@@ -75,7 +70,6 @@ void altrep_print(const char *format, ...)
 {
 	if (altrep_print_enabled)
 	{
-		std::lock_guard guard(output_mutex);
 		va_list args;
 		va_start(args, format);
 		vsnprintf(buffer, BUFFER_SIZE, format, args);

@@ -25,10 +25,6 @@ C_make_fake_file <- function(size) {
     invisible(.Call(`_Travel_C_make_fake_file`, size))
 }
 
-filesystem_thread_func <- function() {
-    invisible(.Call(`_Travel_filesystem_thread_func`))
-}
-
 C_list_virtual_files <- function() {
     .Call(`_Travel_C_list_virtual_files`)
 }

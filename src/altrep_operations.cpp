@@ -60,7 +60,15 @@ void *altPtr_dataptr(SEXP x, Rboolean writeable)
     }
     else
     {
-        return ((file_map_handle*)R_ExternalPtrAddr(handle_extptr))->ptr;
+        file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
+        if (has_mapped_file_handle(handle))
+        {
+            return handle->ptr;
+        }
+        else
+        {
+            Rf_error("The file handle has been released!\n");
+        }
     }
 }
 const void *altPtr_dataptr_or_null(SEXP x)
@@ -142,9 +150,10 @@ static void ptr_finalizer(SEXP handle_extptr)
 {
     Rcpp::List altptr_options = R_ExternalPtrTag(handle_extptr);
     std::string name = Rcpp::as<std::string>(GET_NAME(altptr_options));
-    file_map_handle* handle= (file_map_handle*)R_ExternalPtrAddr(handle_extptr);
-    if(!has_mapped_file_handle(handle)){
-        Rf_warning("The altptr file handle has been released: %s, handle: %p\n", name.c_str(),handle);
+    file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
+    if (!has_mapped_file_handle(handle))
+    {
+        Rf_warning("The altptr file handle has been released: %s, handle: %p\n", name.c_str(), handle);
         return;
     }
     debug_print("Finalizer, name:%s, size:%llu\n", name.c_str(), handle->size);
@@ -158,7 +167,8 @@ static void ptr_finalizer(SEXP handle_extptr)
 
 SEXP make_altptr(int type, void *data, size_t length, unsigned int unit_size, file_data_func read_func, SEXP protect)
 {
-    if(!is_filesystem_running()){
+    if (!is_filesystem_running())
+    {
         Rf_error("The filesystem is not running!\n");
     }
     PROTECT_GUARD guard;
@@ -167,10 +177,10 @@ SEXP make_altptr(int type, void *data, size_t length, unsigned int unit_size, fi
     GET_LENGTH(altptr_options) = length;
     SEXP result = guard.protect(R_new_altrep(alt_class, protect, altptr_options));
     //Compute the total size
-    size_t size = length*unit_size;
+    size_t size = length * unit_size;
     GET_SIZE(altptr_options) = size;
     //Fill the file data that is required by the filesystem
-    filesystem_file_data file_data(read_func,data,size,unit_size);
+    filesystem_file_data file_data(read_func, data, size, unit_size);
     filesystem_file_info file_info = add_virtual_file(file_data);
     std::string file_name = file_info.file_name;
     GET_NAME(altptr_options) = file_name;
@@ -187,6 +197,3 @@ SEXP make_altptr(int type, void *data, size_t length, unsigned int unit_size, fi
     GET_PTR(altptr_options) = handle_extptr;
     return result;
 }
-
-
-
