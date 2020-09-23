@@ -265,6 +265,7 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
     */
     size_t misalignment_begin = offset % unit_size;
     size_t misalignment_end = unit_size - (offset + size) % unit_size;
+    misalignment_end = (misalignment_end == unit_size? 0:misalignment_end);
     size_t desired_read_offset = offset - misalignment_begin;
     size_t desired_read_size = size + misalignment_begin + misalignment_end;
 
