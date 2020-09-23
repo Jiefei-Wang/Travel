@@ -8,9 +8,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <memory>
 
-#include <shared_mutex>
+#include <memory>
 #include "read_operations.h"
 #include "filesystem_operations.h"
 #include "filesystem_manager.h"
@@ -26,10 +25,6 @@ Fuse specific objects
 static fuse_chan *channel = NULL;
 static fuse_session *session = NULL;
 static fuse_lowlevel_ops filesystem_operations;
-
-//Data buffer
-size_t data_buf_size = 2 * sysconf(_SC_PAGESIZE);
-std::unique_ptr<char[]> data_buf(new char[data_buf_size]);
 
 /*
 Declare the callback functions
@@ -242,19 +237,21 @@ static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
     fuse_reply_open(req, fi);
 }
 
+//Data buffer
+static size_t buffer_size = 1024;
+std::unique_ptr<char[]> buffer(new char[buffer_size]);
 //assigned
 static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
                             off_t offset, fuse_file_info *fi)
 {
     size_t current_counter = print_counter++;
-    filesystem_log("%lu: Read, ino %lu, name %s, offset:%llu, size:%llu\n",
-                   current_counter, ino, file_list.get_key2(ino).c_str(),
-                   offset, size);
-
     filesystem_file_data &file_data = file_list.get_value_by_key1(ino);
     unsigned int &unit_size = file_data.unit_size;
     size_t &file_size = file_data.file_size;
     size = get_read_size(file_size, offset, size);
+    filesystem_log("%llu: Read, ino %lu, name %s, offset:%llu, size:%llu\n",
+                   current_counter, ino, file_list.get_key2(ino).c_str(),
+                   offset, size);
     if (size == 0)
         return;
     /*
@@ -266,61 +263,31 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
     desired_read_offset = 0;
     desired_read_size = 8;
     */
-    size_t misalignment_begin;
-    size_t misalignment_end;
-    size_t desired_read_offset;
-    size_t desired_read_size;
-    if (unit_size <= data_buf_size)
-    {
-        misalignment_begin = offset % unit_size;
-        misalignment_end = unit_size - (offset + size) % unit_size;
-        desired_read_offset = offset - misalignment_begin;
-        desired_read_size = size + misalignment_begin + misalignment_end;
-    }
-    else
-    {
-        misalignment_begin = 0;
-        misalignment_end = 0;
-        desired_read_offset = offset;
-        desired_read_size = size;
-    }
-    size_t block_num = desired_read_size / data_buf_size + (desired_read_size % data_buf_size != 0);
-    for (size_t i = 0; i < block_num; i++)
-    {
-        size_t block_off = desired_read_offset + data_buf_size * i;
-        size_t block_size = (i == block_num - 1) ? (desired_read_size % data_buf_size) : data_buf_size;
-        size_t read_size = general_read_func(file_data, data_buf.get(),
-                                             block_off,
-                                             block_size);
-        filesystem_log("%lu: Reading block %llu/%llu, offset %llu, Request read %llu, true read:%llu\n",
-                       current_counter, i, block_num, block_off, block_size, read_size);
-        //compute which region in the block is actually required
-        size_t intra_block_offset_begin = (i == 0 ? misalignment_begin : 0);
-        if (intra_block_offset_begin >= read_size)
-        {
-            filesystem_log("%lu: error in read! code offset_begin:%llu\n",
-                           current_counter, intra_block_offset_begin);
-            return;
-        }
-        size_t intra_block_offset_end = block_size - (i == (block_num - 1) ? misalignment_end : 0);
-        intra_block_offset_end = intra_block_offset_end > read_size ? read_size : intra_block_offset_end;
-        size_t true_block_size = intra_block_offset_end - intra_block_offset_begin;
-        filesystem_log("%lu: intra block off begin: %llu, size: %llu\n",
-                           current_counter, intra_block_offset_begin, true_block_size);
-        int status = fuse_reply_buf(req, data_buf.get() + intra_block_offset_begin, true_block_size);
-        if (status != 0)
-        {
-            filesystem_log("%lu: error in read! code %llu\n", current_counter, status);
-            return;
-        }
-        if (block_size != read_size)
-        {
-            filesystem_log("%lu: Block size and read size do not match!\n");
-            return;
-        }
-    }
+    size_t misalignment_begin = offset % unit_size;
+    size_t misalignment_end = unit_size - (offset + size) % unit_size;
+    size_t desired_read_offset = offset - misalignment_begin;
+    size_t desired_read_size = size + misalignment_begin + misalignment_end;
 
-    //size_t read_size = general_read_func(file_data, buffer.get(), offset, size);
+    filesystem_log("%llu: mismatch begin:%llu, end:%llu, aligned off:%llu, size:%llu",
+                   current_counter, misalignment_begin, misalignment_end,
+                   desired_read_offset, desired_read_size);
+    if (desired_read_size > buffer_size)
+    {
+        buffer.reset(new char[desired_read_size]);
+        buffer_size = desired_read_size;
+    }
+    size_t read_size = general_read_func(file_data, buffer.get(),
+                                         desired_read_offset,
+                                         desired_read_size);
+    int status = fuse_reply_buf(req, buffer.get() + misalignment_begin, size);
+    if (status != 0)
+    {
+        filesystem_log("%llu: error in read! code %d\n", current_counter, status);
+    }
+    if (desired_read_size != read_size)
+    {
+        filesystem_log("%llu: expect size and read size do not match!\n");
+    }
 }
 
 #endif
