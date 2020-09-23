@@ -71,9 +71,13 @@ void filesystem_stop()
     if (channel != NULL)
     {
         filesystem_print("Unmounting\n");
-        umount2(get_mountpoint().c_str(),MNT_FORCE|MNT_DETACH);
+        #ifdef __APPLE__
+            unmount(get_mountpoint().c_str(),MNT_FORCE);
+        #else
         fuse_session_exit(session);
         fuse_unmount(get_mountpoint().c_str(), channel);
+        #endif
+
     }
 }
 
