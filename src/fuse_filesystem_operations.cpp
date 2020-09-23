@@ -287,12 +287,13 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
     size_t block_num = desired_read_size / data_buf_size + (desired_read_size % data_buf_size != 0);
     for (size_t i = 0; i < block_num; i++)
     {
+        size_t block_off = desired_read_offset + data_buf_size * i;
         size_t block_size = (i == block_num - 1) ? (desired_read_size % data_buf_size) : data_buf_size;
         size_t read_size = general_read_func(file_data, data_buf.get(),
-                                             desired_read_offset + data_buf_size * i,
+                                             block_off,
                                              block_size);
-        filesystem_log("%lu: Reading block %llu/%llu, Request read %llu, true read:%llu\n",
-                       current_counter, i, block_num, block_size, read_size);
+        filesystem_log("%lu: Reading block %llu/%llu, offset %llu, Request read %llu, true read:%llu\n",
+                       current_counter, i, block_num, block_off, block_size, read_size);
         //compute which region in the block is actually required
         size_t intra_block_offset_begin = (i == 0 ? misalignment_begin : 0);
         if (intra_block_offset_begin >= read_size)
@@ -304,6 +305,8 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
         size_t intra_block_offset_end = block_size - (i == (block_num - 1) ? misalignment_end : 0);
         intra_block_offset_end = intra_block_offset_end > read_size ? read_size : intra_block_offset_end;
         size_t true_block_size = intra_block_offset_end - intra_block_offset_begin;
+        filesystem_log("%lu: intra block off begin: %llu, size: %llu\n",
+                           current_counter, intra_block_offset_begin, true_block_size);
         int status = fuse_reply_buf(req, data_buf.get() + intra_block_offset_begin, true_block_size);
         if (status != 0)
         {
