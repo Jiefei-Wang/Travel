@@ -11,10 +11,12 @@ validate_path <-function(path){
         if(length(files)!=0){
             stop("The directory <",path,"> is not empty!")
         }
+        path <- normalizePath(path, mustWork = TRUE)
     }else{
         ## Avoid the driver path(e.g. "C:/")
         if(!is_driver_path){
             dir.create(path, recursive = TRUE)
+            path <- normalizePath(path, mustWork = TRUE)
         }
     }
     path

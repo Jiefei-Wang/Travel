@@ -1,7 +1,11 @@
 context("Basic functions")
 
 tmp_dir <- paste0(tempdir(),"/travel_test")
-tmp_dir <- normalizePath(tmp_dir,mustWork = FALSE)
+if(dir.exists(tmp_dir)){
+    unlink(tmp_dir,recursive = TRUE)
+}
+dir.create(tmp_dir,recursive = TRUE)
+tmp_dir <- normalizePath(tmp_dir,mustWork = TRUE)
 
 test_that("Stop the filesystem if it is running",{
     expect_error(stop_filesystem(),NA)
@@ -9,20 +13,22 @@ test_that("Stop the filesystem if it is running",{
 
 test_that("Nonstandard path", {
     ## trailing slash
-    tmp_dir1 <- paste0(tmp_dir,"/")
-    set_mountpoint(tmp_dir)
+    tmp_dir1 <- paste0(tmp_dir,"1/")
+    set_mountpoint(tmp_dir1)
     expect_error(run_filesystem(),NA)
     expect_true(is_filesystem_running())
     Sys.sleep(2)
     expect_error(stop_filesystem(),NA)
+    Sys.sleep(2)
     
     ## driver letter
     tmp_dir2 <- "Y:/"
-    set_mountpoint(tmp_dir)
+    set_mountpoint(tmp_dir2)
     expect_error(run_filesystem(),NA)
     expect_true(is_filesystem_running())
     Sys.sleep(2)
     expect_error(stop_filesystem(),NA)
+    Sys.sleep(2)
 })
 
 
