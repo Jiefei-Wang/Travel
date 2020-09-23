@@ -11,27 +11,25 @@ test_that("Stop the filesystem if it is running",{
     expect_error(stop_filesystem(),NA)
 })
 
-test_that("Nonstandard path", {
-    ## trailing slash
+test_that("path with trailing slash", {
     tmp_dir1 <- paste0(tmp_dir,"1/")
     set_mountpoint(tmp_dir1)
     expect_error(run_filesystem(),NA)
     expect_true(is_filesystem_running())
     Sys.sleep(2)
     expect_error(stop_filesystem(),NA)
-    Sys.sleep(2)
-    
-    ## driver letter
-    tmp_dir2 <- "Y:/"
-    set_mountpoint(tmp_dir2)
-    expect_error(run_filesystem(),NA)
-    expect_true(is_filesystem_running())
-    Sys.sleep(2)
-    expect_error(stop_filesystem(),NA)
-    Sys.sleep(2)
 })
 
-
+test_that("path with driver letter", {
+    if(get_os()=="windows"){
+        tmp_dir2 <- "Y:/"
+        set_mountpoint(tmp_dir2)
+        expect_error(run_filesystem(),NA)
+        expect_true(is_filesystem_running())
+        Sys.sleep(2)
+        expect_error(stop_filesystem(),NA)
+    }
+})
 
 test_that("Mount the filesystem", {
    if(!is_filesystem_running()){
@@ -53,7 +51,7 @@ test_that("Wrap an altrep object", {
         filesystem_files1 <- list.files(tmp_dir)
         file_num1 <- length(filesystem_files1)
         handle_num1 <- C_get_file_handle_number()
-        x <- 1:10
+        x <- runif(1024)
         y <- wrap_altrep(x)
         filesystem_files2 <- list.files(tmp_dir)
         file_num2 <- length(filesystem_files2)
@@ -62,7 +60,7 @@ test_that("Wrap an altrep object", {
         expect_true(handle_num1+1==handle_num2)
         file_path <- paste0(tmp_dir,"/",setdiff(filesystem_files2,filesystem_files1))
         info <- file.info(file_path)
-        expect_true(info$size==4*length(x))
+        expect_true(info$size==8*length(x))
         rm(x,y)
         gc()
         file_num3 <- length(list.files(tmp_dir))
