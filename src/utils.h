@@ -39,7 +39,7 @@ void filesystem_print(const char *format, ...);
 void altrep_print(const char *format, ...);
 size_t get_type_size(int type);
 void mySleep(int sleepMs);
-
+size_t get_read_size(size_t file_size, size_t offset, size_t size);
 
 #ifdef _WIN32
 std::wstring stringToWstring(const char *utf8Bytes);

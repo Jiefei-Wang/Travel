@@ -1,8 +1,3 @@
-makeAltptr<-function(type, data, length, read_func){
-    
-    
-    
-}
 
 wrap_altrep<-function(x){
     start_time <- Sys.time()

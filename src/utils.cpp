@@ -101,7 +101,24 @@ size_t get_object_size(SEXP x)
 	return elt_size * XLENGTH(x);
 }
 
-
+/*
+An utility to get the true read size that will not read out-of-bound
+*/
+size_t get_read_size(size_t file_size, size_t offset, size_t size){
+    if (offset + size > file_size)
+    {
+        if (offset >= file_size)
+        {
+            return 0;
+        }
+        else
+        {
+            return file_size - offset;
+        }
+    }else{
+        return size;
+    }
+}
 
 #ifndef _WIN32
 #include <unistd.h>

@@ -24,24 +24,7 @@ and let the caller to call filesystem_stop later.
 */
 bool is_filesystem_alive();
 
-/*
-An utility to get the true read size that will not read out-of-bound
-*/
-inline size_t get_read_size(size_t file_size, size_t offset, size_t size){
-    if (offset + size > file_size)
-    {
-        if (offset >= file_size)
-        {
-            return 0;
-        }
-        else
-        {
-            return file_size - offset;
-        }
-    }else{
-        return size;
-    }
-}
+
 
 
 

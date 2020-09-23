@@ -154,13 +154,15 @@ static void ptr_finalizer(SEXP handle_extptr)
     if (!has_mapped_file_handle(handle))
     {
         Rf_warning("The altptr file handle has been released: %s, handle: %p\n", name.c_str(), handle);
-        return;
     }
-    debug_print("Finalizer, name:%s, size:%llu\n", name.c_str(), handle->size);
-    std::string status = memory_unmap(handle);
-    if (status != "")
+    else
     {
-        Rf_warning(status.c_str());
+        debug_print("Finalizer, name:%s, size:%llu\n", name.c_str(), handle->size);
+        std::string status = memory_unmap(handle);
+        if (status != "")
+        {
+            Rf_warning(status.c_str());
+        }
     }
     remove_virtual_file(name);
 }
@@ -188,6 +190,7 @@ SEXP make_altptr(int type, void *data, size_t length, unsigned int unit_size, fi
     std::string status = memory_map(handle, file_info, size);
     if (status != "")
     {
+        remove_virtual_file(file_info.file_name);
         Rf_warning(status.c_str());
         return R_NilValue;
     }
