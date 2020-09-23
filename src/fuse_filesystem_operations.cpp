@@ -64,12 +64,15 @@ void filesystem_thread_func()
     channel = NULL;
     fuse_opt_free_args(&args);
 }
+ #include <sys/mount.h>
 
 void filesystem_stop()
 {
     if (channel != NULL)
     {
         filesystem_print("Unmounting\n");
+        umount2(get_mountpoint().c_str(),MNT_FORCE|MNT_DETACH);
+        fuse_session_exit(session);
         fuse_unmount(get_mountpoint().c_str(), channel);
     }
 }
