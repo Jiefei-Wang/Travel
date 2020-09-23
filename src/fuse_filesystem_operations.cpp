@@ -268,7 +268,7 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
     size_t desired_read_offset = offset - misalignment_begin;
     size_t desired_read_size = size + misalignment_begin + misalignment_end;
 
-    filesystem_log("%llu: mismatch begin:%llu, end:%llu, aligned off:%llu, size:%llu",
+    filesystem_log("%llu: mismatch begin:%llu, end:%llu, aligned off:%llu, size:%llu\n",
                    current_counter, misalignment_begin, misalignment_end,
                    desired_read_offset, desired_read_size);
     if (desired_read_size > buffer_size)
