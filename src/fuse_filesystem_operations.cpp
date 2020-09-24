@@ -270,7 +270,9 @@ void filesystem_thread_func(int *thread_status)
             fuse_session_remove_chan(channel);
         }
         fuse_session_destroy(session);
+#ifdef __APPLE__
         fuse_unmount(get_mountpoint().c_str(), channel);
+#endif
     }
     if (channel == NULL)
     {
@@ -294,7 +296,7 @@ void filesystem_stop()
 #ifdef __APPLE__
         unmount(get_mountpoint().c_str(), MNT_FORCE);
 #else
-        fuse_session_exit(session);
+        fuse_unmount(get_mountpoint().c_str(), channel);
 #endif
     }
 }
