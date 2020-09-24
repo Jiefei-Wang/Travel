@@ -31,20 +31,27 @@ public:
 };
 #endif
 
-#include <time.h>
-class Timer{
-  private:
-  clock_t begin_time;
-    int time;
-    public:
-  Timer(int time):time(time){
-    begin_time = clock();
+#include <chrono>
+class Timer
+{
+private:
+  std::chrono::time_point<std::chrono::steady_clock> begin_time;
+  int time;
+
+public:
+  Timer(int time) : time(time)
+  {
+    begin_time = std::chrono::steady_clock::now();
   }
-  bool expired(){
-    return float(clock() - begin_time) / CLOCKS_PER_SEC > time;
+  bool expired()
+  {
+    auto end_time = std::chrono::steady_clock::now();
+    double elapsed_time_s = std::chrono::duration<double>(end_time - begin_time).count();
+    return elapsed_time_s > time;
   }
-  void reset(){
-    begin_time = clock();
+  void reset()
+  {
+    begin_time = std::chrono::steady_clock::now();
   }
 };
 

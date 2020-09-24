@@ -26,3 +26,7 @@ test_that("random access an integer sequece",{
         expect_equal(values,x[ind])
     }
 })
+
+test_that("Garbage collection",{
+    expect_error(gc(),NA)
+})

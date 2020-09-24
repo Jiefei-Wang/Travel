@@ -29,6 +29,10 @@ C_make_fake_file <- function(size) {
     invisible(.Call(`_Travel_C_make_fake_file`, size))
 }
 
+test <- function() {
+    invisible(.Call(`_Travel_test`))
+}
+
 C_list_virtual_files <- function() {
     .Call(`_Travel_C_list_virtual_files`)
 }

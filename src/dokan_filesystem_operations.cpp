@@ -248,8 +248,12 @@ MirrorFindFiles(LPCWSTR wide_file_path,
 		return STATUS_ACCESS_DENIED;
 	}
 }
-
-static WCHAR mountpoint[DOKAN_MAX_PATH] = L"M:\\";
+/*
+========================================================
+Filesystem exported APIs
+========================================================
+*/
+static WCHAR mountpoint[DOKAN_MAX_PATH];
 void filesystem_thread_func(int* thread_status)
 {
 	DOKAN_OPERATIONS dokanOperations;

@@ -80,6 +80,15 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// test
+void test();
+RcppExport SEXP _Travel_test() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    test();
+    return R_NilValue;
+END_RCPP
+}
 // C_list_virtual_files
 Rcpp::DataFrame C_list_virtual_files();
 RcppExport SEXP _Travel_C_list_virtual_files() {
@@ -213,6 +222,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_get_ptr", (DL_FUNC) &_Travel_C_get_ptr, 1},
     {"_Travel_C_make_test_integer_altrep", (DL_FUNC) &_Travel_C_make_test_integer_altrep, 1},
     {"_Travel_C_make_fake_file", (DL_FUNC) &_Travel_C_make_fake_file, 1},
+    {"_Travel_test", (DL_FUNC) &_Travel_test, 0},
     {"_Travel_C_list_virtual_files", (DL_FUNC) &_Travel_C_list_virtual_files, 0},
     {"_Travel_run_filesystem_thread_func", (DL_FUNC) &_Travel_run_filesystem_thread_func, 0},
     {"_Travel_C_run_filesystem_thread", (DL_FUNC) &_Travel_C_run_filesystem_thread, 0},

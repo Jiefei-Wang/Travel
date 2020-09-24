@@ -84,7 +84,9 @@ test_that("Stop the thread", {
         
         file_num <- length(list.files(tmp_dir))
         expect_true(file_num==0)
+        
         ## a warning should be given
+        ## but it would not be captured by try catch.
         expect_error({rm(x);gc()},NA)
         expect_true(nrow(C_list_virtual_files())==0)
     }

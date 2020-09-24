@@ -110,6 +110,18 @@ void C_make_fake_file(size_t size)
 }
 
 
+// [[Rcpp::export]]
+void test(){
+    Timer timer(FILESYSTEM_WAIT_TIME);
+    while (true)
+    {
+      if (timer.expired())
+      {
+        Rf_warning("The thread cannot be stopped for the filesystem is still busy\n");
+        return;
+      }
+    }
+}
 
 
 

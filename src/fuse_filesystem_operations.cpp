@@ -2,13 +2,12 @@
 #define FUSE_USE_VERSION 26
 
 #include <fuse_lowlevel.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-
+#include <sys/mount.h>
 #include <memory>
 #include "read_operations.h"
 #include "filesystem_operations.h"
@@ -18,7 +17,6 @@
 #include "utils.h"
 
 static size_t print_counter = 0;
-
 /*
 Fuse specific objects
 */
@@ -26,70 +24,7 @@ static fuse_chan *channel = NULL;
 static fuse_session *session = NULL;
 static fuse_lowlevel_ops filesystem_operations;
 
-/*
-Declare the callback functions
-*/
-static void filesystem_getattr(fuse_req_t req, fuse_ino_t ino,
-                               struct fuse_file_info *fi);
-static void filesystem_loopup(fuse_req_t req, fuse_ino_t parent, const char *name);
-static void filesystem_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
-                               off_t off, struct fuse_file_info *fi);
-static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
-                            fuse_file_info *fi);
-static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
-                            off_t offset, fuse_file_info *fi);
-
-void filesystem_thread_func(int* thread_status)
-{
-    filesystem_operations.lookup = filesystem_loopup;
-    filesystem_operations.getattr = filesystem_getattr;
-    filesystem_operations.readdir = filesystem_readdir;
-    filesystem_operations.open = filesystem_open;
-    filesystem_operations.read = filesystem_read;
-    struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
-    channel = fuse_mount(get_mountpoint().c_str(), &args);
-    if (channel != NULL)
-    {
-        session = fuse_lowlevel_new(&args, &filesystem_operations,
-                                    sizeof(filesystem_operations), NULL);
-        if (session != NULL)
-        {
-            fuse_session_add_chan(session, channel);
-            *thread_status = fuse_session_loop(session);
-            fuse_session_remove_chan(channel);
-        }
-        fuse_session_destroy(session);
-    }
-    if(channel==NULL||session==NULL){
-        *thread_status = 999;
-    }
-    session = NULL;
-    channel = NULL;
-    fuse_opt_free_args(&args);
-}
- #include <sys/mount.h>
-
-void filesystem_stop()
-{
-    if (channel != NULL)
-    {
-        filesystem_print("Unmounting\n");
-        #ifdef __APPLE__
-            unmount(get_mountpoint().c_str(),MNT_FORCE);
-        #else
-        fuse_session_exit(session);
-        fuse_unmount(get_mountpoint().c_str(), channel);
-        #endif
-
-    }
-}
-
-bool is_filesystem_alive()
-{
-    return session != NULL && channel != NULL;
-}
-
-std::string get_file_name(fuse_ino_t ino)
+static std::string get_file_name(fuse_ino_t ino)
 {
     if (ino != 1)
     {
@@ -275,7 +210,7 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
     */
     size_t misalignment_begin = offset % unit_size;
     size_t misalignment_end = unit_size - (offset + size) % unit_size;
-    misalignment_end = (misalignment_end == unit_size? 0:misalignment_end);
+    misalignment_end = (misalignment_end == unit_size ? 0 : misalignment_end);
     size_t desired_read_offset = offset - misalignment_begin;
     size_t desired_read_size = size + misalignment_begin + misalignment_end;
 
@@ -298,6 +233,89 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
     if (desired_read_size != read_size)
     {
         filesystem_log("%llu: expect size and read size do not match!\n");
+    }
+}
+
+/*
+========================================================
+Filesystem exported APIs
+========================================================
+*/
+
+void filesystem_thread_func(int *thread_status)
+{
+    filesystem_operations.lookup = filesystem_loopup;
+    filesystem_operations.getattr = filesystem_getattr;
+    filesystem_operations.readdir = filesystem_readdir;
+    filesystem_operations.open = filesystem_open;
+    filesystem_operations.read = filesystem_read;
+    struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
+    channel = fuse_mount(get_mountpoint().c_str(), &args);
+    if (channel != NULL)
+    {
+        session = fuse_lowlevel_new(&args, &filesystem_operations,
+                                    sizeof(filesystem_operations), NULL);
+        if (session != NULL)
+        {
+            fuse_session_add_chan(session, channel);
+            int status = fuse_session_loop(session);
+            if (status > 0)
+            {
+                *thread_status = 0;
+            }
+            else
+            {
+                *thread_status = status;
+            }
+            fuse_session_remove_chan(channel);
+        }
+        fuse_session_destroy(session);
+    }
+    if (channel == NULL)
+    {
+        *thread_status = 1000;
+    }
+    else
+    {
+        if (session == NULL)
+            *thread_status = 1001;
+    }
+    session = NULL;
+    channel = NULL;
+    fuse_opt_free_args(&args);
+}
+
+void filesystem_stop()
+{
+    if (channel != NULL)
+    {
+        filesystem_print("Unmounting\n");
+#ifdef __APPLE__
+        unmount(get_mountpoint().c_str(), MNT_FORCE);
+#else
+        fuse_session_exit(session);
+        fuse_unmount(get_mountpoint().c_str(), channel);
+#endif
+    }
+}
+
+bool is_filesystem_alive()
+{
+    return session != NULL && channel != NULL;
+}
+
+std::string get_error_message(int status)
+{
+    switch (status)
+    {
+    case 0:
+        return "success";
+    case 1000:
+        return "Cannot build channel";
+    case 1001:
+        return "Cannot build session";
+    default:
+        return "Unknown error";
     }
 }
 
