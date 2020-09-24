@@ -4,7 +4,6 @@
 #include <future>
 #include <thread>
 #include <shared_mutex>
-#include <time.h>
 #include "filesystem_manager.h"
 #include "filesystem_operations.h"
 #include "package_settings.h"
@@ -23,10 +22,12 @@ Insert or delete files from the filesystem
 
 filesystem_file_info add_virtual_file(filesystem_file_data file_data, std::string name)
 {
-  if(file_data.file_size%file_data.unit_size!=0){
+  if (file_data.file_size % file_data.unit_size != 0)
+  {
     Rf_error("The file size and unit size does not match!\n");
   }
-  if(file_data.file_size<file_data.unit_size){
+  if (file_data.file_size < file_data.unit_size)
+  {
     Rf_error("The file size is less than unit size!\n");
   }
   file_inode_counter++;
@@ -91,13 +92,16 @@ static std::unique_ptr<std::thread> filesystem_thread(nullptr);
 //An indicator to check whether the thread is running or not.
 //When a thread reaches the end of its excution this indicator will becomes true.
 static bool thread_finished = true;
+#define THREAD_INIT INT_MAX
+static int thread_status;
 // [[Rcpp::export]]
 void run_filesystem_thread_func()
 {
   thread_guard guard(thread_finished);
-  filesystem_thread_func();
+  filesystem_thread_func(&thread_status);
 }
 
+void C_stop_filesystem_thread();
 // [[Rcpp::export]]
 void C_run_filesystem_thread()
 {
@@ -105,21 +109,22 @@ void C_run_filesystem_thread()
   {
     Rf_error("The filesystem thread has been running!\n");
   }
-  if(get_mountpoint()==""){
+  if (get_mountpoint() == "")
+  {
     Rf_error("The mount point have not been set!\n");
   }
+  thread_status = THREAD_INIT;
   initial_filesystem_log();
   filesystem_thread.reset(new std::thread(run_filesystem_thread_func));
-  clock_t begin_time = clock();
-  while (thread_finished||!is_filesystem_alive())
-    {
-      if (float(clock() - begin_time) / CLOCKS_PER_SEC > FILESYSTEM_WAIT_TIME)
-      {
-        Rf_warning("The filesystem may not be started successfully!\n");
-        return;
-      }
-    }
+  //Check if the thread is running correctly, if not, kill the thread
+  mySleep(100);
+  if (thread_status != THREAD_INIT)
+  {
+    Rf_warning("The filesystem has been stopped, killing the filesystem thread\n");
+    C_stop_filesystem_thread();
+  }
 }
+
 //#include <unistd.h>
 // [[Rcpp::export]]
 void C_stop_filesystem_thread()
@@ -132,15 +137,15 @@ void C_stop_filesystem_thread()
     {
       Rf_warning(status.c_str());
     }
-    mySleep(1);
+    mySleep(100);
     //stop the filesystem
     filesystem_stop();
     //Check if the thread can be stopped
     filesystem_print("is thread ended: %s\n", thread_finished ? "TRUE" : "FALSE");
-    clock_t begin_time = clock();
+    Timer timer(FILESYSTEM_WAIT_TIME);
     while (!thread_finished)
     {
-      if (float(clock() - begin_time) / CLOCKS_PER_SEC > FILESYSTEM_WAIT_TIME)
+      if (timer.expired())
       {
         Rf_warning("The thread cannot be stopped for the filesystem is still busy\n");
         return;
@@ -149,20 +154,27 @@ void C_stop_filesystem_thread()
     filesystem_print("is thread ended: %s\n", thread_finished ? "TRUE" : "FALSE");
     filesystem_thread->join();
     filesystem_thread.reset(nullptr);
-    filesystem_log("unmount\n");
+    if (thread_status != 0)
+    {
+      Rf_warning("The filesystem did not end correctly, error code:%d(%s)",
+                 thread_status,
+                 get_error_message(thread_status).c_str());
+    }
     close_filesystem_log();
   }
 }
 
 // [[Rcpp::export]]
-bool C_is_filesystem_running(){
+bool C_is_filesystem_running()
+{
   return is_filesystem_running();
 }
 
 bool is_filesystem_running()
 {
-  if(thread_finished&&(filesystem_thread != nullptr)){
-     C_stop_filesystem_thread();
+  if (thread_finished && (filesystem_thread != nullptr))
+  {
+    C_stop_filesystem_thread();
   }
   return filesystem_thread != nullptr && is_filesystem_alive();
 }
@@ -171,6 +183,6 @@ bool is_filesystem_running()
 void show_thread_status()
 {
   Rprintf("Thread stop indicator:%d\n", thread_finished);
-  Rprintf("Is filesystem thread running:%s\n", is_filesystem_running() ? "true" : "false");
-  Rprintf("Is filesystem ok:%s\n", is_filesystem_alive() ? "true" : "false");
+  Rprintf("Is filesystem thread running:%s\n", filesystem_thread != nullptr ? "true" : "false");
+  Rprintf("Is filesystem alive:%s\n", is_filesystem_alive() ? "true" : "false");
 }

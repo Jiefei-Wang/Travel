@@ -52,12 +52,12 @@ std::string memory_map(file_map_handle *&handle, const filesystem_file_info file
 {
     const std::string &file_full_path = file_info.file_full_path;
     //Wait until the file exist or timeout(5s)
-    clock_t begin_time = clock();
+    Timer timer(FILESYSTEM_WAIT_TIME);
     int fd = -1;
     while (fd == -1)
     {
         fd = open(file_full_path.c_str(), O_RDONLY); //read only
-        if (float(clock() - begin_time) / CLOCKS_PER_SEC > FILESYSTEM_WAIT_TIME)
+        if (timer.expired())
             break;
     }
     if (fd == -1)
@@ -98,13 +98,13 @@ std::string memory_unmap(file_map_handle *handle)
 #else
 std::string memory_map(file_map_handle *&handle, const filesystem_file_info file_info, const size_t size)
 {
-    clock_t begin_time = clock();
+    Timer timer(FILESYSTEM_WAIT_TIME);
     HANDLE file_handle = INVALID_HANDLE_VALUE;
     while (file_handle == INVALID_HANDLE_VALUE)
     {
         file_handle = CreateFileA(file_info.file_full_path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL,
                                   OPEN_EXISTING, 0, NULL);
-        if (float(clock() - begin_time) / CLOCKS_PER_SEC > FILESYSTEM_WAIT_TIME)
+        if (timer.expired())
         {
             return "Fail to open the file " + file_info.file_full_path +
                    ", error:" + std::to_string(GetLastError());

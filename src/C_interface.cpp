@@ -76,14 +76,28 @@ SEXP C_get_ptr(SEXP x){
     return R_MakeExternalPtr(DATAPTR(x),R_NilValue,R_NilValue);
 }
 
+/*
+Create an integer vector for testing the altrep functions
+*/
+size_t fake_integer_read(filesystem_file_data &file_data, void *buffer, size_t offset, size_t length){
+    for(size_t i =0;i<length;i++){
+        ((int*)buffer)[i] = (offset+i)%(1024*1024)+1;
+    }
+    return length;
+}
+// [[Rcpp::export]]
+SEXP C_make_test_integer_altrep(double n){
+    return make_altptr(INTSXP, nullptr, n, sizeof(int),fake_integer_read);
+}
 
 
-
-
+/*
+Create a fake file in the mounted filesystem
+*/
 size_t fake_read(filesystem_file_data &file_data, void *buffer, size_t offset, size_t length){
     std::string data = "fake read data\n";
     for(size_t i =0;i<length;i++){
-        ((char*)buffer)[i+offset] = data.c_str()[(i+offset)%(data.length())];
+        ((char*)buffer)[i] = data.c_str()[(i+offset)%(data.length())];
     }
     return length;
 }

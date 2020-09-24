@@ -22,7 +22,6 @@ validate_path <-function(path){
     path
 }
 
-
 get_mountpoint<- function(){
     C_get_mountpoint()
 }
@@ -47,3 +46,19 @@ stop_filesystem <- function(){
 is_filesystem_running<-function(){
     C_is_filesystem_running()
 }
+
+get_temp_mountpoint <- function(){
+    tmp_dir <- paste0(tempdir(),"/Travel_filesystem_",Sys.getpid())
+    validate_path(tmp_dir)
+}
+## automatically deploy the filysystem in a temporary directory
+deploy_filesystem <- function(){
+    if(is_filesystem_running()){
+        message("The filesystem has been running")
+        return()
+    }
+    mountpoint <- get_temp_mountpoint()
+    set_mountpoint(mountpoint)
+    run_filesystem()
+}
+

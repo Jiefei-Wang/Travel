@@ -31,6 +31,24 @@ public:
 };
 #endif
 
+#include <time.h>
+class Timer{
+  private:
+  clock_t begin_time;
+    int time;
+    public:
+  Timer(int time):time(time){
+    begin_time = clock();
+  }
+  bool expired(){
+    return float(clock() - begin_time) / CLOCKS_PER_SEC > time;
+  }
+  void reset(){
+    begin_time = clock();
+  }
+};
+
+
 void initial_filesystem_log();
 void close_filesystem_log();
 void filesystem_log(const char *format, ...);

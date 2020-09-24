@@ -59,6 +59,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// C_make_test_integer_altrep
+SEXP C_make_test_integer_altrep(double n);
+RcppExport SEXP _Travel_C_make_test_integer_altrep(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_make_test_integer_altrep(n));
+    return rcpp_result_gen;
+END_RCPP
+}
 // C_make_fake_file
 void C_make_fake_file(size_t size);
 RcppExport SEXP _Travel_C_make_fake_file(SEXP sizeSEXP) {
@@ -200,6 +211,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_getAltData2", (DL_FUNC) &_Travel_C_getAltData2, 1},
     {"_Travel_print_value", (DL_FUNC) &_Travel_print_value, 1},
     {"_Travel_C_get_ptr", (DL_FUNC) &_Travel_C_get_ptr, 1},
+    {"_Travel_C_make_test_integer_altrep", (DL_FUNC) &_Travel_C_make_test_integer_altrep, 1},
     {"_Travel_C_make_fake_file", (DL_FUNC) &_Travel_C_make_fake_file, 1},
     {"_Travel_C_list_virtual_files", (DL_FUNC) &_Travel_C_list_virtual_files, 0},
     {"_Travel_run_filesystem_thread_func", (DL_FUNC) &_Travel_run_filesystem_thread_func, 0},

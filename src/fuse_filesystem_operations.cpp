@@ -39,7 +39,7 @@ static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
 static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
                             off_t offset, fuse_file_info *fi);
 
-void filesystem_thread_func()
+void filesystem_thread_func(int* thread_status)
 {
     filesystem_operations.lookup = filesystem_loopup;
     filesystem_operations.getattr = filesystem_getattr;
@@ -55,10 +55,13 @@ void filesystem_thread_func()
         if (session != NULL)
         {
             fuse_session_add_chan(session, channel);
-            fuse_session_loop(session);
+            *thread_status = fuse_session_loop(session);
             fuse_session_remove_chan(channel);
         }
         fuse_session_destroy(session);
+    }
+    if(channel==NULL||session==NULL){
+        *thread_status = 999;
     }
     session = NULL;
     channel = NULL;

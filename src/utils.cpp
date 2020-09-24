@@ -13,21 +13,24 @@ bool filesystem_log_enabled = true;
 #define BUFFER_SIZE 1024 * 1024
 static char buffer[BUFFER_SIZE];
 static std::ofstream filesystem_log_stream;
+static bool filesystem_log_opened = false;
 
 // [[Rcpp::export]]
 void initial_filesystem_log()
 {
-	if (filesystem_log_enabled >= 1)
+	if (filesystem_log_enabled >= 1&&!filesystem_log_opened)
 	{
 	filesystem_log_stream.open(get_print_location().c_str(), std::ofstream::out);
+	filesystem_log_opened=true;
 	}
 }
 // [[Rcpp::export]]
 void close_filesystem_log()
 {
-	if (filesystem_log_enabled >= 1)
+	if (filesystem_log_enabled >= 1&&filesystem_log_opened)
 	{
 	filesystem_log_stream.close();
+	filesystem_log_opened=false;
 	}
 }
 

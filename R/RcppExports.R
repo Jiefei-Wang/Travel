@@ -21,6 +21,10 @@ C_get_ptr <- function(x) {
     .Call(`_Travel_C_get_ptr`, x)
 }
 
+C_make_test_integer_altrep <- function(n) {
+    .Call(`_Travel_C_make_test_integer_altrep`, n)
+}
+
 C_make_fake_file <- function(size) {
     invisible(.Call(`_Travel_C_make_fake_file`, size))
 }

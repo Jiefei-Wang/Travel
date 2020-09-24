@@ -1,4 +1,4 @@
-context("Basic functions")
+context("Basic mount and unmount test")
 
 tmp_dir <- paste0(tempdir(),"/travel_test")
 if(dir.exists(tmp_dir)){
@@ -50,11 +50,13 @@ test_that("Wrap an altrep object", {
         gc()
         filesystem_files1 <- list.files(tmp_dir)
         file_num1 <- length(filesystem_files1)
+        expect_true(file_num1 == nrow(C_list_virtual_files()))
         handle_num1 <- C_get_file_handle_number()
         x <- runif(1024)
         y <- wrap_altrep(x)
         filesystem_files2 <- list.files(tmp_dir)
         file_num2 <- length(filesystem_files2)
+        expect_true(file_num2 == nrow(C_list_virtual_files()))
         handle_num2 <- C_get_file_handle_number()
         expect_true(file_num1+1==file_num2)
         expect_true(handle_num1+1==handle_num2)
@@ -64,6 +66,7 @@ test_that("Wrap an altrep object", {
         rm(x,y)
         gc()
         file_num3 <- length(list.files(tmp_dir))
+        expect_true(file_num3 == nrow(C_list_virtual_files()))
         handle_num3 <- C_get_file_handle_number()
         expect_true(file_num1==file_num3)
         expect_true(handle_num1==handle_num3)
@@ -79,8 +82,11 @@ test_that("Stop the thread", {
         handle_num <- C_get_file_handle_number()
         expect_true(handle_num==0)
         
+        file_num <- length(list.files(tmp_dir))
+        expect_true(file_num == nrow(C_list_virtual_files()))
         ## a warning should be given
         expect_error({rm(x);gc()},NA)
+        expect_true(nrow(C_list_virtual_files())==0)
     }
 })
 

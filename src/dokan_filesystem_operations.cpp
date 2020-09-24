@@ -250,7 +250,7 @@ MirrorFindFiles(LPCWSTR wide_file_path,
 }
 
 static WCHAR mountpoint[DOKAN_MAX_PATH] = L"M:\\";
-void filesystem_thread_func()
+void filesystem_thread_func(int* thread_status)
 {
 	DOKAN_OPERATIONS dokanOperations;
 	ZeroMemory(&dokanOperations, sizeof(DOKAN_OPERATIONS));
@@ -292,12 +292,34 @@ void filesystem_thread_func()
 	//dokanOptions.SectorSize;
 	dokanOptions.Options = 0;
 
-	int status = DokanMain(&dokanOptions, &dokanOperations);
-	filesystem_log("Exist main function, status: %d", status);
+	*thread_status = DokanMain(&dokanOptions, &dokanOperations);
 }
 
 
 void filesystem_stop() {
 	DokanRemoveMountPoint(mountpoint);
+}
+
+std::string get_error_message(int status){
+	switch (status) {
+	case DOKAN_SUCCESS:
+		return("Success");
+	case DOKAN_ERROR:
+		return("Error");
+	case DOKAN_DRIVE_LETTER_ERROR:
+		return("Bad Drive letter");
+	case DOKAN_DRIVER_INSTALL_ERROR:
+		return("Can't install driver");
+	case DOKAN_START_ERROR:
+		return("Driver something wrong");
+	case DOKAN_MOUNT_ERROR:
+		return("Can't assign a drive letter");
+	case DOKAN_MOUNT_POINT_ERROR:
+		return("Mount point error");
+	case DOKAN_VERSION_ERROR:
+		return("Version error");
+	default:
+		return("Unknown error");
+	}
 }
 #endif
