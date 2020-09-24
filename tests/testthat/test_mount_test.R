@@ -83,7 +83,7 @@ test_that("Stop the thread", {
         expect_true(handle_num==0)
         
         file_num <- length(list.files(tmp_dir))
-        expect_true(file_num == nrow(C_list_virtual_files()))
+        expect_true(file_num==0)
         ## a warning should be given
         expect_error({rm(x);gc()},NA)
         expect_true(nrow(C_list_virtual_files())==0)
