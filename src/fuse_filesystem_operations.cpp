@@ -291,7 +291,9 @@ void filesystem_stop()
     {
         filesystem_print("Unmounting\n");
 #ifdef __APPLE__
+        fuse_chan* channel_old = channel;
         unmount(get_mountpoint().c_str(), MNT_FORCE);
+        fuse_unmount(get_mountpoint().c_str(), channel_old);
 #else
         fuse_session_exit(session);
         fuse_unmount(get_mountpoint().c_str(), channel);

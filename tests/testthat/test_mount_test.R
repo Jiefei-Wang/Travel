@@ -88,7 +88,6 @@ test_that("Stop the thread", {
         ## a warning should be given
         ## but it would not be captured by try catch.
         expect_error({rm(x);gc()},NA)
-        expect_true(nrow(C_list_virtual_files())==0)
     }
 })
 

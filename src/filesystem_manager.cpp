@@ -122,6 +122,15 @@ void C_run_filesystem_thread()
   {
     Rf_warning("The filesystem has been stopped, killing the filesystem thread\n");
     C_stop_filesystem_thread();
+    return;
+  }
+  Timer timer(FILESYSTEM_WAIT_TIME);
+  while (!is_filesystem_alive())
+  {
+    if (timer.expired())
+    {
+      Rf_warning("The filesystem may not start correctly\n");
+    }
   }
 }
 
