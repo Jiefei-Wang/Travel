@@ -66,6 +66,19 @@ size_t get_type_size(int type);
 void mySleep(int sleepMs);
 size_t get_read_size(size_t file_size, size_t offset, size_t size);
 
+size_t gcd(size_t a, size_t b);
+//Least Common Multiple
+size_t lcm(size_t a, size_t b);
+/*
+Examples:
+build_path("", "bucket") = "bucket"
+build_path("bucket", "") = "bucket"
+build_path("bucket", "/") = "bucket/"
+build_path("bucket", "test") = "bucket/test"
+build_path("bucket/", "test") = "bucket/test"
+build_path("bucket/", "/test") = "bucket/test"
+*/
+std::string build_path(std::string path1, std::string path2);
 #ifdef _WIN32
 std::wstring stringToWstring(const char *utf8Bytes);
 std::string wstringToString(const wchar_t *utf16Bytes);

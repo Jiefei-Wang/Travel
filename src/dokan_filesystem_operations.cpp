@@ -3,7 +3,7 @@
 #include "dokan/dokan.h"
 #include "utils.h"
 #include "filesystem_manager.h"
-#include "read_operations.h"
+#include "read_write_operations.h"
 #include "package_settings.h"
 
 #ifdef WIN10_ENABLE_LONG_PATH
@@ -15,9 +15,7 @@
 using std::string;
 using std::wstring;
 
-bool is_filesystem_alive() { return true;}
-
-
+bool is_filesystem_alive() { return true; }
 
 #define IS_ROOT(x) (x == "\\")
 #define IS_PATH_VALID(path) (path.find_last_of("/\\") == 0)
@@ -116,7 +114,7 @@ dokan_create_file(LPCWSTR wide_file_path, PDOKAN_IO_SECURITY_CONTEXT SecurityCon
 			status = STATUS_NO_SUCH_FILE;
 		}
 	}
-	filesystem_log("Return status:%d\n",status);
+	filesystem_log("Return status:%d\n", status);
 	return status;
 }
 
@@ -145,27 +143,34 @@ NTSTATUS DOKAN_CALLBACK dokan_read_file(LPCWSTR wide_file_path, LPVOID buffer,
 	filesystem_log("ReadFile: %s, ", file_path.c_str());
 
 	filesystem_file_data &file_data = file_list.get_value_by_key2(file_name);
-    size_t &file_size = file_data.file_size;
-    *read_length = get_read_size(file_size, offset, buffer_length);
-
+	size_t &file_size = file_data.file_size;
+	*read_length = get_read_size(file_size, offset, buffer_length);
 	size_t read_size = general_read_func(file_data, buffer, offset, *read_length);
-	filesystem_log("offset:%llu, request read %llu, true read:%llu\n", offset,buffer_length, read_size);
+	filesystem_log("file_size:%llu, offset:%llu, request read %llu, modified read size:%u, true read:%llu\n", 
+	file_size, offset, buffer_length, *read_length, read_size);
 	*read_length = read_size;
-
 	return STATUS_SUCCESS;
 }
 
-NTSTATUS DOKAN_CALLBACK dokan_write_file(LPCWSTR wide_file_path, LPCVOID Buffer,
-										 DWORD NumberOfBytesToWrite,
-										 LPDWORD NumberOfBytesWritten,
-										 LONGLONG Offset,
+NTSTATUS DOKAN_CALLBACK dokan_write_file(LPCWSTR wide_file_path, LPCVOID buffer,
+										 DWORD buffer_length,
+										 LPDWORD write_length,
+										 LONGLONG offset,
 										 PDOKAN_FILE_INFO dokan_file_info)
 {
 	string file_path = wstringToString(wide_file_path);
 	filesystem_log("WriteFile: %s\n", file_path.c_str());
-	return ERROR_ACCESS_DENIED;
+	
+	string file_name = get_file_name_in_path(file_path);
+	filesystem_file_data &file_data = file_list.get_value_by_key2(file_name);
+	size_t &file_size = file_data.file_size;
+	*write_length = get_read_size(file_size, offset, buffer_length);
+	general_write_func(file_data, buffer, offset, *write_length);
+	filesystem_log("file_size:%llu, offset:%llu, request write %llu, true write size:%u\n", 
+	file_size, offset, buffer_length, *write_length);
+	return STATUS_SUCCESS;
 }
-
+/*
 NTSTATUS DOKAN_CALLBACK
 dokan_flush_buffer(LPCWSTR wide_file_path, PDOKAN_FILE_INFO dokan_file_info)
 {
@@ -173,7 +178,7 @@ dokan_flush_buffer(LPCWSTR wide_file_path, PDOKAN_FILE_INFO dokan_file_info)
 	filesystem_log("FlushFileBuffers: %s\n", file_path.c_str());
 	return STATUS_SUCCESS;
 }
-
+*/
 // my secret time: 09/17/2020 14:41
 static FILETIME file_time{2711754096, 30837949};
 NTSTATUS DOKAN_CALLBACK dokan_get_file_information(
@@ -222,9 +227,9 @@ static void copy_file_attris(LPWIN32_FIND_DATAW findData, LPBY_HANDLE_FILE_INFOR
 }
 
 NTSTATUS DOKAN_CALLBACK
-MirrorFindFiles(LPCWSTR wide_file_path,
-				PFillFindData FillFindData, // function pointer
-				PDOKAN_FILE_INFO dokan_file_info)
+dokan_find_files(LPCWSTR wide_file_path,
+				 PFillFindData FillFindData, // function pointer
+				 PDOKAN_FILE_INFO dokan_file_info)
 {
 	string file_path = wstringToString(wide_file_path);
 	filesystem_log("FindFiles: %s\n", file_path.c_str());
@@ -254,7 +259,7 @@ Filesystem exported APIs
 ========================================================
 */
 static WCHAR mountpoint[DOKAN_MAX_PATH];
-void filesystem_thread_func(int* thread_status)
+void filesystem_thread_func(int *thread_status)
 {
 	DOKAN_OPERATIONS dokanOperations;
 	ZeroMemory(&dokanOperations, sizeof(DOKAN_OPERATIONS));
@@ -263,9 +268,9 @@ void filesystem_thread_func(int* thread_status)
 	dokanOperations.CloseFile = dokan_close_file;
 	dokanOperations.ReadFile = dokan_read_file;
 	dokanOperations.WriteFile = dokan_write_file;
-	dokanOperations.FlushFileBuffers = dokan_flush_buffer;
+	dokanOperations.FlushFileBuffers = NULL;
 	dokanOperations.GetFileInformation = dokan_get_file_information;
-	dokanOperations.FindFiles = MirrorFindFiles;
+	dokanOperations.FindFiles = dokan_find_files;
 	dokanOperations.FindFilesWithPattern = NULL;
 	dokanOperations.SetFileAttributes = NULL;
 	dokanOperations.SetFileTime = NULL;
@@ -284,7 +289,7 @@ void filesystem_thread_func(int* thread_status)
 	dokanOperations.FindStreams = NULL;
 	dokanOperations.Mounted = NULL;
 
-	wcscpy(mountpoint,stringToWstring(get_mountpoint()).c_str());
+	wcscpy(mountpoint, stringToWstring(get_mountpoint()).c_str());
 	DOKAN_OPTIONS dokanOptions;
 	dokanOptions.MountPoint = mountpoint;
 	dokanOptions.Version = 140;
@@ -299,31 +304,33 @@ void filesystem_thread_func(int* thread_status)
 	*thread_status = DokanMain(&dokanOptions, &dokanOperations);
 }
 
-
-void filesystem_stop() {
+void filesystem_stop()
+{
 	DokanRemoveMountPoint(mountpoint);
 }
 
-std::string get_error_message(int status){
-	switch (status) {
+std::string get_error_message(int status)
+{
+	switch (status)
+	{
 	case DOKAN_SUCCESS:
-		return("Success");
+		return ("Success");
 	case DOKAN_ERROR:
-		return("Error");
+		return ("Error");
 	case DOKAN_DRIVE_LETTER_ERROR:
-		return("Bad Drive letter");
+		return ("Bad Drive letter");
 	case DOKAN_DRIVER_INSTALL_ERROR:
-		return("Can't install driver");
+		return ("Can't install driver");
 	case DOKAN_START_ERROR:
-		return("Driver something wrong");
+		return ("Driver something wrong");
 	case DOKAN_MOUNT_ERROR:
-		return("Can't assign a drive letter");
+		return ("Can't assign a drive letter");
 	case DOKAN_MOUNT_POINT_ERROR:
-		return("Mount point error");
+		return ("Mount point error");
 	case DOKAN_VERSION_ERROR:
-		return("Version error");
+		return ("Version error");
 	default:
-		return("Unknown error");
+		return ("Unknown error");
 	}
 }
 #endif

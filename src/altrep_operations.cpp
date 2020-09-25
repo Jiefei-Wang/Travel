@@ -7,7 +7,6 @@
 #include "utils.h"
 #include "package_settings.h"
 #include "filesystem_manager.h"
-#include "read_operations.h"
 #include "altrep_operations.h"
 #include "memory_mapped_file.h"
 
@@ -181,9 +180,8 @@ SEXP make_altptr(int type, void *data, size_t length, unsigned int unit_size, fi
     //Compute the total size
     size_t size = length * unit_size;
     GET_SIZE(altptr_options) = size;
-    //Fill the file data that is required by the filesystem
-    filesystem_file_data file_data(read_func, data, size, unit_size);
-    filesystem_file_info file_info = add_virtual_file(file_data);
+    //Create a virtual file
+    filesystem_file_info file_info = add_virtual_file(read_func, data, size, unit_size);
     std::string file_name = file_info.file_name;
     GET_NAME(altptr_options) = file_name;
     file_map_handle *handle;
@@ -199,4 +197,14 @@ SEXP make_altptr(int type, void *data, size_t length, unsigned int unit_size, fi
     R_RegisterCFinalizerEx(handle_extptr, ptr_finalizer, TRUE);
     GET_PTR(altptr_options) = handle_extptr;
     return result;
+}
+
+
+// [[Rcpp::export]]
+void flush_altptr(SEXP x){
+    file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(GET_ALT_PTR(x));
+    std::string status = flush_handle(handle);
+    if(status!=""){
+        Rf_warning(status.c_str());
+    }
 }

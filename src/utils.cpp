@@ -18,19 +18,19 @@ static bool filesystem_log_opened = false;
 // [[Rcpp::export]]
 void initial_filesystem_log()
 {
-	if (filesystem_log_enabled >= 1&&!filesystem_log_opened)
+	if (filesystem_log_enabled >= 1 && !filesystem_log_opened)
 	{
-	filesystem_log_stream.open(get_print_location().c_str(), std::ofstream::out);
-	filesystem_log_opened=true;
+		filesystem_log_stream.open(get_print_location().c_str(), std::ofstream::out);
+		filesystem_log_opened = true;
 	}
 }
 // [[Rcpp::export]]
 void close_filesystem_log()
 {
-	if (filesystem_log_enabled >= 1&&filesystem_log_opened)
+	if (filesystem_log_enabled >= 1 && filesystem_log_opened)
 	{
-	filesystem_log_stream.close();
-	filesystem_log_opened=false;
+		filesystem_log_stream.close();
+		filesystem_log_opened = false;
 	}
 }
 
@@ -107,20 +107,78 @@ size_t get_object_size(SEXP x)
 /*
 An utility to get the true read size that will not read out-of-bound
 */
-size_t get_read_size(size_t file_size, size_t offset, size_t size){
-    if (offset + size > file_size)
-    {
-        if (offset >= file_size)
-        {
-            return 0;
-        }
-        else
-        {
-            return file_size - offset;
-        }
-    }else{
-        return size;
-    }
+size_t get_read_size(size_t file_size, size_t offset, size_t size)
+{
+	if (offset + size > file_size)
+	{
+		if (offset >= file_size)
+		{
+			return 0;
+		}
+		else
+		{
+			return file_size - offset;
+		}
+	}
+	else
+	{
+		return size;
+	}
+}
+
+std::string to_linux_slash(std::string path)
+{
+	for (size_t i = 0; i < path.size(); ++i)
+	{
+		if (path.at(i) == '\\')
+		{
+			path.replace(i, 1, "/");
+		}
+	}
+	return path;
+}
+std::string build_path(std::string path1, std::string path2)
+{
+	path1 = to_linux_slash(path1);
+	path2 = to_linux_slash(path2);
+	char delimiter = '/';
+	if (path1.length() == 0)
+	{
+		return path2;
+	}
+	if (path2.length() == 0)
+	{
+		return path1;
+	}
+	if (path1.at(path1.length() - 1) == delimiter &&
+		path2.at(0) == delimiter)
+	{
+		path2 = path2.erase(0);
+	}
+	if (path1.length() == 0 ||
+		path2.length() == 0 ||
+		path1.at(path1.length() - 1) == delimiter ||
+		path2.at(0) == delimiter)
+	{
+		return path1 + path2;
+	}
+	else
+	{
+		return path1 + delimiter + path2;
+	}
+}
+
+size_t gcd(size_t a, size_t b)
+{
+	if (a == 0)
+		return b;
+	return gcd(b % a, a);
+}
+
+// Function to return LCM of two numbers
+size_t lcm(size_t a, size_t b)
+{
+	return (a * b) / gcd(a, b);
 }
 
 #ifndef _WIN32
@@ -135,13 +193,12 @@ void mySleep(int sleepMs)
 #undef Free
 #include <windows.h>
 #include <codecvt>
-#include <locale> 
+#include <locale>
 
 void mySleep(int sleepMs)
 {
 	Sleep(sleepMs);
 }
-
 
 std::wstring stringToWstring(std::string utf8Bytes)
 {
@@ -152,7 +209,7 @@ std::string wstringToString(std::wstring utf16Bytes)
 	return wstringToString(utf16Bytes.c_str());
 }
 
-std::wstring stringToWstring(const char* utf8Bytes)
+std::wstring stringToWstring(const char *utf8Bytes)
 {
 	//setup converter
 	using convert_type = std::codecvt_utf8<typename std::wstring::value_type>;
@@ -161,7 +218,7 @@ std::wstring stringToWstring(const char* utf8Bytes)
 	//use converter (.to_bytes: wstr->str, .from_bytes: str->wstr)
 	return converter.from_bytes(utf8Bytes);
 }
-std::string wstringToString(const wchar_t* utf16Bytes)
+std::string wstringToString(const wchar_t *utf16Bytes)
 {
 	//setup converter
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> convert;
@@ -170,7 +227,8 @@ std::string wstringToString(const wchar_t* utf16Bytes)
 	return convert.to_bytes(utf16Bytes);
 }
 
-std::string get_file_name_in_path(std::string path) {
+std::string get_file_name_in_path(std::string path)
+{
 	return path.substr(path.find_last_of("\\/") + 1);
 }
 #endif

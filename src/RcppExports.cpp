@@ -89,6 +89,40 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// set_real_value
+void set_real_value(SEXP x, size_t i, double v);
+RcppExport SEXP _Travel_set_real_value(SEXP xSEXP, SEXP iSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< size_t >::type i(iSEXP);
+    Rcpp::traits::input_parameter< double >::type v(vSEXP);
+    set_real_value(x, i, v);
+    return R_NilValue;
+END_RCPP
+}
+// set_int_value
+void set_int_value(SEXP x, size_t i, double v);
+RcppExport SEXP _Travel_set_int_value(SEXP xSEXP, SEXP iSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< size_t >::type i(iSEXP);
+    Rcpp::traits::input_parameter< double >::type v(vSEXP);
+    set_int_value(x, i, v);
+    return R_NilValue;
+END_RCPP
+}
+// flush_altptr
+void flush_altptr(SEXP x);
+RcppExport SEXP _Travel_flush_altptr(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    flush_altptr(x);
+    return R_NilValue;
+END_RCPP
+}
 // C_list_virtual_files
 Rcpp::DataFrame C_list_virtual_files();
 RcppExport SEXP _Travel_C_list_virtual_files() {
@@ -223,6 +257,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_make_test_integer_altrep", (DL_FUNC) &_Travel_C_make_test_integer_altrep, 1},
     {"_Travel_C_make_fake_file", (DL_FUNC) &_Travel_C_make_fake_file, 1},
     {"_Travel_test", (DL_FUNC) &_Travel_test, 0},
+    {"_Travel_set_real_value", (DL_FUNC) &_Travel_set_real_value, 3},
+    {"_Travel_set_int_value", (DL_FUNC) &_Travel_set_int_value, 3},
+    {"_Travel_flush_altptr", (DL_FUNC) &_Travel_flush_altptr, 1},
     {"_Travel_C_list_virtual_files", (DL_FUNC) &_Travel_C_list_virtual_files, 0},
     {"_Travel_run_filesystem_thread_func", (DL_FUNC) &_Travel_run_filesystem_thread_func, 0},
     {"_Travel_C_run_filesystem_thread", (DL_FUNC) &_Travel_C_run_filesystem_thread, 0},

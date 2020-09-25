@@ -13,6 +13,7 @@ struct file_map_handle
 
 std::string memory_map(file_map_handle *&handle, const filesystem_file_info file_key, const size_t size);
 std::string memory_unmap(file_map_handle *handle);
+std::string flush_handle(file_map_handle *handle);
 
 bool has_mapped_file_handle(void* handle);
 std::string unmap_all_files();

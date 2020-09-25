@@ -14,31 +14,46 @@
 static inode_type file_inode_counter = 1;
 double_key_map<inode_type, std::string, filesystem_file_data> file_list;
 
+
+
+filesystem_file_data::filesystem_file_data(file_data_func data_func,
+                       void *private_data,
+                       size_t file_size,
+                       unsigned int unit_size) : data_func(data_func),
+                                                     private_data(private_data),
+                                                     file_size(file_size),
+                                                     unit_size(unit_size)
+  {
+    cache_size = lcm(MIN_CACHE_SIZE, unit_size);
+  }
+
+
 /*
 ==========================================================================
 Insert or delete files from the filesystem
 ==========================================================================
 */
 
-filesystem_file_info add_virtual_file(filesystem_file_data file_data, std::string name)
+filesystem_file_info add_virtual_file(file_data_func data_func,
+                                             void *private_data,
+                                             size_t file_size,
+                                             unsigned int unit_size,
+                                             const char* name)
 {
-  if (file_data.file_size % file_data.unit_size != 0)
+  if (file_size % unit_size != 0)
   {
     Rf_error("The file size and unit size does not match!\n");
   }
-  if (file_data.file_size < file_data.unit_size)
-  {
-    Rf_error("The file size is less than unit size!\n");
-  }
   file_inode_counter++;
-  if (name == "")
-  {
-    name = "inode_" + std::to_string(file_inode_counter);
-  }
-  file_list.insert(file_inode_counter, name, file_data);
-  std::string file_full_path(get_mountpoint() + "/" + name);
-
-  return {file_full_path, name, file_inode_counter};
+  std::string file_name;
+  if (name == NULL)
+    file_name = "inode_" + std::to_string(file_inode_counter);
+  else
+    file_name = std::string(name);
+  filesystem_file_data file_data(data_func, private_data, file_size, unit_size);
+  file_list.insert(file_inode_counter, file_name, file_data);
+  std::string file_full_path= build_path(get_mountpoint(), file_name);
+  return {file_full_path, file_name, file_inode_counter};
 }
 
 bool remove_virtual_file(std::string name)
@@ -53,19 +68,29 @@ Rcpp::DataFrame C_list_virtual_files()
   int n = file_list.size();
   CharacterVector name(n);
   NumericVector inode(n);
+  NumericVector unit_size(n);
   NumericVector file_size(n);
+  NumericVector cache_size(n);
+  NumericVector cache_number(n);
   int j = 0;
   for (auto i = file_list.begin_key(); i != file_list.end_key(); i++)
   {
     name[j] = i->second;
     inode[j] = i->first;
     filesystem_file_data &file_data = file_list.get_value_by_key1(i->first);
+    unit_size[j] = file_data.unit_size;
     file_size[j] = file_data.file_size;
+    cache_size[j] = file_data.cache_size;
+    cache_number[j] = file_data.write_cache.size();
+    Rprintf("%llu\n",file_data.write_cache.size());
     j++;
   }
   DataFrame df = DataFrame::create(Named("name") = name,
                                    Named("inode") = inode,
-                                   Named("size") = file_size);
+                                   Named("unit size") = unit_size,
+                                   Named("file size") = file_size,
+                                   Named("cache size") = cache_size,
+                                   Named("cache number") = cache_number);
   return df;
 }
 

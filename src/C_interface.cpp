@@ -105,8 +105,7 @@ size_t fake_read(filesystem_file_data &file_data, void *buffer, size_t offset, s
 //[[Rcpp::export]]
 void C_make_fake_file(size_t size)
 {
-    filesystem_file_data file_data(fake_read,nullptr,size,1);
-    add_virtual_file(file_data);
+    add_virtual_file(fake_read,nullptr,size);
 }
 
 
@@ -123,8 +122,20 @@ void test(){
     }
 }
 
-
-
+// [[Rcpp::export]]
+void set_real_value(SEXP x, size_t i, double v){
+    if(TYPEOF(x)!=REALSXP){
+        Rf_error("The variable is not of REAL type!\n");
+    }
+    ((double*)DATAPTR(x))[i-1]=v;
+}
+// [[Rcpp::export]]
+void set_int_value(SEXP x, size_t i, double v){
+    if(TYPEOF(x)!=INTSXP){
+        Rf_error("The variable is not of REAL type!\n");
+    }
+    ((int*)DATAPTR(x))[i-1]=v;
+}
 
 /*
 //C_make_altPtr_internal(int type, void *data, size_t size, file_data_func read_func, unsigned int unit_size);

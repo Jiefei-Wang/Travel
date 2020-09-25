@@ -33,6 +33,18 @@ test <- function() {
     invisible(.Call(`_Travel_test`))
 }
 
+set_real_value <- function(x, i, v) {
+    invisible(.Call(`_Travel_set_real_value`, x, i, v))
+}
+
+set_int_value <- function(x, i, v) {
+    invisible(.Call(`_Travel_set_int_value`, x, i, v))
+}
+
+flush_altptr <- function(x) {
+    invisible(.Call(`_Travel_flush_altptr`, x))
+}
+
 C_list_virtual_files <- function() {
     .Call(`_Travel_C_list_virtual_files`)
 }
