@@ -82,7 +82,6 @@ Rcpp::DataFrame C_list_virtual_files()
     file_size[j] = file_data.file_size;
     cache_size[j] = file_data.cache_size;
     cache_number[j] = file_data.write_cache.size();
-    Rprintf("%llu\n",file_data.write_cache.size());
     j++;
   }
   DataFrame df = DataFrame::create(Named("name") = name,

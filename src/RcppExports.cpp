@@ -59,67 +59,13 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// C_make_test_integer_altrep
-SEXP C_make_test_integer_altrep(double n);
-RcppExport SEXP _Travel_C_make_test_integer_altrep(SEXP nSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_make_test_integer_altrep(n));
-    return rcpp_result_gen;
-END_RCPP
-}
-// C_make_fake_file
-void C_make_fake_file(size_t size);
-RcppExport SEXP _Travel_C_make_fake_file(SEXP sizeSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< size_t >::type size(sizeSEXP);
-    C_make_fake_file(size);
-    return R_NilValue;
-END_RCPP
-}
-// test
-void test();
-RcppExport SEXP _Travel_test() {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    test();
-    return R_NilValue;
-END_RCPP
-}
-// set_real_value
-void set_real_value(SEXP x, size_t i, double v);
-RcppExport SEXP _Travel_set_real_value(SEXP xSEXP, SEXP iSEXP, SEXP vSEXP) {
+// C_flush_altptr
+void C_flush_altptr(SEXP x);
+RcppExport SEXP _Travel_C_flush_altptr(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    Rcpp::traits::input_parameter< size_t >::type i(iSEXP);
-    Rcpp::traits::input_parameter< double >::type v(vSEXP);
-    set_real_value(x, i, v);
-    return R_NilValue;
-END_RCPP
-}
-// set_int_value
-void set_int_value(SEXP x, size_t i, double v);
-RcppExport SEXP _Travel_set_int_value(SEXP xSEXP, SEXP iSEXP, SEXP vSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    Rcpp::traits::input_parameter< size_t >::type i(iSEXP);
-    Rcpp::traits::input_parameter< double >::type v(vSEXP);
-    set_int_value(x, i, v);
-    return R_NilValue;
-END_RCPP
-}
-// flush_altptr
-void flush_altptr(SEXP x);
-RcppExport SEXP _Travel_flush_altptr(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    flush_altptr(x);
+    C_flush_altptr(x);
     return R_NilValue;
 END_RCPP
 }
@@ -229,6 +175,51 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// C_make_test_integer_altrep
+SEXP C_make_test_integer_altrep(double n);
+RcppExport SEXP _Travel_C_make_test_integer_altrep(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_make_test_integer_altrep(n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// C_make_fake_file
+void C_make_fake_file(size_t size);
+RcppExport SEXP _Travel_C_make_fake_file(SEXP sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< size_t >::type size(sizeSEXP);
+    C_make_fake_file(size);
+    return R_NilValue;
+END_RCPP
+}
+// C_set_real_value
+void C_set_real_value(SEXP x, size_t i, double v);
+RcppExport SEXP _Travel_C_set_real_value(SEXP xSEXP, SEXP iSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< size_t >::type i(iSEXP);
+    Rcpp::traits::input_parameter< double >::type v(vSEXP);
+    C_set_real_value(x, i, v);
+    return R_NilValue;
+END_RCPP
+}
+// C_set_int_value
+void C_set_int_value(SEXP x, size_t i, double v);
+RcppExport SEXP _Travel_C_set_int_value(SEXP xSEXP, SEXP iSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< size_t >::type i(iSEXP);
+    Rcpp::traits::input_parameter< double >::type v(vSEXP);
+    C_set_int_value(x, i, v);
+    return R_NilValue;
+END_RCPP
+}
 // initial_filesystem_log
 void initial_filesystem_log();
 RcppExport SEXP _Travel_initial_filesystem_log() {
@@ -254,12 +245,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_getAltData2", (DL_FUNC) &_Travel_C_getAltData2, 1},
     {"_Travel_print_value", (DL_FUNC) &_Travel_print_value, 1},
     {"_Travel_C_get_ptr", (DL_FUNC) &_Travel_C_get_ptr, 1},
-    {"_Travel_C_make_test_integer_altrep", (DL_FUNC) &_Travel_C_make_test_integer_altrep, 1},
-    {"_Travel_C_make_fake_file", (DL_FUNC) &_Travel_C_make_fake_file, 1},
-    {"_Travel_test", (DL_FUNC) &_Travel_test, 0},
-    {"_Travel_set_real_value", (DL_FUNC) &_Travel_set_real_value, 3},
-    {"_Travel_set_int_value", (DL_FUNC) &_Travel_set_int_value, 3},
-    {"_Travel_flush_altptr", (DL_FUNC) &_Travel_flush_altptr, 1},
+    {"_Travel_C_flush_altptr", (DL_FUNC) &_Travel_C_flush_altptr, 1},
     {"_Travel_C_list_virtual_files", (DL_FUNC) &_Travel_C_list_virtual_files, 0},
     {"_Travel_run_filesystem_thread_func", (DL_FUNC) &_Travel_run_filesystem_thread_func, 0},
     {"_Travel_C_run_filesystem_thread", (DL_FUNC) &_Travel_C_run_filesystem_thread, 0},
@@ -271,6 +257,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_get_print_location", (DL_FUNC) &_Travel_C_get_print_location, 0},
     {"_Travel_C_set_mountpoint", (DL_FUNC) &_Travel_C_set_mountpoint, 1},
     {"_Travel_C_get_mountpoint", (DL_FUNC) &_Travel_C_get_mountpoint, 0},
+    {"_Travel_C_make_test_integer_altrep", (DL_FUNC) &_Travel_C_make_test_integer_altrep, 1},
+    {"_Travel_C_make_fake_file", (DL_FUNC) &_Travel_C_make_fake_file, 1},
+    {"_Travel_C_set_real_value", (DL_FUNC) &_Travel_C_set_real_value, 3},
+    {"_Travel_C_set_int_value", (DL_FUNC) &_Travel_C_set_int_value, 3},
     {"_Travel_initial_filesystem_log", (DL_FUNC) &_Travel_initial_filesystem_log, 0},
     {"_Travel_close_filesystem_log", (DL_FUNC) &_Travel_close_filesystem_log, 0},
     {NULL, NULL, 0}

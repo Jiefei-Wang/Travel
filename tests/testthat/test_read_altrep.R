@@ -1,6 +1,10 @@
 context("Test if ALTREP is working correctly")
 deploy_filesystem()
-n <- 1024*1024*1024/4
+rm(list=ls())
+gc()
+n <- 1024*1024*16/4
+block_size <- 1024*1024
+y <- rep(1:block_size,n/block_size)
 
 test_that("Create an integer sequece",{
     expect_error(x <- C_make_test_integer_altrep(n),NA)
@@ -11,9 +15,9 @@ test_that("Create an integer sequece",{
 test_that("sequential access an integer sequece",{
     expect_error(x <- C_make_test_integer_altrep(n),NA)
     
-    ind <- 1:(1024*1024)
     for(i in c(seq_len(10), 246 + seq_len(10))){
-        expect_equal(ind,x[ind + (i-1)*1024*1024])
+        ind <- 1:block_size + (i-1)*block_size
+        expect_equal(x[ind], y[ind])
     }
 })
 
@@ -21,9 +25,8 @@ test_that("random access an integer sequece",{
     expect_error(x <- C_make_test_integer_altrep(n),NA)
     
     for(i in seq_len(10)){
-        ind <- ceiling(runif(100)*n)
-        values <- (ind-1)%%(1024*1024) +1
-        expect_equal(values,x[ind])
+        ind <- sample(1:n, block_size)
+        expect_equal(x[ind], y[ind])
     }
 })
 

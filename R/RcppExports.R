@@ -21,28 +21,8 @@ C_get_ptr <- function(x) {
     .Call(`_Travel_C_get_ptr`, x)
 }
 
-C_make_test_integer_altrep <- function(n) {
-    .Call(`_Travel_C_make_test_integer_altrep`, n)
-}
-
-C_make_fake_file <- function(size) {
-    invisible(.Call(`_Travel_C_make_fake_file`, size))
-}
-
-test <- function() {
-    invisible(.Call(`_Travel_test`))
-}
-
-set_real_value <- function(x, i, v) {
-    invisible(.Call(`_Travel_set_real_value`, x, i, v))
-}
-
-set_int_value <- function(x, i, v) {
-    invisible(.Call(`_Travel_set_int_value`, x, i, v))
-}
-
-flush_altptr <- function(x) {
-    invisible(.Call(`_Travel_flush_altptr`, x))
+C_flush_altptr <- function(x) {
+    invisible(.Call(`_Travel_C_flush_altptr`, x))
 }
 
 C_list_virtual_files <- function() {
@@ -87,6 +67,22 @@ C_set_mountpoint <- function(path) {
 
 C_get_mountpoint <- function() {
     .Call(`_Travel_C_get_mountpoint`)
+}
+
+C_make_test_integer_altrep <- function(n) {
+    .Call(`_Travel_C_make_test_integer_altrep`, n)
+}
+
+C_make_fake_file <- function(size) {
+    invisible(.Call(`_Travel_C_make_fake_file`, size))
+}
+
+C_set_real_value <- function(x, i, v) {
+    invisible(.Call(`_Travel_C_set_real_value`, x, i, v))
+}
+
+C_set_int_value <- function(x, i, v) {
+    invisible(.Call(`_Travel_C_set_int_value`, x, i, v))
 }
 
 initial_filesystem_log <- function() {

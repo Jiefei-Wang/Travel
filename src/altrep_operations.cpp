@@ -12,7 +12,7 @@
 
 #define SLOT_NUM 4
 #define NAME_SLOT 0
-#define PTR_SLOT 1
+#define FILE_HANDLE_SLOT 1
 #define SIZE_SLOT 2
 #define LENGTH_SLOT 3
 
@@ -21,16 +21,98 @@
 
 #define GET_PROPS(x) ((Rcpp::List)R_altrep_data2(x))
 
+//These macros assume x is a list of options
 #define GET_NAME(x) (x[NAME_SLOT])
-#define GET_PTR(x) (x[PTR_SLOT])
+//File handle external pointer
+#define GET_HANDLE_EXTPTR(x) (x[FILE_HANDLE_SLOT])
+//File handle itself
+#define GET_FILE_HANDLE(x) ((file_map_handle *)R_ExternalPtrAddr(GET_HANDLE_EXTPTR(x)))
 #define GET_SIZE(x) (x[SIZE_SLOT])
 #define GET_LENGTH(x) (x[LENGTH_SLOT])
 
-#define GET_ALT_NAME(x) (GET_PROPS(x)[NAME_SLOT])
-#define GET_ALT_PTR(x) (GET_PROPS(x)[PTR_SLOT])
-#define GET_ALT_SIZE(x) (GET_PROPS(x)[SIZE_SLOT])
-#define GET_ALT_LENGTH(x) (GET_PROPS(x)[LENGTH_SLOT])
+//These macros assume x is an ALTREP object
+#define GET_ALT_NAME(x) (GET_NAME(GET_PROPS(x)))
+#define GET_ALT_HANDLE_EXTPTR(x) (GET_HANDLE_EXTPTR(GET_PROPS(x)))
+#define GET_ALT_FILE_HANDLE(x) (GET_FILE_HANDLE(GET_PROPS(x)))
+#define GET_ALT_SIZE(x) (GET_SIZE(GET_PROPS(x)))
+#define GET_ALT_LENGTH(x) (GET_LENGTH(GET_PROPS(x)))
 
+
+static void ptr_finalizer(SEXP handle_extptr)
+{
+    Rcpp::List altptr_options = R_ExternalPtrTag(handle_extptr);
+    std::string name = Rcpp::as<std::string>(GET_NAME(altptr_options));
+    file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
+    if (!has_mapped_file_handle(handle))
+    {
+        Rf_warning("The altptr file handle has been released: %s, handle: %p\n", name.c_str(), handle);
+    }
+    else
+    {
+        debug_print("Finalizer, name:%s, size:%llu\n", name.c_str(), handle->size);
+        std::string status = memory_unmap(handle);
+        if (status != "")
+        {
+            Rf_warning(status.c_str());
+        }
+    }
+    remove_virtual_file(name);
+}
+
+SEXP make_altptr(int type, void *data, size_t length, unsigned int unit_size, file_data_func read_func, SEXP protect)
+{
+    if (!is_filesystem_running())
+    {
+        Rf_error("The filesystem is not running!\n");
+    }
+    PROTECT_GUARD guard;
+    R_altrep_class_t alt_class = getAltClass(type);
+    Rcpp::List altptr_options(SLOT_NUM);
+    GET_LENGTH(altptr_options) = length;
+    SEXP result = guard.protect(R_new_altrep(alt_class, protect, altptr_options));
+    //Compute the total size
+    size_t size = length * unit_size;
+    GET_SIZE(altptr_options) = size;
+    //Create a virtual file
+    filesystem_file_info file_info = add_virtual_file(read_func, data, size, unit_size);
+    std::string file_name = file_info.file_name;
+    GET_NAME(altptr_options) = file_name;
+    file_map_handle *handle;
+    std::string status = memory_map(handle, file_info, size);
+    if (status != "")
+    {
+        remove_virtual_file(file_info.file_name);
+        Rf_warning(status.c_str());
+        return R_NilValue;
+    }
+    SEXP handle_extptr = guard.protect(R_MakeExternalPtr(handle, altptr_options, R_NilValue));
+    //Register finalizer for the pointer
+    R_RegisterCFinalizerEx(handle_extptr, ptr_finalizer, TRUE);
+    GET_HANDLE_EXTPTR(altptr_options) = handle_extptr;
+    return result;
+}
+
+SEXP get_file_name(SEXP x){
+    return GET_ALT_NAME(x);
+}
+
+void flush_altptr(SEXP x){
+    file_map_handle *handle = GET_ALT_FILE_HANDLE(x);
+    std::string status = flush_handle(handle);
+    if(status!=""){
+        Rf_warning(status.c_str());
+    }
+}
+
+// [[Rcpp::export]]
+void C_flush_altptr(SEXP x){
+    flush_altptr(x);
+}
+/*
+==========================================
+ALTREP operations
+==========================================
+*/
 Rboolean altPtr_Inspect(SEXP x, int pre, int deep, int pvec,
                         void (*inspect_subtree)(SEXP, int, int, int))
 {
@@ -52,7 +134,7 @@ void *altPtr_dataptr(SEXP x, Rboolean writeable)
     {
         Rf_error("The filesystem is not running!\n");
     }
-    SEXP handle_extptr = GET_ALT_PTR(x);
+    SEXP handle_extptr = GET_ALT_HANDLE_EXTPTR(x);
     if (handle_extptr == R_NilValue)
     {
         return NULL;
@@ -143,68 +225,4 @@ void init_real_class(DllInfo *dll)
 {
     char class_name[] = "shared_real";
     ALT_COMMOM_REGISTRATION(altPtr_real_class, altreal, REAL)
-}
-
-static void ptr_finalizer(SEXP handle_extptr)
-{
-    Rcpp::List altptr_options = R_ExternalPtrTag(handle_extptr);
-    std::string name = Rcpp::as<std::string>(GET_NAME(altptr_options));
-    file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
-    if (!has_mapped_file_handle(handle))
-    {
-        Rf_warning("The altptr file handle has been released: %s, handle: %p\n", name.c_str(), handle);
-    }
-    else
-    {
-        debug_print("Finalizer, name:%s, size:%llu\n", name.c_str(), handle->size);
-        std::string status = memory_unmap(handle);
-        if (status != "")
-        {
-            Rf_warning(status.c_str());
-        }
-    }
-    remove_virtual_file(name);
-}
-
-SEXP make_altptr(int type, void *data, size_t length, unsigned int unit_size, file_data_func read_func, SEXP protect)
-{
-    if (!is_filesystem_running())
-    {
-        Rf_error("The filesystem is not running!\n");
-    }
-    PROTECT_GUARD guard;
-    R_altrep_class_t alt_class = getAltClass(type);
-    Rcpp::List altptr_options(SLOT_NUM);
-    GET_LENGTH(altptr_options) = length;
-    SEXP result = guard.protect(R_new_altrep(alt_class, protect, altptr_options));
-    //Compute the total size
-    size_t size = length * unit_size;
-    GET_SIZE(altptr_options) = size;
-    //Create a virtual file
-    filesystem_file_info file_info = add_virtual_file(read_func, data, size, unit_size);
-    std::string file_name = file_info.file_name;
-    GET_NAME(altptr_options) = file_name;
-    file_map_handle *handle;
-    std::string status = memory_map(handle, file_info, size);
-    if (status != "")
-    {
-        remove_virtual_file(file_info.file_name);
-        Rf_warning(status.c_str());
-        return R_NilValue;
-    }
-    SEXP handle_extptr = guard.protect(R_MakeExternalPtr(handle, altptr_options, R_NilValue));
-    //Register finalizer for the pointer
-    R_RegisterCFinalizerEx(handle_extptr, ptr_finalizer, TRUE);
-    GET_PTR(altptr_options) = handle_extptr;
-    return result;
-}
-
-
-// [[Rcpp::export]]
-void flush_altptr(SEXP x){
-    file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(GET_ALT_PTR(x));
-    std::string status = flush_handle(handle);
-    if(status!=""){
-        Rf_warning(status.c_str());
-    }
 }
