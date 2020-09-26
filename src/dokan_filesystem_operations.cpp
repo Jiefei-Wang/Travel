@@ -5,6 +5,7 @@
 #include "filesystem_manager.h"
 #include "read_write_operations.h"
 #include "package_settings.h"
+#include "double_key_map.h"
 
 #ifdef WIN10_ENABLE_LONG_PATH
 #define DOKAN_MAX_PATH 32768
@@ -16,6 +17,8 @@ using std::string;
 using std::wstring;
 
 bool is_filesystem_alive() { return true; }
+
+extern double_key_map<inode_type, std::string, filesystem_file_data> file_list;
 
 #define IS_ROOT(x) (x == "\\")
 #define IS_PATH_VALID(path) (path.find_last_of("/\\") == 0)

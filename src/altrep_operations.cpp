@@ -1,14 +1,16 @@
 //#include <sys/types.h>
 //Include Rcpp header in utils.h
-#define UTILS_ENABLE_R
 #include <string>
 #include "Rcpp.h"
 #include "R_ext/Altrep.h"
-#include "utils.h"
 #include "package_settings.h"
 #include "filesystem_manager.h"
-#include "altrep_operations.h"
+#include "Travel.h"
 #include "memory_mapped_file.h"
+#define UTILS_ENABLE_R
+#include "utils.h"
+#undef UTILS_ENABLE_R
+
 
 #define SLOT_NUM 4
 #define NAME_SLOT 0
@@ -38,7 +40,36 @@
 #define GET_ALT_LENGTH(x) (GET_LENGTH(GET_PROPS(x)))
 
 
-static void ptr_finalizer(SEXP handle_extptr)
+R_altrep_class_t altPtr_real_class;
+R_altrep_class_t altPtr_integer_class;
+R_altrep_class_t altPtr_logical_class;
+//R_altrep_class_t altPtr_raw_class;
+//R_altrep_class_t altPtr_complex_class;
+
+R_altrep_class_t getAltClass(int type)
+{
+    switch (type)
+    {
+    case REALSXP:
+        return altPtr_real_class;
+    case INTSXP:
+        return altPtr_integer_class;
+    case LGLSXP:
+        return altPtr_logical_class;
+    case RAWSXP:
+        //return altPtr_raw_class;
+    case CPLXSXP:
+        //return altPtr_complex_class;
+    case STRSXP:
+        //return altPtr_str_class;
+    default:
+        Rf_error("Type of %d is not supported yet", type);
+    }
+    // Just for suppressing the annoying warning, it should never be excuted
+    return altPtr_real_class;
+}
+
+static void file_handle_finalizer(SEXP handle_extptr)
 {
     Rcpp::List altptr_options = R_ExternalPtrTag(handle_extptr);
     std::string name = Rcpp::as<std::string>(GET_NAME(altptr_options));
@@ -87,7 +118,7 @@ SEXP make_altptr(int type, void *data, size_t length, unsigned int unit_size, fi
     }
     SEXP handle_extptr = guard.protect(R_MakeExternalPtr(handle, altptr_options, R_NilValue));
     //Register finalizer for the pointer
-    R_RegisterCFinalizerEx(handle_extptr, ptr_finalizer, TRUE);
+    R_RegisterCFinalizerEx(handle_extptr, file_handle_finalizer, TRUE);
     GET_HANDLE_EXTPTR(altptr_options) = handle_extptr;
     return result;
 }
@@ -108,6 +139,7 @@ void flush_altptr(SEXP x){
 void C_flush_altptr(SEXP x){
     flush_altptr(x);
 }
+
 /*
 ==========================================
 ALTREP operations
@@ -165,34 +197,6 @@ const void *altPtr_dataptr_or_null(SEXP x)
     }
 }
 
-R_altrep_class_t altPtr_real_class;
-R_altrep_class_t altPtr_integer_class;
-R_altrep_class_t altPtr_logical_class;
-//R_altrep_class_t altPtr_raw_class;
-//R_altrep_class_t altPtr_complex_class;
-
-R_altrep_class_t getAltClass(int type)
-{
-    switch (type)
-    {
-    case REALSXP:
-        return altPtr_real_class;
-    case INTSXP:
-        return altPtr_integer_class;
-    case LGLSXP:
-        return altPtr_logical_class;
-    case RAWSXP:
-        //return altPtr_raw_class;
-    case CPLXSXP:
-        //return altPtr_complex_class;
-    case STRSXP:
-        //return altPtr_str_class;
-    default:
-        Rf_error("Type of %d is not supported yet", type);
-    }
-    // Just for suppressing the annoying warning, it should never be excuted
-    return altPtr_real_class;
-}
 
 /*
 Register ALTREP class
@@ -226,3 +230,5 @@ void init_real_class(DllInfo *dll)
     char class_name[] = "shared_real";
     ALT_COMMOM_REGISTRATION(altPtr_real_class, altreal, REAL)
 }
+
+

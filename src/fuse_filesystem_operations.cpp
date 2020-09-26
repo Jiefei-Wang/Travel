@@ -16,6 +16,8 @@
 #include "package_settings.h"
 #include "utils.h"
 
+extern double_key_map<inode_type, std::string, filesystem_file_data> file_list;
+
 static size_t print_counter = 0;
 /*
 Fuse specific objects

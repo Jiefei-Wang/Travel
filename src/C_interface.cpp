@@ -1,4 +1,4 @@
-#include "altrep_operations.h"
+#include "Travel.h"
 #include "utils.h"
 #include "filesystem_manager.h"
 
@@ -77,6 +77,14 @@ SEXP C_get_ptr(SEXP x){
 }
 
 
+// [[Rcpp::export]]
+SEXP test_ptr(){
+    return Travel_shared_ptr<int*>(new int);
+}
+// [[Rcpp::export]]
+SEXP test_ptr_array(){
+    return Travel_shared_ptr<int[]>(new int[10]);
+}
 /*
 //C_make_altPtr_internal(int type, void *data, size_t size, file_data_func read_func, unsigned int unit_size);
 struct mydata{
