@@ -60,26 +60,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// test_ptr
-SEXP test_ptr();
-RcppExport SEXP _Travel_test_ptr() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(test_ptr());
-    return rcpp_result_gen;
-END_RCPP
-}
-// test_ptr_array
-SEXP test_ptr_array();
-RcppExport SEXP _Travel_test_ptr_array() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(test_ptr_array());
-    return rcpp_result_gen;
-END_RCPP
-}
 // C_flush_altptr
 void C_flush_altptr(SEXP x);
 RcppExport SEXP _Travel_C_flush_altptr(SEXP xSEXP) {
@@ -266,8 +246,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_getAltData2", (DL_FUNC) &_Travel_C_getAltData2, 1},
     {"_Travel_print_value", (DL_FUNC) &_Travel_print_value, 1},
     {"_Travel_C_get_ptr", (DL_FUNC) &_Travel_C_get_ptr, 1},
-    {"_Travel_test_ptr", (DL_FUNC) &_Travel_test_ptr, 0},
-    {"_Travel_test_ptr_array", (DL_FUNC) &_Travel_test_ptr_array, 0},
     {"_Travel_C_flush_altptr", (DL_FUNC) &_Travel_C_flush_altptr, 1},
     {"_Travel_C_list_virtual_files", (DL_FUNC) &_Travel_C_list_virtual_files, 0},
     {"_Travel_run_filesystem_thread_func", (DL_FUNC) &_Travel_run_filesystem_thread_func, 0},

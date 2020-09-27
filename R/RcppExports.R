@@ -21,14 +21,6 @@ C_get_ptr <- function(x) {
     .Call(`_Travel_C_get_ptr`, x)
 }
 
-test_ptr <- function() {
-    .Call(`_Travel_test_ptr`)
-}
-
-test_ptr_array <- function() {
-    .Call(`_Travel_test_ptr_array`)
-}
-
 C_flush_altptr <- function(x) {
     invisible(.Call(`_Travel_C_flush_altptr`, x))
 }

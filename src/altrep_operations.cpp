@@ -90,7 +90,7 @@ static void file_handle_finalizer(SEXP handle_extptr)
     remove_virtual_file(name);
 }
 
-SEXP make_altptr(int type, void *data, size_t length, unsigned int unit_size, file_data_func read_func, SEXP protect)
+SEXP Travel_make_altrep(int type, size_t length, file_data_func read_func, void *data, unsigned int unit_size, SEXP protect)
 {
     if (!is_filesystem_running())
     {

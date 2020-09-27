@@ -23,11 +23,11 @@ size_t read_altrep(filesystem_file_data &file_data, void *buffer, size_t offset,
     return length;
 }
 
-//make_altptr(int type, void *data, size_t length, unsigned int unit_size, file_data_func read_func, SEXP protect)
+//Travel_make_altrep(int type, void *data, size_t length, unsigned int unit_size, file_data_func read_func, SEXP protect)
 //[[Rcpp::export]]
 SEXP C_make_altPtr_from_altrep(SEXP x)
 {
-    SEXP altptr_object = make_altptr(TYPEOF(x), x, XLENGTH(x), get_type_size(TYPEOF(x)),read_altrep, x);
+    SEXP altptr_object = Travel_make_altrep(TYPEOF(x), XLENGTH(x),read_altrep, x,  get_type_size(TYPEOF(x)), x);
     return altptr_object;
 }
 
@@ -77,14 +77,6 @@ SEXP C_get_ptr(SEXP x){
 }
 
 
-// [[Rcpp::export]]
-SEXP test_ptr(){
-    return Travel_shared_ptr<int*>(new int);
-}
-// [[Rcpp::export]]
-SEXP test_ptr_array(){
-    return Travel_shared_ptr<int[]>(new int[10]);
-}
 /*
 //C_make_altPtr_internal(int type, void *data, size_t size, file_data_func read_func, unsigned int unit_size);
 struct mydata{
