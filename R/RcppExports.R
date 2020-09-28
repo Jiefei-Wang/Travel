@@ -93,6 +93,10 @@ C_set_int_value <- function(x, i, v) {
     invisible(.Call(`_Travel_C_set_int_value`, x, i, v))
 }
 
+C_reset_int <- function(x) {
+    invisible(.Call(`_Travel_C_reset_int`, x))
+}
+
 initial_filesystem_log <- function() {
     invisible(.Call(`_Travel_initial_filesystem_log`))
 }

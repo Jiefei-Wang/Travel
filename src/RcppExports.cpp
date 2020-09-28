@@ -243,6 +243,16 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// C_reset_int
+void C_reset_int(SEXP x);
+RcppExport SEXP _Travel_C_reset_int(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    C_reset_int(x);
+    return R_NilValue;
+END_RCPP
+}
 // initial_filesystem_log
 void initial_filesystem_log();
 RcppExport SEXP _Travel_initial_filesystem_log() {
@@ -286,6 +296,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_make_fake_file", (DL_FUNC) &_Travel_C_make_fake_file, 1},
     {"_Travel_C_set_real_value", (DL_FUNC) &_Travel_C_set_real_value, 3},
     {"_Travel_C_set_int_value", (DL_FUNC) &_Travel_C_set_int_value, 3},
+    {"_Travel_C_reset_int", (DL_FUNC) &_Travel_C_reset_int, 1},
     {"_Travel_initial_filesystem_log", (DL_FUNC) &_Travel_initial_filesystem_log, 0},
     {"_Travel_close_filesystem_log", (DL_FUNC) &_Travel_close_filesystem_log, 0},
     {NULL, NULL, 0}

@@ -147,7 +147,7 @@ NTSTATUS DOKAN_CALLBACK dokan_read_file(LPCWSTR wide_file_path, LPVOID buffer,
 
 	filesystem_file_data &file_data = file_list.get_value_by_key2(file_name);
 	size_t &file_size = file_data.file_size;
-	*read_length = get_read_size(file_size, offset, buffer_length);
+	*read_length = get_valid_file_size(file_size, offset, buffer_length);
 	size_t read_size = general_read_func(file_data, buffer, offset, *read_length);
 	filesystem_log("file_size:%llu, offset:%llu, request read %llu, modified read size:%u, true read:%llu\n", 
 	file_size, offset, buffer_length, *read_length, read_size);
@@ -167,7 +167,7 @@ NTSTATUS DOKAN_CALLBACK dokan_write_file(LPCWSTR wide_file_path, LPCVOID buffer,
 	string file_name = get_file_name_in_path(file_path);
 	filesystem_file_data &file_data = file_list.get_value_by_key2(file_name);
 	size_t &file_size = file_data.file_size;
-	*write_length = get_read_size(file_size, offset, buffer_length);
+	*write_length = get_valid_file_size(file_size, offset, buffer_length);
 	general_write_func(file_data, buffer, offset, *write_length);
 	filesystem_log("file_size:%llu, offset:%llu, request write %llu, true write size:%u\n", 
 	file_size, offset, buffer_length, *write_length);

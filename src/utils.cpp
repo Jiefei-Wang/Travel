@@ -18,7 +18,7 @@ static bool filesystem_log_opened = false;
 // [[Rcpp::export]]
 void initial_filesystem_log()
 {
-	if (filesystem_log_enabled >= 1 && !filesystem_log_opened)
+	if (filesystem_log_enabled && !filesystem_log_opened)
 	{
 		filesystem_log_stream.open(get_print_location().c_str(), std::ofstream::out);
 		filesystem_log_opened = true;
@@ -27,16 +27,17 @@ void initial_filesystem_log()
 // [[Rcpp::export]]
 void close_filesystem_log()
 {
-	if (filesystem_log_enabled >= 1 && filesystem_log_opened)
+	if (filesystem_log_enabled && filesystem_log_opened)
 	{
 		filesystem_log_stream.close();
 		filesystem_log_opened = false;
 	}
 }
 
+
 void filesystem_log(const char *format, ...)
 {
-	if (filesystem_log_enabled >= 1)
+	if (filesystem_log_enabled)
 	{
 		//initial_filesystem_log();
 		va_list args;
@@ -104,27 +105,6 @@ size_t get_object_size(SEXP x)
 	return elt_size * XLENGTH(x);
 }
 
-/*
-An utility to get the true read size that will not read out-of-bound
-*/
-size_t get_read_size(size_t file_size, size_t offset, size_t size)
-{
-	if (offset + size > file_size)
-	{
-		if (offset >= file_size)
-		{
-			return 0;
-		}
-		else
-		{
-			return file_size - offset;
-		}
-	}
-	else
-	{
-		return size;
-	}
-}
 
 std::string to_linux_slash(std::string path)
 {
