@@ -48,6 +48,7 @@ size_t C_get_file_handle_number(){
 }
 
 #ifndef _WIN32
+#include <cstring>
 std::string memory_map(file_map_handle *&handle, const filesystem_file_info file_info, const size_t size)
 {
     const std::string &file_full_path = file_info.file_full_path;
@@ -56,19 +57,19 @@ std::string memory_map(file_map_handle *&handle, const filesystem_file_info file
     int fd = -1;
     while (fd == -1)
     {
-        fd = open(file_full_path.c_str(), O_RDONLY); //read only
+        fd = open(file_full_path.c_str(), O_RDWR); 
         if (timer.expired())
             break;
     }
     if (fd == -1)
     {
-        return "Fail to open the file %s" + file_full_path + ", error: " + std::to_string(errno) + "\n";
+        return "Fail to open the file " + file_info.file_name + ", error: " + strerror(errno) + "\n";
     }
-    void *ptr = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
+    void *ptr = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
     if (ptr == (void *)-1)
     {
         close(fd);
-        return "Fail to map the file %s" + file_full_path + ", error: " + std::to_string(errno) + "\n";
+        return "Fail to map the file " + file_info.file_name + ", error: " + strerror(errno) + "\n";
     }
     close(fd);
     handle = new file_map_handle;
@@ -80,6 +81,9 @@ std::string memory_map(file_map_handle *&handle, const filesystem_file_info file
 }
 std::string memory_unmap(file_map_handle *handle)
 {
+    if(!has_mapped_file_handle(handle)){
+        return "Fail to unmap the handle: The file handle has been released\n";
+    }
     filesystem_print("releasing file handle:%s--%p\n", handle->file_info.file_name.c_str(), handle->ptr);
     if (!has_mapped_file_handle(handle))
     {
@@ -91,9 +95,20 @@ std::string memory_unmap(file_map_handle *handle)
     erase_mapped_file_handle(handle);
     delete handle;
     if (status == -1)
-        return "Fail to unmap the file" + handle->file_info.file_name + ", error: " + std::to_string(errno) + "\n";
+        return "Fail to unmap the file" + handle->file_info.file_name + ", error: " + strerror(errno) + "\n";
     else
         return "";
+}
+
+std::string flush_handle(file_map_handle *handle){
+    if(!has_mapped_file_handle(handle)){
+        return "Fail to flush the changes: The file handle has been released\n";
+    }
+    int status = msync(handle->ptr,handle->size,MS_SYNC);
+    if(status!=0){
+        return "Fail to flush the changes to the memory mapped file" + handle->file_info.file_name + ", error: " + strerror(errno) + "\n";
+    }
+    return "";
 }
 #else
 std::string memory_map(file_map_handle *&handle, const filesystem_file_info file_info, const size_t size)
@@ -139,6 +154,9 @@ std::string memory_map(file_map_handle *&handle, const filesystem_file_info file
 }
 std::string memory_unmap(file_map_handle *handle)
 {
+    if(!has_mapped_file_handle(handle)){
+        return "Fail to unmap the handle: The file handle has been released\n";
+    }
     filesystem_print("releasing file handle:%s--%p\n", handle->file_info.file_name.c_str(), handle->ptr);
     bool status;
     std::string msg;
@@ -166,6 +184,9 @@ std::string memory_unmap(file_map_handle *handle)
 
 
 std::string flush_handle(file_map_handle *handle){
+    if(!has_mapped_file_handle(handle)){
+        return "Fail to flush the changes: The file handle has been released\n";
+    }
     bool status;
     status = FlushViewOfFile(handle->ptr,0);
     if(!status){

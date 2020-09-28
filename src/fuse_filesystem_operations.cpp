@@ -48,7 +48,7 @@ static int fill_file_stat(fuse_ino_t ino, struct stat *stbuf)
     }
     if (file_list.has_key1(ino))
     {
-        stbuf->st_mode = S_IFREG | 0444;
+        stbuf->st_mode = S_IFREG | 0666;
         stbuf->st_nlink = 1;
 
         stbuf->st_size = file_list.get_value_by_key1(ino).file_size;
@@ -167,7 +167,8 @@ static void filesystem_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
 static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
                             fuse_file_info *fi)
 {
-    filesystem_log("%lu: open, ino %lu\n", print_counter++, ino);
+    size_t current_counter = print_counter++;
+    filesystem_log("%lu: open, ino %lu\n", current_counter, ino);
     {
         if (!file_list.has_key1(ino))
         {
@@ -175,19 +176,20 @@ static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
             return;
         }
     }
-    if ((fi->flags & 3) != O_RDONLY)
+    filesystem_log("%lu: open, name %s, flag %d\n", current_counter, get_file_name(ino).c_str(), fi->flags);
+    if ((fi->flags & O_ACCMODE) != O_RDWR&&
+        (fi->flags & O_ACCMODE) != O_RDONLY)
     {
+    filesystem_log("%lu: Access denied\n", current_counter);
         fuse_reply_err(req, EACCES);
         return;
     }
-    filesystem_log("%lu: open, name %s\n", print_counter++, get_file_name(ino).c_str());
     fuse_reply_open(req, fi);
 }
 
 //Data buffer
 static size_t buffer_size = 1024;
 std::unique_ptr<char[]> buffer(new char[buffer_size]);
-//assigned
 static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
                             off_t offset, fuse_file_info *fi)
 {
@@ -238,6 +240,18 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
     }
 }
 
+static void filesystem_write(fuse_req_t req, fuse_ino_t ino, const char *buffer,
+                             size_t buffer_length, off_t offset, struct fuse_file_info *fi)
+{
+    filesystem_file_data &file_data = file_list.get_value_by_key1(ino);
+	size_t &file_size = file_data.file_size;
+	size_t write_length = get_read_size(file_size, offset, buffer_length);
+	general_write_func(file_data, buffer, offset, write_length);
+	filesystem_log("file_size:%llu, offset:%llu, request write %llu, true write size:%u\n", 
+	file_size, offset, buffer_length, write_length);
+    fuse_reply_write(req, write_length);
+}
+
 /*
 ========================================================
 Filesystem exported APIs
@@ -251,6 +265,7 @@ void filesystem_thread_func(int *thread_status)
     filesystem_operations.readdir = filesystem_readdir;
     filesystem_operations.open = filesystem_open;
     filesystem_operations.read = filesystem_read;
+    filesystem_operations.write = filesystem_write;
     struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
     channel = fuse_mount(get_mountpoint().c_str(), &args);
     if (channel != NULL)
