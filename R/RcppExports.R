@@ -25,6 +25,14 @@ C_flush_altptr <- function(x) {
     invisible(.Call(`_Travel_C_flush_altptr`, x))
 }
 
+C_get_file_name <- function(x) {
+    .Call(`_Travel_C_get_file_name`, x)
+}
+
+C_get_file_path <- function(x) {
+    .Call(`_Travel_C_get_file_path`, x)
+}
+
 C_list_virtual_files <- function() {
     .Call(`_Travel_C_list_virtual_files`)
 }

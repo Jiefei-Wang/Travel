@@ -27,7 +27,11 @@ Arguments:
 */
 SEXP Travel_make_altrep(int type, size_t length, file_data_func read_func, void *data,
                         unsigned int unit_size, SEXP protect = R_NilValue);
-
+/*
+Get file info from the ALTREP object returned by Travel_make_altrep
+*/
+SEXP get_file_name(SEXP x);
+SEXP get_file_path(SEXP x);
 
 template <typename T>
 struct Travel_ptr_deleter_impl

@@ -1,7 +1,7 @@
-deploy_filesystem()
 rm(list=ls())
 gc()
 
+deploy_filesystem()
 block_size <- 1024*1024
 
 test_that("write to an integer sequece",{
@@ -19,10 +19,18 @@ test_that("write to an integer sequece",{
     C_set_int_value(x,1,-10)
     y[1] <- -10
     C_flush_altptr(x)
-    expect_equal(x,y)
     files <- C_list_virtual_files()
     expect_equal(files$cache.number, 1)
     
+    ## Check the value of the file
+    ## Check by the variable
+    expect_equal(x,y)
+    ## Check by the file connection
+    file_path <- C_get_file_path(x)
+    con <- file(file_path, open = "rb")
+    data <- readBin(con, integer(),n)
+    expect_equal(x,data)
+    close(con)
     
     ## Change the all value of x, expect creating 4096 block
     ind <- sample(1:length(x),length(x))
@@ -31,9 +39,18 @@ test_that("write to an integer sequece",{
         y[i] <- -i
     }
     C_flush_altptr(x)
-    expect_equal(x,y)
     files <- C_list_virtual_files()
     expect_equal(files$cache.number, length(x)/files$cache.size*4)
+    
+    ## Check the value of the file
+    ## Check by the variable
+    expect_equal(x,y)
+    ## Check by the file connection
+    file_path <- C_get_file_path(x)
+    con <- file(file_path, open = "rb")
+    data <- readBin(con, integer(),n)
+    expect_equal(x,data)
+    close(con)
 })
 
 gc()

@@ -126,6 +126,10 @@ SEXP Travel_make_altrep(int type, size_t length, file_data_func read_func, void 
 SEXP get_file_name(SEXP x){
     return GET_ALT_NAME(x);
 }
+SEXP get_file_path(SEXP x){
+    file_map_handle* handle = GET_ALT_FILE_HANDLE(x);
+    return Rf_mkString(handle->file_info.file_full_path.c_str());
+}
 
 void flush_altptr(SEXP x){
     file_map_handle *handle = GET_ALT_FILE_HANDLE(x);
@@ -139,7 +143,14 @@ void flush_altptr(SEXP x){
 void C_flush_altptr(SEXP x){
     flush_altptr(x);
 }
-
+// [[Rcpp::export]]
+SEXP C_get_file_name(SEXP x){
+    return get_file_name(x);
+}
+// [[Rcpp::export]]
+SEXP C_get_file_path(SEXP x){
+    return get_file_path(x);
+}
 /*
 ==========================================
 ALTREP operations

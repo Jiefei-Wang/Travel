@@ -70,6 +70,28 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// C_get_file_name
+SEXP C_get_file_name(SEXP x);
+RcppExport SEXP _Travel_C_get_file_name(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_get_file_name(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// C_get_file_path
+SEXP C_get_file_path(SEXP x);
+RcppExport SEXP _Travel_C_get_file_path(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_get_file_path(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // C_list_virtual_files
 Rcpp::DataFrame C_list_virtual_files();
 RcppExport SEXP _Travel_C_list_virtual_files() {
@@ -247,6 +269,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_print_value", (DL_FUNC) &_Travel_print_value, 1},
     {"_Travel_C_get_ptr", (DL_FUNC) &_Travel_C_get_ptr, 1},
     {"_Travel_C_flush_altptr", (DL_FUNC) &_Travel_C_flush_altptr, 1},
+    {"_Travel_C_get_file_name", (DL_FUNC) &_Travel_C_get_file_name, 1},
+    {"_Travel_C_get_file_path", (DL_FUNC) &_Travel_C_get_file_path, 1},
     {"_Travel_C_list_virtual_files", (DL_FUNC) &_Travel_C_list_virtual_files, 0},
     {"_Travel_run_filesystem_thread_func", (DL_FUNC) &_Travel_run_filesystem_thread_func, 0},
     {"_Travel_C_run_filesystem_thread", (DL_FUNC) &_Travel_C_run_filesystem_thread, 0},
