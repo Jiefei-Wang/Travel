@@ -38,6 +38,14 @@ void C_make_fake_file(size_t size)
     add_virtual_file(fake_read, nullptr, size);
 }
 
+//[[Rcpp::export]]
+void C_make_fake_file2(size_t size)
+{
+    add_virtual_file(fake_integer_read, nullptr, size);
+}
+
+
+
 // [[Rcpp::export]]
 void C_set_real_value(SEXP x, size_t i, double v)
 {
