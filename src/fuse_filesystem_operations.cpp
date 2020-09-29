@@ -177,13 +177,14 @@ static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
         }
     }
     filesystem_log("%lu: open, name %s, flag %d\n", current_counter, get_file_name(ino).c_str(), fi->flags);
-    if ((fi->flags & O_ACCMODE) != O_RDWR&&
+    if ((fi->flags & O_ACCMODE) != O_RDWR &&
         (fi->flags & O_ACCMODE) != O_RDONLY)
     {
-    filesystem_log("%lu: Access denied\n", current_counter);
+        filesystem_log("%lu: Access denied\n", current_counter);
         fuse_reply_err(req, EACCES);
         return;
     }
+    fi->nonseekable = false;
     fuse_reply_open(req, fi);
 }
 
@@ -193,65 +194,19 @@ std::unique_ptr<char[]> buffer(new char[buffer_size]);
 static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
                             off_t offset, fuse_file_info *fi)
 {
-    size_t current_counter = print_counter++;
-    filesystem_file_data &file_data = file_list.get_value_by_key1(ino);
-    unsigned int &unit_size = file_data.unit_size;
-    size_t &file_size = file_data.file_size;
-    size = get_valid_file_size(file_size, offset, size);
-    filesystem_log("%llu: Read, ino %lu, name %s, offset:%llu, size:%llu\n",
-                   current_counter, ino, file_list.get_key2(ino).c_str(),
-                   offset, size);
-    if (size == 0){
-        fuse_reply_buf(req, NULL, 0);
-        return;
-    }
-    /*
-    Compute the misalignment.
-    E.g. Data is int[3], 12 bytes in total, request to read from offset 3 and size 2
-    unit_size = 4;
-    misalignment_begin = 3;
-    misalignment_end = 3;
-    desired_read_offset = 0;
-    desired_read_size = 8;
-    */
-    size_t misalignment_begin = offset % unit_size;
-    size_t misalignment_end = unit_size - (offset + size) % unit_size;
-    misalignment_end = (misalignment_end == unit_size ? 0 : misalignment_end);
-    size_t desired_read_offset = offset - misalignment_begin;
-    size_t desired_read_size = size + misalignment_begin + misalignment_end;
-
-    filesystem_log("%llu: mismatch begin:%llu, end:%llu, aligned off:%llu, size:%llu\n",
-                   current_counter, misalignment_begin, misalignment_end,
-                   desired_read_offset, desired_read_size);
-    if (desired_read_size > buffer_size)
-    {
-        buffer.reset(new char[desired_read_size]);
-        buffer_size = desired_read_size;
-    }
-    size_t read_size = general_read_func(file_data, buffer.get(),
-                                         desired_read_offset,
-                                         desired_read_size);
-    int status = fuse_reply_buf(req, buffer.get() + misalignment_begin, size);
-    if (status != 0)
-    {
-        filesystem_log("%llu: error in read! code %d\n", current_counter, status);
-    }
-    if (desired_read_size != read_size)
-    {
-        filesystem_log("%llu: expect size and read size do not match!\n");
-    }
+    filesystem_log("read, off:%llu, size:%llu\n",offset, size);
+    buffer.reset(new char[size]);
+    fuse_reply_buf(req, buffer.get(), size);
+    return;
 }
-
+int ct = 0;
 static void filesystem_write(fuse_req_t req, fuse_ino_t ino, const char *buffer,
                              size_t buffer_length, off_t offset, struct fuse_file_info *fi)
 {
-    filesystem_file_data &file_data = file_list.get_value_by_key1(ino);
-	size_t &file_size = file_data.file_size;
-	size_t write_length = get_valid_file_size(file_size, offset, buffer_length);
-	general_write_func(file_data, buffer, offset, write_length);
-	filesystem_log("file_size:%llu, offset:%llu, request write %llu, true write size:%u\n", 
-	file_size, offset, buffer_length, write_length);
-    fuse_reply_write(req, write_length);
+    filesystem_log("%d:start write, off:%llu, size:%llu\n",ct++,offset,buffer_length);
+    fuse_reply_write(req, buffer_length);
+    for(auto i=0;i<5;i++)
+    char *block_ptr = (char*)malloc(4096);
 }
 
 /*
@@ -269,6 +224,7 @@ void filesystem_thread_func(int *thread_status)
     filesystem_operations.read = filesystem_read;
     filesystem_operations.write = filesystem_write;
     struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
+    fuse_opt_add_arg(&args, "-d");
     channel = fuse_mount(get_mountpoint().c_str(), &args);
     if (channel != NULL)
     {

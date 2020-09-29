@@ -2,11 +2,15 @@
 #include "Travel.h"
 //#include "utils.h"
 #include "filesystem_manager.h"
+#include "utils.h"
 /*
 Create an integer vector for testing the altrep functions
 */
 size_t fake_integer_read(filesystem_file_data &file_data, void *buffer, size_t offset, size_t length)
 {
+    if((offset+length)>1024*1024*4){
+        filesystem_log("Ops,error, something is wrong\n");
+    }
     for (size_t i = 0; i < length; i++)
     {
         ((int *)buffer)[i] = (offset + i) % (1024 * 1024) + 1;
@@ -41,9 +45,8 @@ void C_make_fake_file(size_t size)
 //[[Rcpp::export]]
 void C_make_fake_file2(size_t size)
 {
-    add_virtual_file(fake_integer_read, nullptr, size);
+    add_virtual_file(fake_integer_read, nullptr, size,4);
 }
-
 
 
 // [[Rcpp::export]]
@@ -55,14 +58,14 @@ void C_set_real_value(SEXP x, size_t i, double v)
     }
     ((double *)DATAPTR(x))[i - 1] = v;
 }
+static int* ptr = NULL;
 // [[Rcpp::export]]
 void C_set_int_value(SEXP x, size_t i, double v)
 {
-    if (TYPEOF(x) != INTSXP)
-    {
-        Rf_error("The variable is not of int type!\n");
+    if(ptr==NULL){
+        ptr = (int *)DATAPTR(x);
     }
-    ((int *)DATAPTR(x))[i - 1] = v;
+    ptr[i - 1] = v;
 }
 
 // [[Rcpp::export]]

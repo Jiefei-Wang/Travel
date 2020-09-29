@@ -6,7 +6,7 @@
 #include "package_settings.h"
 
 bool debug_print_enabled = true;
-bool altrep_print_enabled = false;
+bool altrep_print_enabled = true;
 bool filesystem_print_enabled = true;
 bool filesystem_log_enabled = true;
 
@@ -161,6 +161,10 @@ size_t lcm(size_t a, size_t b)
 	return (a * b) / gcd(a, b);
 }
 
+std::string get_file_name_in_path(std::string path)
+{
+	return path.substr(path.find_last_of("\\/") + 1);
+}
 #ifndef _WIN32
 #include <unistd.h>
 void mySleep(int sleepMs)
@@ -207,8 +211,4 @@ std::string wstringToString(const wchar_t *utf16Bytes)
 	return convert.to_bytes(utf16Bytes);
 }
 
-std::string get_file_name_in_path(std::string path)
-{
-	return path.substr(path.find_last_of("\\/") + 1);
-}
 #endif

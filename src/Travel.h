@@ -4,6 +4,7 @@
 #include <Rinternals.h>
 #include "Travel_types.h"
 
+
 /*
 Create an ALTREP object given the data reading function. There
 will be a pointer associated with the ALTREP object. 

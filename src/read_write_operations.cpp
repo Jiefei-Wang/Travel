@@ -128,7 +128,7 @@ void general_write_func(filesystem_file_data &file_data, const void *buffer, siz
         }
         if (file_data.write_cache[block_id] == nullptr)
         {
-            filesystem_log("Creating new block %llu\n",block_id);
+            /*filesystem_log("Creating new block %llu\n",block_id);
             char* block_ptr = new char[cache_size];
             filesystem_log("Inserting block\n");
             file_data.write_cache[block_id].reset(block_ptr);
@@ -136,11 +136,11 @@ void general_write_func(filesystem_file_data &file_data, const void *buffer, siz
                 size_t read_size = get_valid_file_size(file_data.file_size,block_offset*cache_size,cache_size);
                 read_file_source_func(file_data,file_data.write_cache[block_id].get(),
                 block_offset*cache_size,read_size);
-            }
+            }*/
         }
-        char *block_ptr = file_data.write_cache[block_id].get();
+        /*char *block_ptr = file_data.write_cache[block_id].get();
         memcpy(block_ptr + block_offset, (char *)buffer + buffer_offset, block_write_length);
-        buffer_offset = buffer_offset + block_write_length;
+        buffer_offset = buffer_offset + block_write_length;*/
     }
 }
 
@@ -159,7 +159,10 @@ size_t general_read_func(filesystem_file_data &file_data, void *buffer, size_t o
         size_t block_id = (offset + buffer_offset) / cache_size;
         //If no cached block exists or the block id exceeds highest_block_id
         if (it == file_data.write_cache.end() || it->first > highest_block_id)
-        {
+        { 
+            if(buffer_offset>=size){
+                filesystem_log("error:something is wrong4\n");
+            }
             size_t read_size = read_file_source_func(file_data, (char *)buffer + buffer_offset,
                                                        offset + buffer_offset, size - buffer_offset);
             buffer_offset = buffer_offset + read_size;
@@ -168,6 +171,7 @@ size_t general_read_func(filesystem_file_data &file_data, void *buffer, size_t o
         //If the current region is cached
         if (block_id == it->first)
         {
+            //filesystem_log("Read cached block:%llu\n",block_id);
             size_t block_offset = (offset + buffer_offset) % cache_size;
             size_t block_read_length = cache_size - block_offset;
             if (size - buffer_offset < block_read_length)
@@ -175,6 +179,12 @@ size_t general_read_func(filesystem_file_data &file_data, void *buffer, size_t o
                 block_read_length = size - buffer_offset;
             }
             char *block_ptr = it->second.get();
+             if(buffer_offset+block_read_length>size){
+                filesystem_log("error:something is wrong1\n");
+            }
+             if(block_offset+block_read_length>cache_size){
+                filesystem_log("error:something is wrong2\n");
+            }
             memcpy((char *)buffer + buffer_offset, block_ptr + block_offset, block_read_length);
             buffer_offset = buffer_offset + block_read_length;
             ++it;
@@ -186,6 +196,9 @@ size_t general_read_func(filesystem_file_data &file_data, void *buffer, size_t o
 
             size_t next_block_offset = it->first * cache_size;
             size_t required_read_size = next_block_offset - (offset + buffer_offset);
+            if(buffer_offset+required_read_size>size){
+                filesystem_log("error:something is wrong3\n");
+            }
             size_t read_size = read_file_source_func(file_data, (char *)buffer + buffer_offset,
                                                        offset + buffer_offset, required_read_size);
             buffer_offset = buffer_offset + read_size;

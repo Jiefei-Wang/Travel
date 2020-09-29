@@ -219,6 +219,16 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// C_make_fake_file2
+void C_make_fake_file2(size_t size);
+RcppExport SEXP _Travel_C_make_fake_file2(SEXP sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< size_t >::type size(sizeSEXP);
+    C_make_fake_file2(size);
+    return R_NilValue;
+END_RCPP
+}
 // C_set_real_value
 void C_set_real_value(SEXP x, size_t i, double v);
 RcppExport SEXP _Travel_C_set_real_value(SEXP xSEXP, SEXP iSEXP, SEXP vSEXP) {
@@ -294,6 +304,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_get_mountpoint", (DL_FUNC) &_Travel_C_get_mountpoint, 0},
     {"_Travel_C_make_test_integer_altrep", (DL_FUNC) &_Travel_C_make_test_integer_altrep, 1},
     {"_Travel_C_make_fake_file", (DL_FUNC) &_Travel_C_make_fake_file, 1},
+    {"_Travel_C_make_fake_file2", (DL_FUNC) &_Travel_C_make_fake_file2, 1},
     {"_Travel_C_set_real_value", (DL_FUNC) &_Travel_C_set_real_value, 3},
     {"_Travel_C_set_int_value", (DL_FUNC) &_Travel_C_set_int_value, 3},
     {"_Travel_C_reset_int", (DL_FUNC) &_Travel_C_reset_int, 1},
