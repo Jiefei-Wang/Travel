@@ -85,12 +85,20 @@ C_make_fake_file <- function(size) {
     invisible(.Call(`_Travel_C_make_fake_file`, size))
 }
 
+C_make_fake_file2 <- function(size) {
+    invisible(.Call(`_Travel_C_make_fake_file2`, size))
+}
+
 C_set_real_value <- function(x, i, v) {
     invisible(.Call(`_Travel_C_set_real_value`, x, i, v))
 }
 
 C_set_int_value <- function(x, i, v) {
     invisible(.Call(`_Travel_C_set_int_value`, x, i, v))
+}
+
+C_reset_int <- function(x) {
+    invisible(.Call(`_Travel_C_reset_int`, x))
 }
 
 initial_filesystem_log <- function() {

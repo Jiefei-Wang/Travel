@@ -197,12 +197,14 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
     filesystem_file_data &file_data = file_list.get_value_by_key1(ino);
     unsigned int &unit_size = file_data.unit_size;
     size_t &file_size = file_data.file_size;
-    size = get_read_size(file_size, offset, size);
+    size = get_valid_file_size(file_size, offset, size);
     filesystem_log("%llu: Read, ino %lu, name %s, offset:%llu, size:%llu\n",
                    current_counter, ino, file_list.get_key2(ino).c_str(),
                    offset, size);
-    if (size == 0)
+    if (size == 0){
+        fuse_reply_buf(req, NULL, 0);
         return;
+    }
     /*
     Compute the misalignment.
     E.g. Data is int[3], 12 bytes in total, request to read from offset 3 and size 2
@@ -245,7 +247,7 @@ static void filesystem_write(fuse_req_t req, fuse_ino_t ino, const char *buffer,
 {
     filesystem_file_data &file_data = file_list.get_value_by_key1(ino);
 	size_t &file_size = file_data.file_size;
-	size_t write_length = get_read_size(file_size, offset, buffer_length);
+	size_t write_length = get_valid_file_size(file_size, offset, buffer_length);
 	general_write_func(file_data, buffer, offset, write_length);
 	filesystem_log("file_size:%llu, offset:%llu, request write %llu, true write size:%u\n", 
 	file_size, offset, buffer_length, write_length);

@@ -64,7 +64,6 @@ void filesystem_print(const char *format, ...);
 void altrep_print(const char *format, ...);
 size_t get_type_size(int type);
 void mySleep(int sleepMs);
-size_t get_read_size(size_t file_size, size_t offset, size_t size);
 
 size_t gcd(size_t a, size_t b);
 //Least Common Multiple

@@ -38,12 +38,20 @@ void C_make_fake_file(size_t size)
     add_virtual_file(fake_read, nullptr, size);
 }
 
+//[[Rcpp::export]]
+void C_make_fake_file2(size_t size)
+{
+    add_virtual_file(fake_integer_read, nullptr, size);
+}
+
+
+
 // [[Rcpp::export]]
 void C_set_real_value(SEXP x, size_t i, double v)
 {
     if (TYPEOF(x) != REALSXP)
     {
-        Rf_error("The variable is not of REAL type!\n");
+        Rf_error("The variable is not of double type!\n");
     }
     ((double *)DATAPTR(x))[i - 1] = v;
 }
@@ -52,7 +60,19 @@ void C_set_int_value(SEXP x, size_t i, double v)
 {
     if (TYPEOF(x) != INTSXP)
     {
-        Rf_error("The variable is not of REAL type!\n");
+        Rf_error("The variable is not of int type!\n");
     }
     ((int *)DATAPTR(x))[i - 1] = v;
+}
+
+// [[Rcpp::export]]
+void C_reset_int(SEXP x){
+     if (TYPEOF(x) != INTSXP)
+    {
+        Rf_error("The variable is not of int type!\n");
+    }
+    int* ptr = (int*)DATAPTR(x);
+    for(R_xlen_t i=0;i<XLENGTH(x);i++){
+        ptr[i]=0;
+    }
 }

@@ -4,30 +4,32 @@
 //#include "Travel.h"
 #include "utils.h"
 
-void general_write_func(filesystem_file_data &file_data, const void *buffer, size_t offset, size_t size)
+/*
+An utility to get the true read size that will not read out-of-bound
+*/
+size_t get_valid_file_size(size_t file_size, size_t offset, size_t size)
 {
-    size_t &cache_size = file_data.cache_size;
-    size_t buffer_offset = 0;
-    while (buffer_offset < size)
+    if (offset + size > file_size)
     {
-        size_t block_id = (offset + buffer_offset) / cache_size;
-        size_t block_offset = (offset + buffer_offset) % cache_size;
-        size_t block_write_length = cache_size - block_offset;
-        if (size - buffer_offset < block_write_length)
+        if (offset >= file_size)
         {
-            block_write_length = size - buffer_offset;
+            return 0;
         }
-        if (file_data.write_cache.find(block_id)==file_data.write_cache.end())
+        else
         {
-            file_data.write_cache[block_id] = new char[cache_size];
+            return file_size - offset;
         }
-        char *block_ptr = file_data.write_cache[block_id];
-        memcpy(block_ptr + block_offset, (char *)buffer + buffer_offset, block_write_length);
-        buffer_offset = buffer_offset + block_write_length;
+    }
+    else
+    {
+        return size;
     }
 }
 
-size_t general_local_read_func(filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
+/*
+    Read the local file
+*/
+size_t read_local_file_func(filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
 {
     unsigned int &unit_size = file_data.unit_size;
     // If the unit size is 1, there is nothing to do
@@ -101,6 +103,46 @@ size_t general_local_read_func(filesystem_file_data &file_data, void *buffer, si
     }
     return final_read_size;
 }
+/*
+    Read the data from source
+*/
+size_t read_file_source_func(filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
+{
+    return read_local_file_func(file_data, buffer, offset, size);
+}
+
+
+
+void general_write_func(filesystem_file_data &file_data, const void *buffer, size_t offset, size_t size)
+{
+    size_t &cache_size = file_data.cache_size;
+    size_t buffer_offset = 0;
+    while (buffer_offset < size)
+    {
+        size_t block_id = (offset + buffer_offset) / cache_size;
+        size_t block_offset = (offset + buffer_offset) % cache_size;
+        size_t block_write_length = cache_size - block_offset;
+        if (size - buffer_offset < block_write_length)
+        {
+            block_write_length = size - buffer_offset;
+        }
+
+        if (file_data.write_cache.find(block_id)==file_data.write_cache.end())
+        {
+            filesystem_log("Creating new block %llu\n",block_id);
+            file_data.write_cache[block_id] = new char[cache_size];
+            if(block_offset!=0||block_write_length!=cache_size){
+                size_t read_size = get_valid_file_size(file_data.file_size,block_offset*cache_size,cache_size);
+                read_file_source_func(file_data,file_data.write_cache[block_id],
+                block_offset*cache_size,read_size);
+            }
+        }
+        char *block_ptr = file_data.write_cache[block_id];
+        memcpy(block_ptr + block_offset, (char *)buffer + buffer_offset, block_write_length);
+        buffer_offset = buffer_offset + block_write_length;
+    }
+}
+
 
 size_t general_read_func(filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
 {
@@ -117,7 +159,7 @@ size_t general_read_func(filesystem_file_data &file_data, void *buffer, size_t o
         //If no cached block exists or the block id exceeds highest_block_id
         if (it == file_data.write_cache.end() || it->first > highest_block_id)
         {
-            size_t read_size = general_local_read_func(file_data, (char *)buffer + buffer_offset,
+            size_t read_size = read_file_source_func(file_data, (char *)buffer + buffer_offset,
                                                        offset + buffer_offset, size - buffer_offset);
             buffer_offset = buffer_offset + read_size;
             break;
@@ -143,7 +185,7 @@ size_t general_read_func(filesystem_file_data &file_data, void *buffer, size_t o
 
             size_t next_block_offset = it->first * cache_size;
             size_t required_read_size = next_block_offset - (offset + buffer_offset);
-            size_t read_size = general_local_read_func(file_data, (char *)buffer + buffer_offset,
+            size_t read_size = read_file_source_func(file_data, (char *)buffer + buffer_offset,
                                                        offset + buffer_offset, required_read_size);
             buffer_offset = buffer_offset + read_size;
             if (read_size != required_read_size)
