@@ -17,11 +17,11 @@ void general_write_func(filesystem_file_data &file_data, const void *buffer, siz
         {
             block_write_length = size - buffer_offset;
         }
-        if (file_data.write_cache[block_id] == nullptr)
+        if (file_data.write_cache.find(block_id)==file_data.write_cache.end())
         {
-            file_data.write_cache[block_id].reset(new char[cache_size]);
+            file_data.write_cache[block_id] = new char[cache_size];
         }
-        char *block_ptr = file_data.write_cache[block_id].get();
+        char *block_ptr = file_data.write_cache[block_id];
         memcpy(block_ptr + block_offset, (char *)buffer + buffer_offset, block_write_length);
         buffer_offset = buffer_offset + block_write_length;
     }
@@ -131,7 +131,7 @@ size_t general_read_func(filesystem_file_data &file_data, void *buffer, size_t o
             {
                 block_read_length = size - buffer_offset;
             }
-            char *block_ptr = it->second.get();
+            char *block_ptr = it->second;
             memcpy((char *)buffer + buffer_offset, block_ptr + block_offset, block_read_length);
             buffer_offset = buffer_offset + block_read_length;
             ++it;

@@ -14,19 +14,16 @@
 static inode_type file_inode_counter = 1;
 double_key_map<inode_type, std::string, filesystem_file_data> file_list;
 
-
-
 filesystem_file_data::filesystem_file_data(file_data_func data_func,
-                       void *private_data,
-                       size_t file_size,
-                       unsigned int unit_size) : data_func(data_func),
-                                                     private_data(private_data),
-                                                     file_size(file_size),
-                                                     unit_size(unit_size)
-  {
-    cache_size = lcm(MIN_CACHE_SIZE, unit_size);
-  }
-
+                                           void *private_data,
+                                           size_t file_size,
+                                           unsigned int unit_size) : data_func(data_func),
+                                                                     private_data(private_data),
+                                                                     file_size(file_size),
+                                                                     unit_size(unit_size)
+{
+  cache_size = lcm(MIN_CACHE_SIZE, unit_size);
+}
 
 /*
 ==========================================================================
@@ -35,10 +32,10 @@ Insert or delete files from the filesystem
 */
 
 filesystem_file_info add_virtual_file(file_data_func data_func,
-                                             void *private_data,
-                                             size_t file_size,
-                                             unsigned int unit_size,
-                                             const char* name)
+                                      void *private_data,
+                                      size_t file_size,
+                                      unsigned int unit_size,
+                                      const char *name)
 {
   if (file_size % unit_size != 0)
   {
@@ -52,13 +49,21 @@ filesystem_file_info add_virtual_file(file_data_func data_func,
     file_name = std::string(name);
   filesystem_file_data file_data(data_func, private_data, file_size, unit_size);
   file_list.insert(file_inode_counter, file_name, file_data);
-  std::string file_full_path= build_path(get_mountpoint(), file_name);
+  std::string file_full_path = build_path(get_mountpoint(), file_name);
   return {file_full_path, file_name, file_inode_counter};
 }
 
 bool remove_virtual_file(std::string name)
 {
-  return file_list.erase_value_by_key2(name);
+  if (file_list.has_key2(name))
+  {
+    filesystem_file_data &file_data = file_list.get_value_by_key2(name);
+    for(auto i:file_data.write_cache){
+      delete i.second;
+    }
+    return file_list.erase_value_by_key2(name);
+  }
+  return false;
 }
 
 // [[Rcpp::export]]

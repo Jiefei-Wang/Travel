@@ -40,7 +40,7 @@ struct filesystem_file_data
   size_t file_size;
   unsigned int unit_size;
   size_t cache_size;
-  std::map<size_t, std::shared_ptr<char[]>> write_cache;
+  std::map<size_t, char*> write_cache;
 };
 
 /*
