@@ -34,7 +34,6 @@
 #define GET_ALT_LENGTH(x) (GET_PROPS_LENGTH(GET_PROPS(x)))
 
 
-
 R_altrep_class_t get_altptr_class(int type);
 
 

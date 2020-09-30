@@ -1,4 +1,4 @@
-context("Test if ALTREP is working correctly")
+context("Testing filesystem reading feature with altrep")
 deploy_filesystem()
 rm(list=ls())
 gc()

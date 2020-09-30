@@ -52,13 +52,22 @@ filesystem_file_info add_virtual_file(file_data_func data_func,
   std::string file_full_path = build_path(get_mountpoint(), file_name);
   return {file_full_path, file_name, file_inode_counter};
 }
+filesystem_file_data &get_virtual_file(std::string name)
+{
+  if (!file_list.has_key2(name))
+  {
+    Rf_error("The virtual file %s does not exist!\n", name.c_str());
+  }
+  return file_list.get_value_by_key2(name);
+}
 
 bool remove_virtual_file(std::string name)
 {
   if (file_list.has_key2(name))
   {
     filesystem_file_data &file_data = file_list.get_value_by_key2(name);
-    for(auto i:file_data.write_cache){
+    for (auto i : file_data.write_cache)
+    {
       delete i.second;
     }
     return file_list.erase_value_by_key2(name);

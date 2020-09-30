@@ -1,3 +1,4 @@
+context("Testing filesystem writting feature with altrep")
 rm(list=ls())
 gc()
 

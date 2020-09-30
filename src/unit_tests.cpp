@@ -16,7 +16,7 @@ size_t fake_integer_read(filesystem_file_data &file_data, void *buffer, size_t o
 // [[Rcpp::export]]
 SEXP C_make_test_integer_altrep(double n)
 {
-    return Travel_make_altptr(INTSXP, n, fake_integer_read, nullptr, sizeof(int));
+    return Travel_make_altptr(INTSXP, n, fake_integer_read, nullptr);
 }
 
 /*
@@ -76,4 +76,15 @@ void C_reset_int(SEXP x){
     for(R_xlen_t i=0;i< len;i++){
         ptr[i]=0;
     }
+}
+
+
+// [[Rcpp::export]]
+SEXP C_duplicate(SEXP x){
+    return Rf_duplicate(x);
+}
+
+// [[Rcpp::export]]
+bool C_is_altrep(SEXP x){
+    return ALTREP(x);
 }

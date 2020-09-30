@@ -263,6 +263,28 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// C_duplicate
+SEXP C_duplicate(SEXP x);
+RcppExport SEXP _Travel_C_duplicate(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_duplicate(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// C_is_altrep
+bool C_is_altrep(SEXP x);
+RcppExport SEXP _Travel_C_is_altrep(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_is_altrep(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // initial_filesystem_log
 void initial_filesystem_log();
 RcppExport SEXP _Travel_initial_filesystem_log() {
@@ -308,6 +330,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_set_real_value", (DL_FUNC) &_Travel_C_set_real_value, 3},
     {"_Travel_C_set_int_value", (DL_FUNC) &_Travel_C_set_int_value, 3},
     {"_Travel_C_reset_int", (DL_FUNC) &_Travel_C_reset_int, 1},
+    {"_Travel_C_duplicate", (DL_FUNC) &_Travel_C_duplicate, 1},
+    {"_Travel_C_is_altrep", (DL_FUNC) &_Travel_C_is_altrep, 1},
     {"_Travel_initial_filesystem_log", (DL_FUNC) &_Travel_initial_filesystem_log, 0},
     {"_Travel_close_filesystem_log", (DL_FUNC) &_Travel_close_filesystem_log, 0},
     {NULL, NULL, 0}

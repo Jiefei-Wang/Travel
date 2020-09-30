@@ -101,6 +101,14 @@ C_reset_int <- function(x) {
     invisible(.Call(`_Travel_C_reset_int`, x))
 }
 
+C_duplicate <- function(x) {
+    .Call(`_Travel_C_duplicate`, x)
+}
+
+C_is_altrep <- function(x) {
+    .Call(`_Travel_C_is_altrep`, x)
+}
+
 initial_filesystem_log <- function() {
     invisible(.Call(`_Travel_initial_filesystem_log`))
 }
