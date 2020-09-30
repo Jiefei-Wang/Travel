@@ -11,7 +11,6 @@
 #include "utils.h"
 #undef UTILS_ENABLE_R
 
-
 #define SLOT_NUM 4
 #define NAME_SLOT 0
 #define FILE_HANDLE_SLOT 1
@@ -38,7 +37,6 @@
 #define GET_ALT_FILE_HANDLE(x) (GET_FILE_HANDLE(GET_PROPS(x)))
 #define GET_ALT_SIZE(x) (GET_SIZE(GET_PROPS(x)))
 #define GET_ALT_LENGTH(x) (GET_LENGTH(GET_PROPS(x)))
-
 
 R_altrep_class_t altPtr_real_class;
 R_altrep_class_t altPtr_integer_class;
@@ -123,32 +121,39 @@ SEXP Travel_make_altrep(int type, size_t length, file_data_func read_func, void 
     return result;
 }
 
-SEXP get_file_name(SEXP x){
+SEXP get_file_name(SEXP x)
+{
     return GET_ALT_NAME(x);
 }
-SEXP get_file_path(SEXP x){
-    file_map_handle* handle = GET_ALT_FILE_HANDLE(x);
+SEXP get_file_path(SEXP x)
+{
+    file_map_handle *handle = GET_ALT_FILE_HANDLE(x);
     return Rf_mkString(handle->file_info.file_full_path.c_str());
 }
 
-void flush_altptr(SEXP x){
+void flush_altptr(SEXP x)
+{
     file_map_handle *handle = GET_ALT_FILE_HANDLE(x);
     std::string status = flush_handle(handle);
-    if(status!=""){
+    if (status != "")
+    {
         Rf_warning(status.c_str());
     }
 }
 
 // [[Rcpp::export]]
-void C_flush_altptr(SEXP x){
+void C_flush_altptr(SEXP x)
+{
     flush_altptr(x);
 }
 // [[Rcpp::export]]
-SEXP C_get_file_name(SEXP x){
+SEXP C_get_file_name(SEXP x)
+{
     return get_file_name(x);
 }
 // [[Rcpp::export]]
-SEXP C_get_file_path(SEXP x){
+SEXP C_get_file_path(SEXP x)
+{
     return get_file_path(x);
 }
 /*
@@ -180,21 +185,16 @@ void *altPtr_dataptr(SEXP x, Rboolean writeable)
     SEXP handle_extptr = GET_ALT_HANDLE_EXTPTR(x);
     if (handle_extptr == R_NilValue)
     {
-        return NULL;
+        Rf_error("The file handle is NULL, this should not happen!\n");
     }
-    else
+    file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
+    if (!has_mapped_file_handle(handle))
     {
-        file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
-        if (has_mapped_file_handle(handle))
-        {
-            return handle->ptr;
-        }
-        else
-        {
-            Rf_error("The file handle has been released!\n");
-        }
+        Rf_error("The file handle has been released!\n");
     }
+    return handle->ptr;
 }
+
 const void *altPtr_dataptr_or_null(SEXP x)
 {
     altrep_print("accessing data pointer or null\n");
@@ -207,7 +207,6 @@ const void *altPtr_dataptr_or_null(SEXP x)
         return NULL;
     }
 }
-
 
 /*
 Register ALTREP class
@@ -241,5 +240,3 @@ void init_real_class(DllInfo *dll)
     char class_name[] = "shared_real";
     ALT_COMMOM_REGISTRATION(altPtr_real_class, altreal, REAL)
 }
-
-

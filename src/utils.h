@@ -1,8 +1,15 @@
 #ifndef HEADER_UTILS
 #define HEADER_UTILS
 
-#define DEBUG_ALTREP(x)
-#define DEBUG_ALTPTR(x) x
+#define TRAVEL_DEBUG
+
+#ifdef TRAVEL_DEBUG
+#define filesystem_assert(x)
+#else
+#define filesystem_assert(x)
+#endif
+
+
 
 #ifdef _WIN32
 #undef ERROR
