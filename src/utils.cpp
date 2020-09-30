@@ -95,6 +95,9 @@ size_t get_type_size(int type)
 	case REALSXP:
 		elt_size = sizeof(double);
 		break;
+	case RAWSXP:
+		elt_size = 1;
+		break;
 	}
 	return elt_size;
 }

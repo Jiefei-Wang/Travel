@@ -25,10 +25,10 @@ Arguments:
         to manage the lifespan of your private data
         (see the function `Travel_shared_ptr`).
 */
-SEXP Travel_make_altrep(int type, size_t length, file_data_func read_func, void *data,
+SEXP Travel_make_altptr(int type, size_t length, file_data_func read_func, void *data,
                         unsigned int unit_size, SEXP protect = R_NilValue);
 /*
-Get file info from the ALTREP object returned by Travel_make_altrep
+Get file info from the ALTREP object returned by Travel_make_altptr
 */
 SEXP get_file_name(SEXP x);
 SEXP get_file_path(SEXP x);

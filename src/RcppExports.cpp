@@ -313,13 +313,15 @@ static const R_CallMethodDef CallEntries[] = {
     {NULL, NULL, 0}
 };
 
-void init_logical_class(DllInfo *dll);
-void init_integer_class(DllInfo *dll);
-void init_real_class(DllInfo *dll);
+void init_altptr_logical_class(DllInfo *dll);
+void init_altptr_integer_class(DllInfo *dll);
+void ini_altptrt_real_class(DllInfo *dll);
+void init_altptr_raw_class(DllInfo *dll);
 RcppExport void R_init_Travel(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
-    init_logical_class(dll);
-    init_integer_class(dll);
-    init_real_class(dll);
+    init_altptr_logical_class(dll);
+    init_altptr_integer_class(dll);
+    ini_altptrt_real_class(dll);
+    init_altptr_raw_class(dll);
 }

@@ -23,11 +23,11 @@ size_t read_altrep(filesystem_file_data &file_data, void *buffer, size_t offset,
     return length;
 }
 
-//Travel_make_altrep(int type, void *data, size_t length, unsigned int unit_size, file_data_func read_func, SEXP protect)
+//Travel_make_altptr(int type, void *data, size_t length, unsigned int unit_size, file_data_func read_func, SEXP protect)
 //[[Rcpp::export]]
 SEXP C_make_altPtr_from_altrep(SEXP x)
 {
-    SEXP altptr_object = Travel_make_altrep(TYPEOF(x), XLENGTH(x),read_altrep, x,  get_type_size(TYPEOF(x)), x);
+    SEXP altptr_object = Travel_make_altptr(TYPEOF(x), XLENGTH(x),read_altrep, x,  get_type_size(TYPEOF(x)), x);
     return altptr_object;
 }
 
