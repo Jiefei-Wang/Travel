@@ -72,7 +72,8 @@ void C_reset_int(SEXP x){
         Rf_error("The variable is not of int type!\n");
     }
     int* ptr = (int*)DATAPTR(x);
-    for(R_xlen_t i=0;i<XLENGTH(x);i++){
+    R_xlen_t len = XLENGTH(x);
+    for(R_xlen_t i=0;i< len;i++){
         ptr[i]=0;
     }
 }

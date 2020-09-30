@@ -167,10 +167,11 @@ NTSTATUS DOKAN_CALLBACK dokan_write_file(LPCWSTR wide_file_path, LPCVOID buffer,
 	string file_name = get_file_name_in_path(file_path);
 	filesystem_file_data &file_data = file_list.get_value_by_key2(file_name);
 	size_t &file_size = file_data.file_size;
-	*write_length = get_valid_file_size(file_size, offset, buffer_length);
-	general_write_func(file_data, buffer, offset, *write_length);
+	size_t expect_write = get_valid_file_size(file_size, offset, buffer_length);
+	size_t true_write = general_write_func(file_data, buffer, offset, expect_write);
 	filesystem_log("file_size:%llu, offset:%llu, request write %llu, true write size:%u\n", 
-	file_size, offset, buffer_length, *write_length);
+	file_size, offset, buffer_length, true_write);
+	*write_length = true_write;
 	return STATUS_SUCCESS;
 }
 /*

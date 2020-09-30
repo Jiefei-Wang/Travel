@@ -1,12 +1,13 @@
 #ifndef HEADER_UTILS
 #define HEADER_UTILS
 
-#define TRAVEL_DEBUG
+#define TRAVEL_PACKAGE_DEBUG
 
-#ifdef TRAVEL_DEBUG
-#define filesystem_assert(x)
+#ifdef TRAVEL_PACKAGE_DEBUG
+#include <assert.h> 
+#define claim(x) assert(x)
 #else
-#define filesystem_assert(x)
+#define claim(x)
 #endif
 
 

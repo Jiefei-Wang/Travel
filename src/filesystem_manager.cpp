@@ -123,11 +123,9 @@ static std::unique_ptr<std::thread> filesystem_thread(nullptr);
 static bool thread_finished = true;
 #define THREAD_INIT INT_MAX
 static int thread_status;
-#include <assert.h> 
 // [[Rcpp::export]]
 void run_filesystem_thread_func()
 {
-  assert(0);
   thread_guard guard(thread_finished);
   filesystem_thread_func(&thread_status);
 }

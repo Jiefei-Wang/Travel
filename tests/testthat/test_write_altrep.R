@@ -34,9 +34,15 @@ test_that("write to an integer sequece",{
     
     ## Change the all value of x, expect creating 4096 block
     ind <- sample(1:length(x),length(x))
+    j <- 0
     for(i in ind){
         C_set_int_value(x,i,-i)
         y[i] <- -i
+        j = j + 1
+        if(j>n/5){
+            j <- 0
+            C_flush_altptr(x)
+        }
     }
     C_flush_altptr(x)
     files <- C_list_virtual_files()

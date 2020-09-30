@@ -231,6 +231,7 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
     size_t read_size = general_read_func(file_data, buffer.get(),
                                          desired_read_offset,
                                          desired_read_size);
+    claim(misalignment_begin<size);
     int status = fuse_reply_buf(req, buffer.get() + misalignment_begin, size);
     if (status != 0)
     {
