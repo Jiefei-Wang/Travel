@@ -4,6 +4,8 @@
 #include <map>
 #include <memory>
 
+#define inode_type unsigned long
+
 struct filesystem_file_data;
 /*
 The function that reads the data from the file,

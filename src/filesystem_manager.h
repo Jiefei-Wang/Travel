@@ -10,7 +10,11 @@ filesystem_file_info add_virtual_file(file_data_func data_func,
                                       unsigned int unit_size = 1,
                                       const char *name = NULL);
 filesystem_file_data& get_virtual_file(std::string name);
+bool has_virtual_file(std::string name);
 bool remove_virtual_file(std::string name);
-bool is_filesystem_running();
+typename std::map<const inode_type,const std::string>::iterator virtual_file_begin();
+typename std::map<const inode_type,const std::string>::iterator virtual_file_end();
 
+
+bool is_filesystem_running();
 #endif

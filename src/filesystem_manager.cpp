@@ -60,6 +60,9 @@ filesystem_file_data &get_virtual_file(std::string name)
   }
   return file_list.get_value_by_key2(name);
 }
+bool has_virtual_file(std::string name){
+    return file_list.has_key2(name);
+}
 
 bool remove_virtual_file(std::string name)
 {
@@ -74,7 +77,12 @@ bool remove_virtual_file(std::string name)
   }
   return false;
 }
-
+typename std::map<const inode_type,const std::string>::iterator virtual_file_begin(){
+  return file_list.begin_key();
+}
+typename std::map<const inode_type,const std::string>::iterator virtual_file_end(){
+  return file_list.end_key();
+}
 // [[Rcpp::export]]
 Rcpp::DataFrame C_list_virtual_files()
 {

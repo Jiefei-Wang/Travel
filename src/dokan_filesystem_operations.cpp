@@ -18,8 +18,6 @@ using std::wstring;
 
 bool is_filesystem_alive() { return true; }
 
-extern double_key_map<inode_type, std::string, filesystem_file_data> file_list;
-
 #define IS_ROOT(x) (x == "\\")
 #define IS_PATH_VALID(path) (path.find_last_of("/\\") == 0)
 
@@ -80,7 +78,7 @@ dokan_create_file(LPCWSTR wide_file_path, PDOKAN_IO_SECURITY_CONTEXT SecurityCon
 	filesystem_log("creation_disposition = 0x%x:\n", creation_disposition);
 
 	NTSTATUS status = STATUS_ACCESS_DENIED;
-	if (IS_ROOT(file_path) || file_list.has_key2(file_name))
+	if (IS_ROOT(file_path) || has_virtual_file(file_name))
 	{
 		if (creation_disposition == OPEN_ALWAYS)
 		{
@@ -145,7 +143,7 @@ NTSTATUS DOKAN_CALLBACK dokan_read_file(LPCWSTR wide_file_path, LPVOID buffer,
 	string file_name = get_file_name_in_path(file_path);
 	filesystem_log("ReadFile: %s, ", file_path.c_str());
 
-	filesystem_file_data &file_data = file_list.get_value_by_key2(file_name);
+	filesystem_file_data &file_data = get_virtual_file(file_name);
 	size_t &file_size = file_data.file_size;
 	*read_length = get_valid_file_size(file_size, offset, buffer_length);
 	size_t read_size = general_read_func(file_data, buffer, offset, *read_length);
@@ -165,7 +163,7 @@ NTSTATUS DOKAN_CALLBACK dokan_write_file(LPCWSTR wide_file_path, LPCVOID buffer,
 	filesystem_log("WriteFile: %s\n", file_path.c_str());
 	
 	string file_name = get_file_name_in_path(file_path);
-	filesystem_file_data &file_data = file_list.get_value_by_key2(file_name);
+	filesystem_file_data &file_data = get_virtual_file(file_name);
 	size_t &file_size = file_data.file_size;
 	size_t expect_write = get_valid_file_size(file_size, offset, buffer_length);
 	size_t true_write = general_write_func(file_data, buffer, offset, expect_write);
@@ -204,12 +202,12 @@ NTSTATUS DOKAN_CALLBACK dokan_get_file_information(
 	}
 	else
 	{
-		if (!file_list.has_key2(file_name))
+		if (!has_virtual_file(file_name))
 		{
 			return STATUS_NO_SUCH_FILE;
 		}
 		HandleFileInformation->dwFileAttributes = FILE_ATTRIBUTE_READONLY;
-		filesystem_file_data &file_data = file_list.get_value_by_key2(file_name);
+		filesystem_file_data &file_data = get_virtual_file(file_name);
 		HandleFileInformation->nFileSizeLow = (unsigned long)file_data.file_size;
 		HandleFileInformation->nFileSizeHigh = file_data.file_size >> 32;
 	}
@@ -241,7 +239,7 @@ dokan_find_files(LPCWSTR wide_file_path,
 	if (IS_ROOT(file_path))
 	{
 		BY_HANDLE_FILE_INFORMATION info;
-		for (auto i = file_list.begin_key(); i != file_list.end_key(); ++i)
+		for (auto i = virtual_file_begin(); i != virtual_file_end(); ++i)
 		{
 			wstring wide_sub_file_path = stringToWstring(i->second);
 			dokan_get_file_information((L"\\" + wide_sub_file_path).c_str(), &info, dokan_file_info);
