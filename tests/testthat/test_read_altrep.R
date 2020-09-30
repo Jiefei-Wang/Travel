@@ -30,6 +30,9 @@ test_that("random access an integer sequece",{
     }
 })
 
-test_that("Garbage collection",{
-    expect_error(gc(),NA)
+gc()
+
+test_that("Check virtual file number",{
+    expect_true(nrow(C_list_virtual_files())==0)
+    expect_true(C_get_file_handle_number() == 0)
 })

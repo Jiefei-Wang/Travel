@@ -1,4 +1,7 @@
 context("Testing filesystem writting feature with altrep")
+
+## Skip it for linux for there is a know bug
+if(get_os!="linux"){
 rm(list=ls())
 gc()
 
@@ -61,3 +64,8 @@ test_that("write to an integer sequece",{
 })
 
 gc()
+test_that("Check virtual file number",{
+    expect_true(nrow(C_list_virtual_files())==0)
+    expect_true(C_get_file_handle_number() == 0)
+})
+}

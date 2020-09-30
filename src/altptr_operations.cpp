@@ -88,6 +88,7 @@ const void *altptr_dataptr_or_null(SEXP x)
 
 
 SEXP altptr_duplicate(SEXP x, Rboolean deep) {
+    altrep_print("Duplicating object\n");
 	if (!is_filesystem_running())
     {
         Rf_error("The filesystem is not running!\n");
@@ -130,7 +131,7 @@ Register ALTREP class
     R_set_altvec_Dataptr_or_null_method(ALT_CLASS, altptr_dataptr_or_null);
 	
     
-    //R_set_altvec_Extract_subset_method(ALT_CLASS, numeric_subset<R_TYPE, C_TYPE>);\
+//R_set_altvec_Extract_subset_method(ALT_CLASS, numeric_subset<R_TYPE, C_TYPE>);
 
 
 //[[Rcpp::init]]
