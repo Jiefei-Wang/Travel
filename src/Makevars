@@ -1,3 +1,24 @@
 PKG_CPPFLAGS = `pkg-config fuse --cflags`
 PKG_LIBS = `pkg-config fuse --libs`
 CXX_STD= CXX11
+
+
+MKDIR_P = mkdir -p
+package_lib= Travel.so
+
+
+.PHONY: all copy-header
+
+all: remove-file copy-header ${package_lib}
+
+
+remove-file:
+	 rm -f "../inst/include/SharedObject/Travel.h" &&\
+	 rm -f "../inst/include/SharedObject/Travel_types.h" &&\
+	 ${MKDIR_P} ../inst/include&&\
+	 ${MKDIR_P} ../inst/include/Travel
+
+
+copy-header:
+	 cp "Travel.h" "../inst/include/Travel/" &&\
+	 cp "Travel_types.h" "../inst/include/Travel/"

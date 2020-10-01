@@ -285,6 +285,46 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// C_set_debug_print
+void C_set_debug_print(bool x);
+RcppExport SEXP _Travel_C_set_debug_print(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< bool >::type x(xSEXP);
+    C_set_debug_print(x);
+    return R_NilValue;
+END_RCPP
+}
+// C_set_altrep_print
+void C_set_altrep_print(bool x);
+RcppExport SEXP _Travel_C_set_altrep_print(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< bool >::type x(xSEXP);
+    C_set_altrep_print(x);
+    return R_NilValue;
+END_RCPP
+}
+// C_set_filesystem_print
+void C_set_filesystem_print(bool x);
+RcppExport SEXP _Travel_C_set_filesystem_print(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< bool >::type x(xSEXP);
+    C_set_filesystem_print(x);
+    return R_NilValue;
+END_RCPP
+}
+// C_set_filesystem_log
+void C_set_filesystem_log(bool x);
+RcppExport SEXP _Travel_C_set_filesystem_log(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< bool >::type x(xSEXP);
+    C_set_filesystem_log(x);
+    return R_NilValue;
+END_RCPP
+}
 // initial_filesystem_log
 void initial_filesystem_log();
 RcppExport SEXP _Travel_initial_filesystem_log() {
@@ -332,20 +372,32 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_reset_int", (DL_FUNC) &_Travel_C_reset_int, 1},
     {"_Travel_C_duplicate", (DL_FUNC) &_Travel_C_duplicate, 1},
     {"_Travel_C_is_altrep", (DL_FUNC) &_Travel_C_is_altrep, 1},
+    {"_Travel_C_set_debug_print", (DL_FUNC) &_Travel_C_set_debug_print, 1},
+    {"_Travel_C_set_altrep_print", (DL_FUNC) &_Travel_C_set_altrep_print, 1},
+    {"_Travel_C_set_filesystem_print", (DL_FUNC) &_Travel_C_set_filesystem_print, 1},
+    {"_Travel_C_set_filesystem_log", (DL_FUNC) &_Travel_C_set_filesystem_log, 1},
     {"_Travel_initial_filesystem_log", (DL_FUNC) &_Travel_initial_filesystem_log, 0},
     {"_Travel_close_filesystem_log", (DL_FUNC) &_Travel_close_filesystem_log, 0},
     {NULL, NULL, 0}
 };
 
+void init_altfile_logical_class(DllInfo *dll);
+void init_altfile_integer_class(DllInfo *dll);
+void ini_altfile_real_class(DllInfo *dll);
+void init_altfile_raw_class(DllInfo *dll);
 void init_altptr_logical_class(DllInfo *dll);
 void init_altptr_integer_class(DllInfo *dll);
-void ini_altptrt_real_class(DllInfo *dll);
+void ini_altptr_real_class(DllInfo *dll);
 void init_altptr_raw_class(DllInfo *dll);
 RcppExport void R_init_Travel(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
+    init_altfile_logical_class(dll);
+    init_altfile_integer_class(dll);
+    ini_altfile_real_class(dll);
+    init_altfile_raw_class(dll);
     init_altptr_logical_class(dll);
     init_altptr_integer_class(dll);
-    ini_altptrt_real_class(dll);
+    ini_altptr_real_class(dll);
     init_altptr_raw_class(dll);
 }

@@ -5,15 +5,32 @@
 #include <fstream>
 #include "package_settings.h"
 
-bool debug_print_enabled = true;
+bool debug_print_enabled = false;
 bool altrep_print_enabled = false;
-bool filesystem_print_enabled = true;
-bool filesystem_log_enabled = true;
+bool filesystem_print_enabled = false;
+bool filesystem_log_enabled = false;
 
 #define BUFFER_SIZE 1024 * 1024
 static char buffer[BUFFER_SIZE];
 static std::ofstream filesystem_log_stream;
 static bool filesystem_log_opened = false;
+
+// [[Rcpp::export]]
+void C_set_debug_print(bool x){
+	debug_print_enabled = x;
+}
+// [[Rcpp::export]]
+void C_set_altrep_print(bool x){
+	altrep_print_enabled = x;
+}
+// [[Rcpp::export]]
+void C_set_filesystem_print(bool x){
+	filesystem_print_enabled = x;
+}
+// [[Rcpp::export]]
+void C_set_filesystem_log(bool x){
+	filesystem_log_enabled = x;
+}
 
 // [[Rcpp::export]]
 void initial_filesystem_log()

@@ -1,7 +1,7 @@
 context("Testing filesystem writting feature with altrep")
 
 ## Skip it for linux for there is a know bug
-if(get_os()!="linux"){
+if(get_OS()!="linux"){
     rm(list=ls())
     gc()
     

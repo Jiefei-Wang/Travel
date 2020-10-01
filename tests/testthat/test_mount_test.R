@@ -21,7 +21,7 @@ test_that("path with trailing slash", {
 })
 
 test_that("path with driver letter", {
-    if(get_os()=="windows"){
+    if(get_OS()=="windows"){
         tmp_dir2 <- "Y:/"
         set_mountpoint(tmp_dir2)
         expect_error(run_filesystem(),NA)

@@ -5,33 +5,33 @@
 #include "package_settings.h"
 #include "Travel.h"
 
-R_altrep_class_t altPtr_real_class;
-R_altrep_class_t altPtr_integer_class;
-R_altrep_class_t altPtr_logical_class;
-R_altrep_class_t altPtr_raw_class;
-//R_altrep_class_t altPtr_complex_class;
+R_altrep_class_t altptr_real_class;
+R_altrep_class_t altptr_integer_class;
+R_altrep_class_t altptr_logical_class;
+R_altrep_class_t altptr_raw_class;
+//R_altrep_class_t altptr_complex_class;
 
 R_altrep_class_t get_altptr_class(int type)
 {
     switch (type)
     {
     case REALSXP:
-        return altPtr_real_class;
+        return altptr_real_class;
     case INTSXP:
-        return altPtr_integer_class;
+        return altptr_integer_class;
     case LGLSXP:
-        return altPtr_logical_class;
+        return altptr_logical_class;
     case RAWSXP:
-        return altPtr_raw_class;
+        return altptr_raw_class;
     case CPLXSXP:
-        //return altPtr_complex_class;
+        //return altptr_complex_class;
     case STRSXP:
-        //return altPtr_str_class;
+        //return altptr_str_class;
     default:
         Rf_error("Type of %d is not supported yet", type);
     }
     // Just for suppressing the annoying warning, it should never be excuted
-    return altPtr_real_class;
+    return altptr_real_class;
 }
 /*
 ==========================================
@@ -101,10 +101,11 @@ SEXP altptr_duplicate(SEXP x, Rboolean deep) {
     std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
     filesystem_file_data& file_data = get_virtual_file(file_name);
     //Duplicate the object
-    SEXP res = PROTECT(Travel_make_altptr(TYPEOF(x), XLENGTH(x), file_data.data_func, file_data.private_data, GET_WRAPPED_DATA(x)));
+    SEXP res = PROTECT(Travel_make_altptr(TYPEOF(x), XLENGTH(x), file_data.data_func, file_data.private_data, GET_PROTECTED_DATA(x)));
     //Get the new file name
     std::string new_file_name = Rcpp::as<std::string>(GET_ALT_NAME(res));
     filesystem_file_data& new_file_data = get_virtual_file(new_file_name);
+    //Copy write cache
     claim(file_data.cache_size==new_file_data.cache_size);
     size_t cache_size = file_data.cache_size;
     for(auto i:file_data.write_cache){
@@ -112,6 +113,8 @@ SEXP altptr_duplicate(SEXP x, Rboolean deep) {
         memcpy(ptr, i.second, cache_size);
         new_file_data.write_cache[i.first] = ptr;
     }
+    //Protect data
+    SET_PROTECTED_DATA(res, GET_PROTECTED_DATA(x));
     Rf_unprotect(1);
     return res;
 }
@@ -138,25 +141,25 @@ Register ALTREP class
 void init_altptr_logical_class(DllInfo *dll)
 {
     char class_name[] = "travel_altptr_logical";
-    ALT_COMMOM_REGISTRATION(altPtr_logical_class, altlogical, LOGICAL)
+    ALT_COMMOM_REGISTRATION(altptr_logical_class, altlogical, LOGICAL);
 }
 //[[Rcpp::init]]
 void init_altptr_integer_class(DllInfo *dll)
 {
     char class_name[] = "travel_altptr_integer";
-    ALT_COMMOM_REGISTRATION(altPtr_integer_class, altinteger, INTEGER)
+    ALT_COMMOM_REGISTRATION(altptr_integer_class, altinteger, INTEGER);
 }
 
 //[[Rcpp::init]]
-void ini_altptrt_real_class(DllInfo *dll)
+void ini_altptr_real_class(DllInfo *dll)
 {
     char class_name[] = "travel_altptr_real";
-    ALT_COMMOM_REGISTRATION(altPtr_real_class, altreal, REAL)
+    ALT_COMMOM_REGISTRATION(altptr_real_class, altreal, REAL);
 }
 
 //[[Rcpp::init]]
 void init_altptr_raw_class(DllInfo *dll)
 {
     char class_name[] = "travel_altptr_raw";
-    ALT_COMMOM_REGISTRATION(altPtr_real_class, altraw, RAW)
+    ALT_COMMOM_REGISTRATION(altptr_real_class, altraw, RAW);
 }

@@ -109,6 +109,22 @@ C_is_altrep <- function(x) {
     .Call(`_Travel_C_is_altrep`, x)
 }
 
+C_set_debug_print <- function(x) {
+    invisible(.Call(`_Travel_C_set_debug_print`, x))
+}
+
+C_set_altrep_print <- function(x) {
+    invisible(.Call(`_Travel_C_set_altrep_print`, x))
+}
+
+C_set_filesystem_print <- function(x) {
+    invisible(.Call(`_Travel_C_set_filesystem_print`, x))
+}
+
+C_set_filesystem_log <- function(x) {
+    invisible(.Call(`_Travel_C_set_filesystem_log`, x))
+}
+
 initial_filesystem_log <- function() {
     invisible(.Call(`_Travel_initial_filesystem_log`))
 }
