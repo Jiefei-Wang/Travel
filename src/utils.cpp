@@ -44,7 +44,7 @@ void initial_filesystem_log()
 // [[Rcpp::export]]
 void close_filesystem_log()
 {
-	if (filesystem_log_enabled && filesystem_log_opened)
+	if (filesystem_log_opened)
 	{
 		filesystem_log_stream.close();
 		filesystem_log_opened = false;

@@ -17,3 +17,10 @@ get_OS <- function(){
 get_OS_bit <- function(){
     .Machine$sizeof.pointer * 8
 }
+
+set_verbose<- function(x){
+    C_set_debug_print(x)
+    C_set_altrep_print(x)
+    C_set_filesystem_print(x)
+    C_set_filesystem_log(x)
+}

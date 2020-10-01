@@ -35,7 +35,7 @@ pkgconfig <- function(x = c("PKG_LIBS", "PKG_CPPFLAGS")){
             }
             files <- files[ind]
         }
-        result <- paste0(folder,"/",files)
+        result <- paste0("\"",folder,"/",files,"\"")
     }else{
         result <- ""
     }

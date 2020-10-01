@@ -1,4 +1,5 @@
 context("Basic mount and unmount test for the filesystem")
+set_verbose(FALSE)
 
 tmp_dir <- paste0(tempdir(),"/travel_test")
 if(dir.exists(tmp_dir)){
