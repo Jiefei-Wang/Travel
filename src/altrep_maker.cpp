@@ -33,7 +33,7 @@ static void altptr_handle_finalizer(SEXP handle_extptr)
 /*
 
 */
-SEXP Travel_make_altptr(int type, size_t length, file_data_func read_func, void *data, SEXP protect)
+SEXP Travel_make_altptr(int type, size_t length, file_data_func read_func, void *private_data, SEXP protect)
 {
     if (!is_filesystem_running())
     {
@@ -49,7 +49,7 @@ SEXP Travel_make_altptr(int type, size_t length, file_data_func read_func, void 
     size_t size = length * unit_size;
     SET_PROPS_SIZE(altptr_options, Rcpp::wrap(size));
     //Create a virtual file
-    filesystem_file_info file_info = add_virtual_file(read_func, data, size, unit_size);
+    filesystem_file_info file_info = add_virtual_file(read_func, private_data, size, unit_size);
     std::string file_name = file_info.file_name;
     SET_PROPS_NAME(altptr_options, Rcpp::wrap(file_name));
     file_map_handle *handle;

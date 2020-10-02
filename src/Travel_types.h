@@ -13,8 +13,8 @@ this function do not need to do the out-of-bound check.
 Args: 
   file_data: The file info
   buffer: The buffer where the data will be written to
-  offset: The offset of the file. The unit size is specified in file_data.unit_size.
-  length: The length of the data. The unit size is specified in file_data.unit_size.
+  offset: The offset(index) of the vector.
+  length: The length of the data.
 */
 typedef size_t (*file_data_func)(filesystem_file_data &file_data, void *buffer, size_t offset, size_t length);
 
@@ -26,8 +26,7 @@ member variables:
   file_size: The file size in bytes
   unit_size: The unit size of the data in bytes. The offset and length
              that are passed to the function data_func will be calculated based on this unit.
-             The value does not have to match the true unit size, 
-             it can be 1 if data_func supports reading 1 bytes from the file.
+             DO NOT TRY TO CHANGE IT!
   cache_size: The write cache size. DO NOT TRY TO CHANGE IT!
   write_cache: All the changes to the data will be stored here by block. DO NOT TRY TO CHANGE IT!
 */
