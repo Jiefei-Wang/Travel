@@ -3,7 +3,7 @@ title: "vignette"
 author: 
 - name: Jiefei Wang
   affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
-date: "2020-10-02"
+date: "`r Sys.Date()`"
 output:
     BiocStyle::html_document:
         toc: true
@@ -15,24 +15,31 @@ vignette: >
 package: Travel
 ---
 
-
+```{r setup, include = FALSE}
+#knitr::knit("vignettes/vignette.Rmd.raw", output = "vignettes/vignette.Rmd")
+#rmarkdown::render("vignettes/vignette.Rmd","md_document",output_dir = "./",output_file = "README")
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+options(scipen=999)
+library(Travel)
+library(inline)
+Travel:::deploy_filesystem()
+Travel:::set_verbose(FALSE)
+```
 
 # Introduction
 ## ALTREP
 ALTREP is a relatively new feature that has been released since R3.5. It stands for alternative representation of R's vector object. ALTREP is capable to create an R vector with a customized data structure. The difference between ALTREP and vector is opaque to R users. The main motivation of the ALTREP is to reduce the memory load when creating some special vector. Consider the example
-
-```r
+```{r}
 x <- 1:(1024*1024*1024*1024)
 length(x)
-#> [1] 1099511627776
 typeof(x)
-#> [1] "double"
 ```
 You might think the above crazy code will exhaust all the memory in your machine and burn your computer into ash. However, if you are using any version of R that is equal or newer than 3.5, the code works like a charm. You can access the data of `x` as usual
-
-```r
+```{r}
 head(x)
-#> [1] 1 2 3 4 5 6
 ```
 You might have a guess on what has happened here. The data of the vector `x` clearly has a lot of redundance. Since it is an arithmetic sequence, you only need to know the first item and the common difference to compute every values in `x`. As long as you do not need the entire data at once, you do not have to put all data into your memory. A minimum ALTREP object can be made by defining a length function and an element retrieving function at C level, the function prototypes are
 ```{}
@@ -62,18 +69,15 @@ The above code works fine for a regular R vector since its data has been allocat
 2. Call `Rf_error` to throw an error message.
 
 While the first one seems to be a good choice, it is actually not always feasible in practice for the object might be larger than the available memory(As the crazy vector example we saw previously). The second choice can be used if a pointer cannot be given, but it prevents the ALTREP object from being used by many old but useful packages. Also, it might causes memory leaking for the objects allocated in heap prior to the call of `DATAPTR` may not have a chance to release themselves. For an arithmetic sequence in the first example, it actually adopt both strategies: It will allocate the memory for a short sequence, but throw an error for a large sequence. For example
-
-```r
+```{r, error=TRUE}
 ## Short sequence
 x1 <- 1:10
 x1[1] <- 10 
 head(x1)
-#> [1] 10  2  3  4  5  6
 
 ## long sequence 
 x2 <- 1:(1024*1024*1024*1024)
 x2[1] <- 10
-#> Error: cannot allocate vector of size 8192.0 Gb
 ```
 As of R4.1, every attempt to change the values of an R vector will require to access the pointer of the vector. For a short sequence this can be easily solved via the memory allocation. However, for a large sequence, since there would not be enough space for a 8192Gb vector, doing so will end up with an error message. 
 Requiring the pointer from an ALTREP object has been a very serious limitation that prevents it from being used in practice to represent a large data. That is the problem that the Travel package is intended to solve.
@@ -88,32 +92,24 @@ The pointer is "virtual" in the sense that the data does not exist in the memory
 ![](data request.png)
 
 As we see from the flowchart, the data of the pointer `ptr` is made on-demand. The pointer would not exhaust the memory even if it points to an extremely large object. By doing that we solve the main limitation of the ALTREP. The pointer of the ALTREP object can be accessed in a usual way, and the memory consumption is minimum. Take the super large sequence as an example again, the package provides a wrapper function to turn an old ALTREP object into a new ALTREP object with a virtual pointer. 
-
-```r
+```{r}
 x <- 1:(1024*1024*1024*1024)
 y <- wrap_altrep(x)
 
 x[1:10]
-#>  [1]  1  2  3  4  5  6  7  8  9 10
 y[1:10]
-#>  [1]  1  2  3  4  5  6  7  8  9 10
 ```
 While `x` and `y` looks the same, the pointer of `y` can be accessed as usual
-
-```r
+```{r, error=TRUE}
 x[1] <- 10
-#> Error: cannot allocate vector of size 8192.0 Gb
 x[1:10]
-#>  [1]  1  2  3  4  5  6  7  8  9 10
 
 y[1] <- 10
 y[1:10]
-#>  [1] 10  2  3  4  5  6  7  8  9 10
 ```
 Furthermore, loop over the sequence `y` works as expected.
 
-
-```r
+```{r, error=TRUE}
 ## We only compute the sum of the first 10 elements
 code <- 
 '
@@ -129,10 +125,8 @@ my_sum <- cxxfunction(signature(x="SEXP"),
 
 ## An error will be given for x
 my_sum(x)
-#> Error: cannot allocate vector of size 8192.0 Gb
 ## No error will be given and the sum can be computed
 my_sum(y)
-#> [1] 64
 ```
 Please note that the wrapper function `wrap_altrep` should be used with caution for it will call R's function in a multithreaded environment. As R is known to be a single-thread program, it is not recommended to use this function in practice. `wrap_altrep` should be called for demonstration purpose only. In the next section, we will show you how to formally build your own ALTREP object using Travel package.
 
@@ -261,34 +255,8 @@ Vcells 1863208 14.3    8388608 64.0  2630899 20.1
 Now you get a vector `x` with a crazy size, all operations of the ALTREP can be supported. Enjoy the full power of the ALTREP objects!
 
 # Session info
-
-```r
+```{r}
 sessionInfo()
-#> R Under development (unstable) (2020-09-03 r79126)
-#> Platform: x86_64-w64-mingw32/x64 (64-bit)
-#> Running under: Windows 10 x64 (build 18362)
-#> 
-#> Matrix products: default
-#> 
-#> locale:
-#> [1] LC_COLLATE=English_United States.1252  LC_CTYPE=English_United States.1252   
-#> [3] LC_MONETARY=English_United States.1252 LC_NUMERIC=C                          
-#> [5] LC_TIME=English_United States.1252    
-#> 
-#> attached base packages:
-#> [1] stats     graphics  grDevices utils     datasets  methods   base     
-#> 
-#> other attached packages:
-#> [1] Travel_0.99.0  inline_0.3.16  testthat_2.3.2
-#> 
-#> loaded via a namespace (and not attached):
-#>  [1] Rcpp_1.0.5          rstudioapi_0.11     knitr_1.29          magrittr_1.5        pkgload_1.1.0      
-#>  [6] R6_2.4.1            rlang_0.4.7         fansi_0.4.1         stringr_1.4.0       tools_4.1.0        
-#> [11] pkgbuild_1.1.0      xfun_0.16           cli_2.0.2           withr_2.2.0         htmltools_0.5.0    
-#> [16] yaml_2.2.1          assertthat_0.2.1    digest_0.6.25       rprojroot_1.3-2     crayon_1.3.4       
-#> [21] processx_3.4.4      BiocManager_1.30.10 callr_3.4.3         ps_1.3.4            evaluate_0.14      
-#> [26] glue_1.4.2          rmarkdown_2.3       stringi_1.4.6       compiler_4.1.0      desc_1.2.0         
-#> [31] backports_1.1.9     prettyunits_1.1.1   BiocStyle_2.17.0
 ```
 
 
