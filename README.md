@@ -114,7 +114,7 @@ a virtual pointer. The pointer of the ALTREP object can be accessed via
 the regular `DATAPTR` function in `Rinternals.h` at C level. The basic
 workflow of using the package is
 
-![](src/Making%20altrep.png)
+![](vignettes/Making%20altrep.png)
 
 The pointer is “virtual” in the sense that the data does not exist in
 the memory before one actually try to access the data. The pointer is
@@ -126,7 +126,7 @@ an ALTREP object with the data reading function `read_data`. Let the
 pointer of the ALTREP object be `ptr`. Here is what happens behind the
 scenes when you want to read the `i`th element of the pointer
 
-![](src/data%20request.png)
+![](vignettes/data%20request.png)
 
 As we see from the flowchart, the data of the pointer `ptr` is made
 on-demand. The pointer would not exhaust the memory even if it points to
