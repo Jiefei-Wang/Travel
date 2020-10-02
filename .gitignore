@@ -43,6 +43,7 @@ vignettes/*.pdf
 src/.vscode/
 debug_output
 
+*.Rproj
 
 inst/test
 inst/doc
