@@ -44,6 +44,27 @@ void C_make_fake_file2(size_t size)
     add_virtual_file(fake_integer_read, nullptr, size);
 }
 
+SEXP make_altptr_from_file(std::string path, int type, size_t length);
+//[[Rcpp::export]]
+SEXP C_make_altptr_from_file(SEXP path, SEXP type, size_t length)
+{
+    std::string path_str = Rcpp::as<std::string>(path);
+    std::string type_str = Rcpp::as<std::string>(type);
+    int type_num;
+    if(type_str=="logical"){
+        type_num = LGLSXP;
+    }else if(type_str == "integer"){
+        type_num = INTSXP;
+    }else if(type_str=="double"|| type_str =="real"){
+        type_num = REALSXP;
+    }else{
+        Rf_error("Unknown type <%s>\n", type_str.c_str());
+    }
+    return make_altptr_from_file(path_str, type_num, length);
+}
+
+
+
 
 
 // [[Rcpp::export]]

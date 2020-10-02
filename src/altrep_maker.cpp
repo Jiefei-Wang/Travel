@@ -90,7 +90,7 @@ static void altfile_handle_finalizer(SEXP handle_extptr)
     }
 }
 
-SEXP make_altrep_from_file(std::string path, int type, size_t length)
+SEXP make_altptr_from_file(std::string path, int type, size_t length)
 {
     PROTECT_GUARD guard;
     R_altrep_class_t alt_class = get_altfile_class(type);

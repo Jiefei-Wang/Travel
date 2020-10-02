@@ -161,5 +161,5 @@ void ini_altptr_real_class(DllInfo *dll)
 void init_altptr_raw_class(DllInfo *dll)
 {
     char class_name[] = "travel_altptr_raw";
-    ALT_COMMOM_REGISTRATION(altptr_real_class, altraw, RAW);
+    ALT_COMMOM_REGISTRATION(altptr_raw_class, altraw, RAW);
 }

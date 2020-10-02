@@ -111,7 +111,7 @@ void ini_altfile_real_class(DllInfo *dll)
 void init_altfile_raw_class(DllInfo *dll)
 {
     char class_name[] = "travel_altfile_raw";
-    ALT_COMMOM_REGISTRATION(altfile_real_class, altraw, RAW);
+    ALT_COMMOM_REGISTRATION(altfile_raw_class, altraw, RAW);
 }
 
 

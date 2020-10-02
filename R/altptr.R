@@ -13,8 +13,5 @@
 #' y <- wrap_altrep(x)
 #' @export
 wrap_altrep<-function(x){
-    if(is_filesystem_running()){
-        break
-    }
-    C_make_altPtr_from_altrep(x)
+    C_make_altptr_from_altrep(x)
 }

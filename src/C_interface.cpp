@@ -25,7 +25,7 @@ size_t read_altrep(filesystem_file_data &file_data, void *buffer, size_t offset,
 
 //Travel_make_altptr(int type, void *data, size_t length, unsigned int unit_size, file_data_func read_func, SEXP protect)
 //[[Rcpp::export]]
-SEXP C_make_altPtr_from_altrep(SEXP x)
+SEXP C_make_altptr_from_altrep(SEXP x)
 {
     SEXP altptr_object = Travel_make_altptr(TYPEOF(x), XLENGTH(x),read_altrep, x, x);
     return altptr_object;
@@ -131,7 +131,7 @@ SEXP C_make_altPtr_from_scratch(int type, SEXP data, size_t length, SEXP read_fu
     SEXP altptr_object = C_make_altPtr_internal(type, wrapped_object, length * unit_size, read_SEXP, get_type_size(type));
     if (altptr_object != R_NilValue)
     {
-        SET_WRAPPED_DATA(altptr_object, wrapped_object);
+        SET_PROTECTED_DATA(altptr_object, wrapped_object);
     }
     return altptr_object;
 }

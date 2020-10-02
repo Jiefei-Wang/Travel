@@ -6,14 +6,14 @@
 
 using namespace Rcpp;
 
-// C_make_altPtr_from_altrep
-SEXP C_make_altPtr_from_altrep(SEXP x);
-RcppExport SEXP _Travel_C_make_altPtr_from_altrep(SEXP xSEXP) {
+// C_make_altptr_from_altrep
+SEXP C_make_altptr_from_altrep(SEXP x);
+RcppExport SEXP _Travel_C_make_altptr_from_altrep(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_make_altPtr_from_altrep(x));
+    rcpp_result_gen = Rcpp::wrap(C_make_altptr_from_altrep(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -229,6 +229,19 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// C_make_altptr_from_file
+SEXP C_make_altptr_from_file(SEXP path, SEXP type, size_t length);
+RcppExport SEXP _Travel_C_make_altptr_from_file(SEXP pathSEXP, SEXP typeSEXP, SEXP lengthSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type path(pathSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< size_t >::type length(lengthSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_make_altptr_from_file(path, type, length));
+    return rcpp_result_gen;
+END_RCPP
+}
 // C_set_real_value
 void C_set_real_value(SEXP x, size_t i, double v);
 RcppExport SEXP _Travel_C_set_real_value(SEXP xSEXP, SEXP iSEXP, SEXP vSEXP) {
@@ -345,7 +358,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_Travel_C_make_altPtr_from_altrep", (DL_FUNC) &_Travel_C_make_altPtr_from_altrep, 1},
+    {"_Travel_C_make_altptr_from_altrep", (DL_FUNC) &_Travel_C_make_altptr_from_altrep, 1},
     {"_Travel_C_getAltData1", (DL_FUNC) &_Travel_C_getAltData1, 1},
     {"_Travel_C_getAltData2", (DL_FUNC) &_Travel_C_getAltData2, 1},
     {"_Travel_print_value", (DL_FUNC) &_Travel_print_value, 1},
@@ -367,6 +380,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_make_test_integer_altrep", (DL_FUNC) &_Travel_C_make_test_integer_altrep, 1},
     {"_Travel_C_make_fake_file", (DL_FUNC) &_Travel_C_make_fake_file, 1},
     {"_Travel_C_make_fake_file2", (DL_FUNC) &_Travel_C_make_fake_file2, 1},
+    {"_Travel_C_make_altptr_from_file", (DL_FUNC) &_Travel_C_make_altptr_from_file, 3},
     {"_Travel_C_set_real_value", (DL_FUNC) &_Travel_C_set_real_value, 3},
     {"_Travel_C_set_int_value", (DL_FUNC) &_Travel_C_set_int_value, 3},
     {"_Travel_C_reset_int", (DL_FUNC) &_Travel_C_reset_int, 1},
