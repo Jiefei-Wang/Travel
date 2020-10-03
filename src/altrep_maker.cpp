@@ -43,14 +43,11 @@ SEXP Travel_make_altptr(Travel_altrep_info altrep_info, SEXP protect)
     SEXP altptr_options = guard.protect(Rf_allocVector(VECSXP, SLOT_NUM));
     SET_PROPS_LENGTH(altptr_options, Rcpp::wrap(altrep_info.length));
     SEXP result = guard.protect(R_new_altrep(alt_class, protect, altptr_options));
-    //Compute the total size
-    size_t unit_size = get_type_size(altrep_info.type);
-    size_t file_size = altrep_info.length * unit_size;
     //Create a virtual file
     filesystem_file_info file_info = add_virtual_file(altrep_info);
     Filesystem_file_data &file_data = get_virtual_file(file_info.file_inode);
     SET_PROPS_NAME(altptr_options, Rcpp::wrap(file_info.file_name));
-    SET_PROPS_SIZE(altptr_options, Rcpp::wrap(file_size));
+    SET_PROPS_SIZE(altptr_options, Rcpp::wrap(file_data.file_size));
     file_map_handle *handle;
     std::string status = memory_map(handle, file_info, file_data.file_size);
     if (status != "")
@@ -111,7 +108,8 @@ SEXP make_altptr_from_file(std::string path, int type, size_t length)
         return R_NilValue;
     }
     SEXP handle_extptr = guard.protect(R_MakeExternalPtr(handle,
-                                                         guard.protect(Rcpp::wrap(file_name)), R_NilValue));
+                                                         GET_PROPS_NAME(altfile_options),
+                                                          R_NilValue));
     //Register finalizer for the pointer
     R_RegisterCFinalizerEx(handle_extptr, altfile_handle_finalizer, TRUE);
     SET_PROPS_EXTPTR(altfile_options, handle_extptr);

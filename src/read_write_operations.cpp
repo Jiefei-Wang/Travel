@@ -116,6 +116,7 @@ size_t read_file_source_func(Filesystem_file_data &file_data, void *buffer, size
 
 size_t general_write_func(Filesystem_file_data &file_data, const void *buffer, size_t offset, size_t size)
 {
+    claim(offset + size <= file_data.file_size);
     if (size == 0)
         return 0;
     size_t &cache_size = file_data.cache_size;
@@ -149,11 +150,13 @@ size_t general_write_func(Filesystem_file_data &file_data, const void *buffer, s
         memcpy(block_ptr + block_offset, (char *)buffer + buffer_offset, block_write_length);
         buffer_offset = buffer_offset + block_write_length;
     }
+    claim(buffer_offset <= size);
     return buffer_offset;
 }
 
 size_t general_read_func(Filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
 {
+    claim(offset + size <= file_data.file_size);
     if (size == 0)
         return 0;
     size_t &cache_size = file_data.cache_size;

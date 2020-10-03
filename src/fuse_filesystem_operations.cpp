@@ -230,7 +230,6 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
     size_t read_size = general_read_func(file_data, buffer.get(),
                                          desired_read_offset,
                                          desired_read_size);
-    claim(misalignment_begin<size);
     int status = fuse_reply_buf(req, buffer.get() + misalignment_begin, size);
     if (status != 0)
     {
@@ -248,10 +247,10 @@ static void filesystem_write(fuse_req_t req, fuse_ino_t ino, const char *buffer,
     Filesystem_file_data &file_data = get_virtual_file(ino);
 	size_t &file_size = file_data.file_size;
 	size_t write_length = get_valid_file_size(file_size, offset, buffer_length);
-	general_write_func(file_data, buffer, offset, write_length);
-	filesystem_log("file_size:%llu, offset:%llu, request write %llu, true write size:%u\n", 
-	file_size, offset, buffer_length, write_length);
-    fuse_reply_write(req, write_length);
+	size_t true_write_length = general_write_func(file_data, buffer, offset, write_length);
+	filesystem_log("file_size:%llu, offset:%llu, request write %llu, matched write size:%llu, true write size\n", 
+	file_size, offset, buffer_length, write_length,true_write_length);
+    fuse_reply_write(req, true_write_length);
 }
 
 /*

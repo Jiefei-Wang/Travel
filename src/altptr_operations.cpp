@@ -49,7 +49,7 @@ Rboolean altptr_Inspect(SEXP x, int pre, int deep, int pvec,
 R_xlen_t altptr_length(SEXP x)
 {
     R_xlen_t size = Rcpp::as<size_t>(GET_ALT_LENGTH(x));
-    altrep_print("accessing length: %d\n", size);
+    altrep_print("accessing length: %llu\n", size);
     return size;
 }
 
