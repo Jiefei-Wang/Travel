@@ -7,15 +7,8 @@
 #include "package_settings.h"
 #include "double_key_map.h"
 
-#ifdef WIN10_ENABLE_LONG_PATH
-#define DOKAN_MAX_PATH 32768
-#else
-#define DOKAN_MAX_PATH MAX_PATH
-#endif
-
 using std::string;
 using std::wstring;
-
 bool is_filesystem_alive() { return true; }
 
 #define IS_ROOT(x) (x == "\\")
@@ -260,7 +253,6 @@ dokan_find_files(LPCWSTR wide_file_path,
 Filesystem exported APIs
 ========================================================
 */
-static WCHAR mountpoint[DOKAN_MAX_PATH];
 void filesystem_thread_func(int *thread_status)
 {
 	DOKAN_OPERATIONS dokanOperations;
@@ -291,9 +283,9 @@ void filesystem_thread_func(int *thread_status)
 	dokanOperations.FindStreams = NULL;
 	dokanOperations.Mounted = NULL;
 
-	wcscpy(mountpoint, stringToWstring(get_mountpoint()).c_str());
+	std::wstring mp = stringToWstring(get_mountpoint());
 	DOKAN_OPTIONS dokanOptions;
-	dokanOptions.MountPoint = mountpoint;
+	dokanOptions.MountPoint = mp.c_str();
 	dokanOptions.Version = 140;
 	dokanOptions.ThreadCount = 1;
 	//You CANNOT comment this out!
@@ -308,7 +300,8 @@ void filesystem_thread_func(int *thread_status)
 
 void filesystem_stop()
 {
-	DokanRemoveMountPoint(mountpoint);
+	std::wstring mp = stringToWstring(get_mountpoint());
+	DokanRemoveMountPoint(mp.c_str());
 }
 
 std::string get_error_message(int status)
