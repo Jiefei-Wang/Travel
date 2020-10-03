@@ -9,7 +9,8 @@ package_lib= Travel.so
 
 .PHONY: all copy-header
 
-all: remove-file copy-header ${package_lib}
+all: ${package_lib}
+#all: remove-file copy-header ${package_lib}
 
 
 remove-file:

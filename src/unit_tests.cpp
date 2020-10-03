@@ -41,8 +41,10 @@ size_t fake_read(Travel_altrep_info* altrep_info, void *buffer, size_t offset, s
 void C_make_fake_file(size_t size)
 {
     Travel_altrep_info altrep_info = {};
+    altrep_info.type = RAWSXP;
+    altrep_info.length = size;
     altrep_info.operations.get_region = fake_read;
-    add_virtual_file(altrep_info, size);
+    add_virtual_file(altrep_info);
 }
 
 //[[Rcpp::export]]
@@ -50,7 +52,9 @@ void C_make_fake_file2(size_t size)
 {
     Travel_altrep_info altrep_info = {};
     altrep_info.operations.get_region = fake_integer_read;
-    add_virtual_file(altrep_info, size);
+    altrep_info.type = RAWSXP;
+    altrep_info.length = size;
+    add_virtual_file(altrep_info);
 }
 
 SEXP make_altptr_from_file(std::string path, int type, size_t length);

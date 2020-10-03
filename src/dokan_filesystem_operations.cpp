@@ -136,7 +136,7 @@ NTSTATUS DOKAN_CALLBACK dokan_read_file(LPCWSTR wide_file_path, LPVOID buffer,
 	string file_name = get_file_name_in_path(file_path);
 	filesystem_log("ReadFile: %s, ", file_path.c_str());
 
-	filesystem_file_data &file_data = get_virtual_file(file_name);
+	Filesystem_file_data &file_data = get_virtual_file(file_name);
 	size_t &file_size = file_data.file_size;
 	*read_length = get_valid_file_size(file_size, offset, buffer_length);
 	size_t read_size = general_read_func(file_data, buffer, offset, *read_length);
@@ -156,7 +156,7 @@ NTSTATUS DOKAN_CALLBACK dokan_write_file(LPCWSTR wide_file_path, LPCVOID buffer,
 	filesystem_log("WriteFile: %s\n", file_path.c_str());
 	
 	string file_name = get_file_name_in_path(file_path);
-	filesystem_file_data &file_data = get_virtual_file(file_name);
+	Filesystem_file_data &file_data = get_virtual_file(file_name);
 	size_t &file_size = file_data.file_size;
 	size_t expect_write = get_valid_file_size(file_size, offset, buffer_length);
 	size_t true_write = general_write_func(file_data, buffer, offset, expect_write);
@@ -200,7 +200,7 @@ NTSTATUS DOKAN_CALLBACK dokan_get_file_information(
 			return STATUS_NO_SUCH_FILE;
 		}
 		HandleFileInformation->dwFileAttributes = FILE_ATTRIBUTE_READONLY;
-		filesystem_file_data &file_data = get_virtual_file(file_name);
+		Filesystem_file_data &file_data = get_virtual_file(file_name);
 		HandleFileInformation->nFileSizeLow = (unsigned long)file_data.file_size;
 		HandleFileInformation->nFileSizeHigh = file_data.file_size >> 32;
 	}

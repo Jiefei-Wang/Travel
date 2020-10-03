@@ -118,6 +118,8 @@ size_t get_type_size(int type)
 	case RAWSXP:
 		elt_size = 1;
 		break;
+	default:
+		Rf_error("Unknown type %d\n", type);
 	}
 	return elt_size;
 }

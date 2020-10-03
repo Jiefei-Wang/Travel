@@ -193,7 +193,7 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
                             off_t offset, fuse_file_info *fi)
 {
     size_t current_counter = print_counter++;
-    filesystem_file_data &file_data = get_virtual_file(ino);
+    Filesystem_file_data &file_data = get_virtual_file(ino);
     uint8_t &unit_size = file_data.unit_size;
     size_t &file_size = file_data.file_size;
     size = get_valid_file_size(file_size, offset, size);
@@ -245,7 +245,7 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
 static void filesystem_write(fuse_req_t req, fuse_ino_t ino, const char *buffer,
                              size_t buffer_length, off_t offset, struct fuse_file_info *fi)
 {
-    filesystem_file_data &file_data = get_virtual_file(ino);
+    Filesystem_file_data &file_data = get_virtual_file(ino);
 	size_t &file_size = file_data.file_size;
 	size_t write_length = get_valid_file_size(file_size, offset, buffer_length);
 	general_write_func(file_data, buffer, offset, write_length);

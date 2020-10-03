@@ -29,7 +29,7 @@ size_t get_valid_file_size(size_t file_size, size_t offset, size_t size)
 /*
     Read the local file
 */
-size_t read_local_file_func(filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
+size_t read_local_file_func(Filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
 {
     uint8_t &unit_size = file_data.unit_size;
     // If the unit size is 1, there is nothing to do
@@ -109,12 +109,12 @@ size_t read_local_file_func(filesystem_file_data &file_data, void *buffer, size_
 /*
     Read the data from source
 */
-size_t read_file_source_func(filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
+size_t read_file_source_func(Filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
 {
     return read_local_file_func(file_data, buffer, offset, size);
 }
 
-size_t general_write_func(filesystem_file_data &file_data, const void *buffer, size_t offset, size_t size)
+size_t general_write_func(Filesystem_file_data &file_data, const void *buffer, size_t offset, size_t size)
 {
     if (size == 0)
         return 0;
@@ -152,7 +152,7 @@ size_t general_write_func(filesystem_file_data &file_data, const void *buffer, s
     return buffer_offset;
 }
 
-size_t general_read_func(filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
+size_t general_read_func(Filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
 {
     if (size == 0)
         return 0;

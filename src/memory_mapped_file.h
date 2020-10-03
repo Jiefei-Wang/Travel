@@ -14,7 +14,8 @@ struct file_map_handle
                     size_t size) : file_info(file_info),
                                    file_handle(file_handle),
                                    map_handle(map_handle),
-                                   ptr(ptr) {}
+                                   ptr(ptr),
+                                   size(size) {}
     filesystem_file_info file_info;
     void *file_handle;
     void *map_handle;

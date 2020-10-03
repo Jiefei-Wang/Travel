@@ -26,10 +26,9 @@ member variables:
   cache_size: The write cache size. DO NOT TRY TO CHANGE IT!
   write_cache: All the changes to the data will be stored here by block. DO NOT TRY TO CHANGE IT!
 */
-struct filesystem_file_data
+struct Filesystem_file_data
 {
-  filesystem_file_data(Travel_altrep_info altrep_info,
-                       size_t file_size);
+  Filesystem_file_data(Travel_altrep_info altrep_info);
   Travel_altrep_info altrep_info;
   uint8_t unit_size;
   size_t file_size;
@@ -39,12 +38,11 @@ struct filesystem_file_data
 
 
 filesystem_file_info add_virtual_file(Travel_altrep_info altrep_info,
-                                      size_t file_size,
                                       const char *name = NULL);
 const std::string& get_virtual_file_name(inode_type inode);
 inode_type get_virtual_file_inode(const std::string name);
-filesystem_file_data& get_virtual_file(const std::string name);
-filesystem_file_data& get_virtual_file(inode_type inode);
+Filesystem_file_data& get_virtual_file(const std::string name);
+Filesystem_file_data& get_virtual_file(inode_type inode);
 bool has_virtual_file(const std::string name);
 bool has_virtual_file(inode_type inode);
 bool remove_virtual_file(const std::string name);

@@ -19,7 +19,8 @@ Args:
   offset: The starting offset(index) of the vector.
   length: The length of the data.
 */
-typedef size_t (*Travel_get_region)(Travel_altrep_info *altrep_info, void *buffer, size_t offset, size_t length);
+typedef size_t (*Travel_get_region)(Travel_altrep_info *altrep_info, void *buffer, 
+size_t offset, size_t length);
 
 //Get the size of the private data of an ALTREP
 typedef size_t (*Travel_get_private_size)(Travel_altrep_info *altrep_info);

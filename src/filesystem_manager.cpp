@@ -12,12 +12,13 @@
 #include "memory_mapped_file.h"
 
 static inode_type file_inode_counter = 1;
-double_key_map<inode_type, std::string, filesystem_file_data> file_list;
+double_key_map<inode_type, std::string, Filesystem_file_data> file_list;
 
-filesystem_file_data::filesystem_file_data(Travel_altrep_info altrep_info,
-                       size_t file_size) : altrep_info(altrep_info),file_size(file_size)
+Filesystem_file_data::Filesystem_file_data(Travel_altrep_info altrep_info): 
+                  altrep_info(altrep_info)
 {
   unit_size = get_type_size(altrep_info.type);
+  file_size = altrep_info.length * unit_size;
   cache_size = lcm(MIN_CACHE_SIZE, unit_size);
 }
 
@@ -28,20 +29,21 @@ Insert or delete files from the filesystem
 */
 
 filesystem_file_info add_virtual_file(Travel_altrep_info altrep_info,
-                                      size_t file_size,
                                       const char *name)
 {
-  if (file_size % get_type_size(altrep_info.type) != 0)
-  {
-    Rf_error("The file size and unit size does not match!\n");
-  }
+  if(altrep_info.type==0){
+        Rf_error("Unspecified vector type!\n");
+    }
+    if(altrep_info.operations.get_region==NULL){
+        Rf_error("The function <get_region> is NULL!\n");
+    }
   file_inode_counter++;
   std::string file_name;
   if (name == NULL)
     file_name = "inode_" + std::to_string(file_inode_counter);
   else
     file_name = std::string(name);
-  filesystem_file_data file_data(altrep_info, file_size);
+  Filesystem_file_data file_data(altrep_info);
   file_list.insert(file_inode_counter, file_name, file_data);
   std::string file_full_path = build_path(get_mountpoint(), file_name);
   return {file_full_path, file_name, file_inode_counter};
@@ -54,11 +56,11 @@ const std::string& get_virtual_file_name(inode_type inode){
 inode_type get_virtual_file_inode(const std::string name){
   return file_list.get_key1(name);
 }
-filesystem_file_data &get_virtual_file(const std::string name)
+Filesystem_file_data &get_virtual_file(const std::string name)
 {
   return file_list.get_value_by_key2(name);
 }
-filesystem_file_data& get_virtual_file(inode_type inode){
+Filesystem_file_data& get_virtual_file(inode_type inode){
   return file_list.get_value_by_key1(inode);
 }
 
@@ -72,7 +74,7 @@ bool remove_virtual_file(const std::string name)
 {
   if (has_virtual_file(name))
   {
-    filesystem_file_data &file_data = file_list.get_value_by_key2(name);
+    Filesystem_file_data &file_data = file_list.get_value_by_key2(name);
     for (auto i : file_data.write_cache)
     {
       delete i.second;
@@ -103,7 +105,7 @@ Rcpp::DataFrame C_list_virtual_files()
   {
     name[j] = i->second;
     inode[j] = i->first;
-    filesystem_file_data &file_data = file_list.get_value_by_key1(i->first);
+    Filesystem_file_data &file_data = file_list.get_value_by_key1(i->first);
     unit_size[j] = file_data.unit_size;
     file_size[j] = file_data.file_size;
     cache_size[j] = file_data.cache_size;

@@ -99,12 +99,12 @@ SEXP altptr_duplicate(SEXP x, Rboolean deep) {
     flush_handle(handle);
     //Get the file name
     std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
-    filesystem_file_data& file_data = get_virtual_file(file_name);
+    Filesystem_file_data& file_data = get_virtual_file(file_name);
     //Duplicate the object
     SEXP res = PROTECT(Travel_make_altptr(file_data.altrep_info, GET_PROTECTED_DATA(x)));
     //Get the new file name
     std::string new_file_name = Rcpp::as<std::string>(GET_ALT_NAME(res));
-    filesystem_file_data& new_file_data = get_virtual_file(new_file_name);
+    Filesystem_file_data& new_file_data = get_virtual_file(new_file_name);
     //Copy write cache
     claim(file_data.cache_size==new_file_data.cache_size);
     size_t cache_size = file_data.cache_size;
