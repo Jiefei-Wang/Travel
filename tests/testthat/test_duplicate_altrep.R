@@ -1,7 +1,8 @@
 context("Testing altrep duplication")
+set_verbose(FALSE)
 
 ## Skip it for linux for there is a know bug
-if(get_os()!="linux"){
+if(get_OS()!="linux"){
     rm(list=ls())
     gc()
     

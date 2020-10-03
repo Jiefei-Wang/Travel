@@ -16,7 +16,7 @@ static void altptr_handle_finalizer(SEXP handle_extptr)
     file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
     if (!has_mapped_file_handle(handle))
     {
-        Rf_warning("The altptr file handle has been released: %s, handle: %p\n", name.c_str(), handle);
+        Rf_warning("The altptr handle has been released: %s, handle: %p\n", name.c_str(), handle);
     }
     else
     {
@@ -30,27 +30,30 @@ static void altptr_handle_finalizer(SEXP handle_extptr)
     remove_virtual_file(name);
 }
 
-SEXP Travel_make_altptr(int type, size_t length, file_data_func read_func, void *data, SEXP protect)
+/*
+
+*/
+SEXP Travel_make_altptr(Travel_altrep_info altrep_info, SEXP protect)
 {
     if (!is_filesystem_running())
     {
         Rf_error("The filesystem is not running!\n");
     }
     PROTECT_GUARD guard;
-    R_altrep_class_t alt_class = get_altptr_class(type);
+    R_altrep_class_t alt_class = get_altptr_class(altrep_info.type);
     SEXP altptr_options = guard.protect(Rf_allocVector(VECSXP,SLOT_NUM));
-    SET_PROPS_LENGTH(altptr_options,Rcpp::wrap(length));
+    SET_PROPS_LENGTH(altptr_options,Rcpp::wrap(altrep_info.length));
     SEXP result = guard.protect(R_new_altrep(alt_class, protect, altptr_options));
     //Compute the total size
-    size_t unit_size = get_type_size(type);
-    size_t size = length * unit_size;
-    SET_PROPS_SIZE(altptr_options, Rcpp::wrap(size));
+    size_t unit_size = get_type_size(altrep_info.type);
+    size_t file_size = altrep_info.length * unit_size;
+    SET_PROPS_SIZE(altptr_options, Rcpp::wrap(file_size));
     //Create a virtual file
-    filesystem_file_info file_info = add_virtual_file(read_func, data, size, unit_size);
+    filesystem_file_info file_info = add_virtual_file(altrep_info, file_size);
     std::string file_name = file_info.file_name;
     SET_PROPS_NAME(altptr_options, Rcpp::wrap(file_name));
     file_map_handle *handle;
-    std::string status = memory_map(handle, file_info, size);
+    std::string status = memory_map(handle, file_info, file_size);
     if (status != "")
     {
         remove_virtual_file(file_info.file_name);
@@ -66,38 +69,57 @@ SEXP Travel_make_altptr(int type, size_t length, file_data_func read_func, void 
 }
 
 
-/*
-SEXP make_altrep_from_file(filesystem_file_info& file_info, int type, size_t length)
+
+
+static void altfile_handle_finalizer(SEXP handle_extptr)
+{
+    std::string name = Rcpp::as<std::string>(R_ExternalPtrTag(handle_extptr));
+    file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
+    if (!has_mapped_file_handle(handle))
+    {
+        Rf_warning("The altfile handle has been released: %s, handle: %p\n", name.c_str(), handle);
+    }
+    else
+    {
+        debug_print("Finalizer, name:%s, size:%llu\n", name.c_str(), handle->size);
+        std::string status = memory_unmap(handle,false);
+        if (status != "")
+        {
+            Rf_warning(status.c_str());
+        }
+    }
+}
+
+SEXP make_altptr_from_file(std::string path, int type, size_t length)
 {
     PROTECT_GUARD guard;
-    R_altrep_class_t alt_class = get_altptr_class(type);
-    SEXP altptr_options = guard.protect(Rf_allocVector(VECSXP,SLOT_NUM));
-    SET_PROPS_LENGTH(altptr_options,Rcpp::wrap(length));
-    SEXP result = guard.protect(R_new_altrep(alt_class, protect, altptr_options));
+    R_altrep_class_t alt_class = get_altfile_class(type);
+    SEXP altfile_options = guard.protect(Rf_allocVector(VECSXP,SLOT_NUM));
+    SET_PROPS_LENGTH(altfile_options,Rcpp::wrap(length));
+    SEXP result = guard.protect(R_new_altrep(alt_class, R_NilValue, altfile_options));
     //Compute the total size
+    size_t unit_size = get_type_size(type);
     size_t size = length * unit_size;
-    SET_PROPS_SIZE(altptr_options, Rcpp::wrap(size));
-    //Create a virtual file
-    filesystem_file_info file_info = add_virtual_file(read_func, data, size, unit_size);
-    std::string file_name = file_info.file_name;
-    SET_PROPS_NAME(altptr_options, Rcpp::wrap(file_name));
+    SET_PROPS_SIZE(altfile_options, Rcpp::wrap(size));
+    std::string file_name = get_file_name_in_path(path);
+    SET_PROPS_NAME(altfile_options, Rcpp::wrap(file_name));
+    filesystem_file_info file_info;
+    file_info.file_name = file_name;
+    file_info.file_full_path = path;
     file_map_handle *handle;
-    std::string status = memory_map(handle, file_info, size);
+    std::string status = memory_map(handle, file_info, size,false);
     if (status != "")
     {
-        remove_virtual_file(file_info.file_name);
         Rf_warning(status.c_str());
         return R_NilValue;
     }
-    SEXP handle_extptr = guard.protect(R_MakeExternalPtr(handle, altptr_options, R_NilValue));
+    SEXP handle_extptr = guard.protect(R_MakeExternalPtr(handle, 
+    guard.protect(Rcpp::wrap(file_name)), R_NilValue));
     //Register finalizer for the pointer
-    R_RegisterCFinalizerEx(handle_extptr, file_handle_finalizer, TRUE);
-    SET_PROPS_EXTPTR(altptr_options, handle_extptr);
+    R_RegisterCFinalizerEx(handle_extptr, altfile_handle_finalizer, TRUE);
+    SET_PROPS_EXTPTR(altfile_options, handle_extptr);
     return result;
-}*/
-
-
-
+}
 
 
 

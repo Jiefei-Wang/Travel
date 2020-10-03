@@ -14,15 +14,10 @@
 static inode_type file_inode_counter = 1;
 double_key_map<inode_type, std::string, filesystem_file_data> file_list;
 
-filesystem_file_data::filesystem_file_data(file_data_func data_func,
-                                           void *private_data,
-                                           size_t file_size,
-                                           unsigned int unit_size) : data_func(data_func),
-                                                                     private_data(private_data),
-                                                                     file_size(file_size),
-                                                                     unit_size(unit_size)
+filesystem_file_data::filesystem_file_data(Travel_altrep_info altrep_info,
+                       size_t file_size) : altrep_info(altrep_info),file_size(file_size)
 {
-  cache_size = lcm(MIN_CACHE_SIZE, unit_size);
+  cache_size = lcm(MIN_CACHE_SIZE, altrep_info.unit_size);
 }
 
 /*
@@ -31,13 +26,11 @@ Insert or delete files from the filesystem
 ==========================================================================
 */
 
-filesystem_file_info add_virtual_file(file_data_func data_func,
-                                      void *private_data,
+filesystem_file_info add_virtual_file(Travel_altrep_info altrep_info,
                                       size_t file_size,
-                                      unsigned int unit_size,
                                       const char *name)
 {
-  if (file_size % unit_size != 0)
+  if (file_size % altrep_info.unit_size != 0)
   {
     Rf_error("The file size and unit size does not match!\n");
   }
@@ -47,7 +40,7 @@ filesystem_file_info add_virtual_file(file_data_func data_func,
     file_name = "inode_" + std::to_string(file_inode_counter);
   else
     file_name = std::string(name);
-  filesystem_file_data file_data(data_func, private_data, file_size, unit_size);
+  filesystem_file_data file_data(altrep_info, file_size);
   file_list.insert(file_inode_counter, file_name, file_data);
   std::string file_full_path = build_path(get_mountpoint(), file_name);
   return {file_full_path, file_name, file_inode_counter};
@@ -110,7 +103,7 @@ Rcpp::DataFrame C_list_virtual_files()
     name[j] = i->second;
     inode[j] = i->first;
     filesystem_file_data &file_data = file_list.get_value_by_key1(i->first);
-    unit_size[j] = file_data.unit_size;
+    unit_size[j] = file_data.altrep_info.unit_size;
     file_size[j] = file_data.file_size;
     cache_size[j] = file_data.cache_size;
     cache_number[j] = file_data.write_cache.size();

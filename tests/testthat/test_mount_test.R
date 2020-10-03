@@ -1,4 +1,5 @@
 context("Basic mount and unmount test for the filesystem")
+set_verbose(FALSE)
 
 tmp_dir <- paste0(tempdir(),"/travel_test")
 if(dir.exists(tmp_dir)){
@@ -21,7 +22,7 @@ test_that("path with trailing slash", {
 })
 
 test_that("path with driver letter", {
-    if(get_os()=="windows"){
+    if(get_OS()=="windows"){
         tmp_dir2 <- "Y:/"
         set_mountpoint(tmp_dir2)
         expect_error(run_filesystem(),NA)

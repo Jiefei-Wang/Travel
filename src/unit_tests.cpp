@@ -5,7 +5,7 @@
 /*
 Create an integer vector for testing the altrep functions
 */
-size_t fake_integer_read(filesystem_file_data &file_data, void *buffer, size_t offset, size_t length)
+size_t fake_integer_read(Travel_altrep_info* altrep_info, void *buffer, size_t offset, size_t length)
 {
     for (size_t i = 0; i < length; i++)
     {
@@ -16,13 +16,18 @@ size_t fake_integer_read(filesystem_file_data &file_data, void *buffer, size_t o
 // [[Rcpp::export]]
 SEXP C_make_test_integer_altrep(double n)
 {
-    return Travel_make_altptr(INTSXP, n, fake_integer_read, nullptr);
+    Travel_altrep_info altrep_info = {};
+    altrep_info.length = n;
+    altrep_info.type = INTSXP;
+    altrep_info.operations.get_region = fake_integer_read;
+
+    return Travel_make_altptr(altrep_info);
 }
 
 /*
 Create a fake file in the mounted filesystem
 */
-size_t fake_read(filesystem_file_data &file_data, void *buffer, size_t offset, size_t length)
+size_t fake_read(Travel_altrep_info* altrep_info, void *buffer, size_t offset, size_t length)
 {
     std::string data = "fake read data\n";
     for (size_t i = 0; i < length; i++)
@@ -35,14 +40,39 @@ size_t fake_read(filesystem_file_data &file_data, void *buffer, size_t offset, s
 //[[Rcpp::export]]
 void C_make_fake_file(size_t size)
 {
-    add_virtual_file(fake_read, nullptr, size);
+    Travel_altrep_info altrep_info = {};
+    altrep_info.operations.get_region = fake_read;
+    add_virtual_file(altrep_info, size);
 }
 
 //[[Rcpp::export]]
 void C_make_fake_file2(size_t size)
 {
-    add_virtual_file(fake_integer_read, nullptr, size);
+    Travel_altrep_info altrep_info = {};
+    altrep_info.operations.get_region = fake_integer_read;
+    add_virtual_file(altrep_info, size);
 }
+
+SEXP make_altptr_from_file(std::string path, int type, size_t length);
+//[[Rcpp::export]]
+SEXP C_make_altptr_from_file(SEXP path, SEXP type, size_t length)
+{
+    std::string path_str = Rcpp::as<std::string>(path);
+    std::string type_str = Rcpp::as<std::string>(type);
+    int type_num;
+    if(type_str=="logical"){
+        type_num = LGLSXP;
+    }else if(type_str == "integer"){
+        type_num = INTSXP;
+    }else if(type_str=="double"|| type_str =="real"){
+        type_num = REALSXP;
+    }else{
+        Rf_error("Unknown type <%s>\n", type_str.c_str());
+    }
+    return make_altptr_from_file(path_str, type_num, length);
+}
+
+
 
 
 

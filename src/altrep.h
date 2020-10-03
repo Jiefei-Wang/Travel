@@ -6,8 +6,8 @@
 #define SIZE_SLOT 2
 #define LENGTH_SLOT 3
 
-#define GET_WRAPPED_DATA(x) R_altrep_data1(x)
-#define SET_WRAPPED_DATA(x, v) R_set_altrep_data1(x, v)
+#define GET_PROTECTED_DATA(x) R_altrep_data1(x)
+#define SET_PROTECTED_DATA(x, v) R_set_altrep_data1(x, v)
 
 
 #define GET_PROPS(x) R_altrep_data2(x)
@@ -35,5 +35,5 @@
 
 
 R_altrep_class_t get_altptr_class(int type);
-
+R_altrep_class_t get_altfile_class(int type);
 

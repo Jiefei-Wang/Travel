@@ -1,4 +1,4 @@
-get_os <- function(){
+get_OS <- function(){
     sysinf <- Sys.info()
     if (!is.null(sysinf)){
         os <- sysinf['sysname']
@@ -12,4 +12,15 @@ get_os <- function(){
             os <- "linux"
     }
     tolower(os)
+}
+
+get_OS_bit <- function(){
+    .Machine$sizeof.pointer * 8
+}
+
+set_verbose<- function(x){
+    C_set_debug_print(x)
+    C_set_altrep_print(x)
+    C_set_filesystem_print(x)
+    C_set_filesystem_log(x)
 }
