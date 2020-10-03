@@ -42,7 +42,29 @@ ALTREP operations
 Rboolean altptr_Inspect(SEXP x, int pre, int deep, int pvec,
                         void (*inspect_subtree)(SEXP, int, int, int))
 {
-    Rprintf("altrep pointer object(len=%llu, type=%d)\n", Rf_xlength(x), TYPEOF(x));
+    std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
+    Filesystem_file_data &file_data = get_virtual_file(file_name);
+    Rprintf("Altptr: len: %llu, file size: %llu, unit size: %llu, cache num: %llu, private: %p",
+            (uint64_t)Rf_xlength(x),
+            (uint64_t)file_data.file_size,
+            (uint64_t)file_data.unit_size,
+            (uint64_t)file_data.write_cache.size(),
+            file_data.altrep_info.private_data);
+    if (file_data.altrep_info.operations.get_private_size != NULL)
+    {
+        size_t private_size = file_data.altrep_info.operations.get_private_size(&file_data.altrep_info);
+        Rprintf(", private size:%llu\n", (uint64_t)private_size);
+    }
+    else
+    {
+        Rprintf("\n");
+    }
+    if (file_data.altrep_info.private_data != NULL &&
+        file_data.altrep_info.operations.inspect_private != NULL)
+    {
+        Rprintf("Private data:\n");
+        file_data.altrep_info.operations.inspect_private(&file_data.altrep_info);
+    }
     return TRUE;
 }
 
@@ -86,30 +108,31 @@ const void *altptr_dataptr_or_null(SEXP x)
     }
 }
 
-
-SEXP altptr_duplicate(SEXP x, Rboolean deep) {
+SEXP altptr_duplicate(SEXP x, Rboolean deep)
+{
     altrep_print("Duplicating object\n");
-	if (!is_filesystem_running())
+    if (!is_filesystem_running())
     {
         Rf_error("The filesystem is not running!\n");
     }
     SEXP handle_extptr = GET_ALT_HANDLE_EXTPTR(x);
-    file_map_handle* handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
+    file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
     //Pass all changes to the filesystem
     flush_handle(handle);
     //Get the file name
     std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
-    Filesystem_file_data& file_data = get_virtual_file(file_name);
+    Filesystem_file_data &file_data = get_virtual_file(file_name);
     //Duplicate the object
     SEXP res = PROTECT(Travel_make_altptr(file_data.altrep_info, GET_PROTECTED_DATA(x)));
     //Get the new file name
     std::string new_file_name = Rcpp::as<std::string>(GET_ALT_NAME(res));
-    Filesystem_file_data& new_file_data = get_virtual_file(new_file_name);
+    Filesystem_file_data &new_file_data = get_virtual_file(new_file_name);
     //Copy write cache
-    claim(file_data.cache_size==new_file_data.cache_size);
+    claim(file_data.cache_size == new_file_data.cache_size);
     size_t cache_size = file_data.cache_size;
-    for(auto i:file_data.write_cache){
-        char* ptr = new char[cache_size];
+    for (auto i : file_data.write_cache)
+    {
+        char *ptr = new char[cache_size];
         memcpy(ptr, i.second, cache_size);
         new_file_data.write_cache[i.first] = ptr;
     }
@@ -128,14 +151,12 @@ Register ALTREP class
     /* common ALTREP methods */                                           \
     R_set_altrep_Inspect_method(ALT_CLASS, altptr_Inspect);               \
     R_set_altrep_Length_method(ALT_CLASS, altptr_length);                 \
-    R_set_altrep_Duplicate_method(ALT_CLASS, altptr_duplicate);     \
+    R_set_altrep_Duplicate_method(ALT_CLASS, altptr_duplicate);           \
     /* ALTVEC methods */                                                  \
     R_set_altvec_Dataptr_method(ALT_CLASS, altptr_dataptr);               \
     R_set_altvec_Dataptr_or_null_method(ALT_CLASS, altptr_dataptr_or_null);
-	
-    
-//R_set_altvec_Extract_subset_method(ALT_CLASS, numeric_subset<R_TYPE, C_TYPE>);
 
+//R_set_altvec_Extract_subset_method(ALT_CLASS, numeric_subset<R_TYPE, C_TYPE>);
 
 //[[Rcpp::init]]
 void init_altptr_logical_class(DllInfo *dll)

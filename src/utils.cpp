@@ -125,7 +125,7 @@ size_t get_type_size(int type)
 }
 
 
-size_t get_object_size(SEXP x)
+uint64_t get_object_size(SEXP x)
 {
 	size_t elt_size = get_type_size(TYPEOF(x));
 	return elt_size * XLENGTH(x);
