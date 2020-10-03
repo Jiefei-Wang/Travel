@@ -194,7 +194,7 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
 {
     size_t current_counter = print_counter++;
     filesystem_file_data &file_data = get_virtual_file(ino);
-    unsigned int &unit_size = file_data.unit_size;
+    uint8_t &unit_size = file_data.unit_size;
     size_t &file_size = file_data.file_size;
     size = get_valid_file_size(file_size, offset, size);
     filesystem_log("%llu: Read, ino %lu, name %s, offset:%llu, size:%llu\n",

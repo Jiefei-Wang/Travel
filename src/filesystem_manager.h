@@ -31,6 +31,7 @@ struct filesystem_file_data
   filesystem_file_data(Travel_altrep_info altrep_info,
                        size_t file_size);
   Travel_altrep_info altrep_info;
+  uint8_t unit_size;
   size_t file_size;
   size_t cache_size;
   std::map<size_t, char *> write_cache;

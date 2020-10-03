@@ -87,12 +87,12 @@ build_path("bucket/", "test") = "bucket/test"
 build_path("bucket/", "/test") = "bucket/test"
 */
 std::string build_path(std::string path1, std::string path2);
+std::string get_file_name_in_path(std::string path);
 #ifdef _WIN32
 std::wstring stringToWstring(const char *utf8Bytes);
 std::string wstringToString(const wchar_t *utf16Bytes);
 std::wstring stringToWstring(std::string utf8Bytes);
 std::string wstringToString(std::wstring utf16Bytes);
-std::string get_file_name_in_path(std::string path);
 #endif
 
 #endif

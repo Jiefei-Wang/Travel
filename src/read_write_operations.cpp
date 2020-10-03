@@ -31,7 +31,7 @@ size_t get_valid_file_size(size_t file_size, size_t offset, size_t size)
 */
 size_t read_local_file_func(filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
 {
-    uint8_t &unit_size = file_data.altrep_info.unit_size;
+    uint8_t &unit_size = file_data.unit_size;
     // If the unit size is 1, there is nothing to do
     if (unit_size == 1)
     {

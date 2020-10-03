@@ -42,7 +42,6 @@ e.g Travel_altrep_info altrep_info = {};
 Args:
   operations: A collection of functions to do the vector operations
   type: R's vector type(e.g. RAWSXP, LGLSXP, INTSXP, REALSXP)
-  unit_size: The size of each element in the vector
   length: Length of the vector
   private_data: A pointer that can be used to store the private data of the ALTREP
 */
@@ -50,7 +49,6 @@ struct Travel_altrep_info
 {
   struct Travel_altrep_operations operations;
   int type;
-  uint8_t unit_size;
   uint64_t length;
   void *private_data;
 };
