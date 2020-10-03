@@ -52,21 +52,31 @@ filesystem_file_info add_virtual_file(file_data_func data_func,
   std::string file_full_path = build_path(get_mountpoint(), file_name);
   return {file_full_path, file_name, file_inode_counter};
 }
-filesystem_file_data &get_virtual_file(std::string name)
+
+
+const std::string& get_virtual_file_name(inode_type inode){
+  return file_list.get_key2(inode);
+}
+inode_type get_virtual_file_inode(const std::string name){
+  return file_list.get_key1(name);
+}
+filesystem_file_data &get_virtual_file(const std::string name)
 {
-  if (!file_list.has_key2(name))
-  {
-    Rf_error("The virtual file %s does not exist!\n", name.c_str());
-  }
   return file_list.get_value_by_key2(name);
 }
-bool has_virtual_file(std::string name){
-    return file_list.has_key2(name);
+filesystem_file_data& get_virtual_file(inode_type inode){
+  return file_list.get_value_by_key1(inode);
 }
 
-bool remove_virtual_file(std::string name)
+bool has_virtual_file(const std::string name){
+    return file_list.has_key2(name);
+}
+bool has_virtual_file(inode_type inode){
+    return file_list.has_key1(inode);
+}
+bool remove_virtual_file(const std::string name)
 {
-  if (file_list.has_key2(name))
+  if (has_virtual_file(name))
   {
     filesystem_file_data &file_data = file_list.get_value_by_key2(name);
     for (auto i : file_data.write_cache)

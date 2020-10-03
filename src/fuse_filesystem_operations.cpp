@@ -16,8 +16,6 @@
 #include "package_settings.h"
 #include "utils.h"
 
-extern double_key_map<inode_type, std::string, filesystem_file_data> file_list;
-
 static size_t print_counter = 0;
 /*
 Fuse specific objects
@@ -26,15 +24,16 @@ static fuse_chan *channel = NULL;
 static fuse_session *session = NULL;
 static fuse_lowlevel_ops filesystem_operations;
 
-static std::string get_file_name(fuse_ino_t ino)
+static std::string root_path = "/";
+static const std::string& get_file_name(fuse_ino_t ino)
 {
     if (ino != 1)
     {
-        return file_list.get_key2(ino);
+        return get_virtual_file_name(ino);
     }
     else
     {
-        return "/";
+        return root_path;
     }
 }
 static int fill_file_stat(fuse_ino_t ino, struct stat *stbuf)
@@ -46,12 +45,12 @@ static int fill_file_stat(fuse_ino_t ino, struct stat *stbuf)
         stbuf->st_nlink = 2;
         return 0;
     }
-    if (file_list.has_key1(ino))
+    if (has_virtual_file(ino))
     {
         stbuf->st_mode = S_IFREG | 0666;
         stbuf->st_nlink = 1;
 
-        stbuf->st_size = file_list.get_value_by_key1(ino).file_size;
+        stbuf->st_size = get_virtual_file(ino).file_size;
         return 0;
     }
     return -1;
@@ -84,7 +83,7 @@ static void filesystem_loopup(fuse_req_t req, fuse_ino_t parent, const char *nam
     filesystem_log("%lu: lookup, parent %lu, name %s\n", print_counter++, parent, name);
     struct fuse_entry_param e;
     {
-        if (parent != FUSE_ROOT_ID || !file_list.has_key2(name))
+        if (parent != FUSE_ROOT_ID || !has_virtual_file(name))
         {
             filesystem_log("File is not found\n");
             fuse_reply_err(req, ENOENT);
@@ -93,7 +92,7 @@ static void filesystem_loopup(fuse_req_t req, fuse_ino_t parent, const char *nam
         filesystem_log("File is found\n");
 
         memset(&e, 0, sizeof(e));
-        e.ino = file_list.get_key1(name);
+        e.ino = get_virtual_file_inode(name);
     }
     e.attr_timeout = 0;
     e.entry_timeout = 0;
@@ -153,7 +152,7 @@ static void filesystem_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
         memset(&b, 0, sizeof(b));
         dirbuf_add(req, &b, ".", 1);
         dirbuf_add(req, &b, "..", 1);
-        for (auto i = file_list.begin_key(); i != file_list.end_key(); ++i)
+        for (auto i = virtual_file_begin(); i != virtual_file_end(); ++i)
         {
             filesystem_log("File Added: %s\n", i->second.c_str());
             dirbuf_add(req, &b, i->second.c_str(), i->first);
@@ -170,7 +169,7 @@ static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
     size_t current_counter = print_counter++;
     filesystem_log("%lu: open, ino %lu\n", current_counter, ino);
     {
-        if (!file_list.has_key1(ino))
+        if (!has_virtual_file(ino))
         {
             fuse_reply_err(req, ENOENT);
             return;
@@ -194,12 +193,12 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
                             off_t offset, fuse_file_info *fi)
 {
     size_t current_counter = print_counter++;
-    filesystem_file_data &file_data = file_list.get_value_by_key1(ino);
+    filesystem_file_data &file_data = get_virtual_file(ino);
     unsigned int &unit_size = file_data.unit_size;
     size_t &file_size = file_data.file_size;
     size = get_valid_file_size(file_size, offset, size);
     filesystem_log("%llu: Read, ino %lu, name %s, offset:%llu, size:%llu\n",
-                   current_counter, ino, file_list.get_key2(ino).c_str(),
+                   current_counter, ino, get_virtual_file_name(ino).c_str(),
                    offset, size);
     if (size == 0){
         fuse_reply_buf(req, NULL, 0);
@@ -246,7 +245,7 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
 static void filesystem_write(fuse_req_t req, fuse_ino_t ino, const char *buffer,
                              size_t buffer_length, off_t offset, struct fuse_file_info *fi)
 {
-    filesystem_file_data &file_data = file_list.get_value_by_key1(ino);
+    filesystem_file_data &file_data = get_virtual_file(ino);
 	size_t &file_size = file_data.file_size;
 	size_t write_length = get_valid_file_size(file_size, offset, buffer_length);
 	general_write_func(file_data, buffer, offset, write_length);
