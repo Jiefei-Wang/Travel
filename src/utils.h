@@ -1,6 +1,7 @@
 #ifndef HEADER_UTILS
 #define HEADER_UTILS
 
+#include "Travel_types.h"
 #define TRAVEL_PACKAGE_DEBUG
 
 #ifdef TRAVEL_PACKAGE_DEBUG

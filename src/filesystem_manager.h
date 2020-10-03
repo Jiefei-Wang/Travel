@@ -4,10 +4,41 @@
 #include <string>
 #include "Travel_types.h"
 
-filesystem_file_info add_virtual_file(file_data_func data_func,
-                                      void *private_data,
+/*
+A struct that holds File name, full path and inode number
+*/
+struct filesystem_file_info
+{
+  std::string file_full_path;
+  std::string file_name;
+  size_t file_inode;
+};
+
+
+/*
+The struct that holds all data of a file
+member variables:
+  data_func: The function to read the data from the file
+  file_size: The file size in bytes
+  unit_size: The unit size of the data in bytes. The offset and length
+             that are passed to the function data_func will be calculated based on this unit.
+             DO NOT TRY TO CHANGE IT!
+  cache_size: The write cache size. DO NOT TRY TO CHANGE IT!
+  write_cache: All the changes to the data will be stored here by block. DO NOT TRY TO CHANGE IT!
+*/
+struct filesystem_file_data
+{
+  filesystem_file_data(Travel_altrep_info altrep_info,
+                       size_t file_size);
+  Travel_altrep_info altrep_info;
+  size_t file_size;
+  size_t cache_size;
+  std::map<size_t, char *> write_cache;
+};
+
+
+filesystem_file_info add_virtual_file(Travel_altrep_info altrep_info,
                                       size_t file_size,
-                                      unsigned int unit_size = 1,
                                       const char *name = NULL);
 filesystem_file_data& get_virtual_file(std::string name);
 bool has_virtual_file(std::string name);

@@ -2,9 +2,9 @@
 #include "utils.h"
 #include "filesystem_manager.h"
 
-size_t read_altrep(filesystem_file_data &file_data, void *buffer, size_t offset, size_t length)
+size_t read_altrep(Travel_altrep_info* altrep_info, void *buffer, size_t offset, size_t length)
 {
-    SEXP wrapped_object = (SEXP)file_data.private_data;
+    SEXP wrapped_object = (SEXP)altrep_info->private_data;
     switch (TYPEOF(wrapped_object))
     {
     case INTSXP:
@@ -23,11 +23,16 @@ size_t read_altrep(filesystem_file_data &file_data, void *buffer, size_t offset,
     return length;
 }
 
-//Travel_make_altptr(int type, void *data, size_t length, unsigned int unit_size, file_data_func read_func, SEXP protect)
+//Travel_make_altptr(int type, void *data, size_t length, unsigned int unit_size, read_data_func read_func, SEXP protect)
 //[[Rcpp::export]]
 SEXP C_make_altptr_from_altrep(SEXP x)
 {
-    SEXP altptr_object = Travel_make_altptr(TYPEOF(x), XLENGTH(x),read_altrep, x, x);
+    Travel_altrep_info altrep_info = {};
+    altrep_info.length = XLENGTH(x);
+    altrep_info.private_data = x;
+    altrep_info.type = TYPEOF(x);
+    altrep_info.operations.get_region = read_altrep;
+    SEXP altptr_object = Travel_make_altptr(altrep_info);
     return altptr_object;
 }
 
@@ -77,8 +82,14 @@ SEXP C_get_ptr(SEXP x){
 }
 
 
+
+
+
+
+
+
 /*
-//C_make_altPtr_internal(int type, void *data, size_t size, file_data_func read_func, unsigned int unit_size);
+//C_make_altPtr_internal(int type, void *data, size_t size, read_data_func read_func, unsigned int unit_size);
 struct mydata{
     size_t from;
     size_t by;

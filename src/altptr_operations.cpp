@@ -101,7 +101,7 @@ SEXP altptr_duplicate(SEXP x, Rboolean deep) {
     std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
     filesystem_file_data& file_data = get_virtual_file(file_name);
     //Duplicate the object
-    SEXP res = PROTECT(Travel_make_altptr(TYPEOF(x), XLENGTH(x), file_data.data_func, file_data.private_data, GET_PROTECTED_DATA(x)));
+    SEXP res = PROTECT(Travel_make_altptr(file_data.altrep_info, GET_PROTECTED_DATA(x)));
     //Get the new file name
     std::string new_file_name = Rcpp::as<std::string>(GET_ALT_NAME(res));
     filesystem_file_data& new_file_data = get_virtual_file(new_file_name);

@@ -31,11 +31,11 @@ size_t get_valid_file_size(size_t file_size, size_t offset, size_t size)
 */
 size_t read_local_file_func(filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
 {
-    unsigned int &unit_size = file_data.unit_size;
+    uint8_t &unit_size = file_data.altrep_info.unit_size;
     // If the unit size is 1, there is nothing to do
     if (unit_size == 1)
     {
-        return file_data.data_func(file_data, buffer, offset, size);
+        return file_data.altrep_info.operations.get_region(&file_data.altrep_info, buffer, offset, size);
     }
     //Otherwise, we must convert the request to fit the unit size requirement
     size_t buffer_offset = 0;
@@ -47,7 +47,7 @@ size_t read_local_file_func(filesystem_file_data &file_data, void *buffer, size_
     if (start_intra_elt_offset != 0)
     {
         ptr.reset(new char[unit_size]);
-        size_t read_length = file_data.data_func(file_data, ptr.get(), start_offset, 1);
+        size_t read_length = file_data.altrep_info.operations.get_region(&file_data.altrep_info, ptr.get(), start_offset, 1);
         if (read_length != 1)
         {
             filesystem_log("Warning in read_local_file_func: The return size of the reading function is not 1!\n");
@@ -74,8 +74,9 @@ size_t read_local_file_func(filesystem_file_data &file_data, void *buffer, size_
     {
         claim(buffer_offset + length * unit_size <= size);
         claim(size - buffer_offset - length * unit_size < unit_size);
-        size_t read_length = file_data.data_func(file_data, cbuffer + buffer_offset,
-                                                 start_offset, length);
+        size_t read_length = file_data.altrep_info.operations.get_region(&file_data.altrep_info,
+                                                                         cbuffer + buffer_offset,
+                                                                         start_offset, length);
         buffer_offset = buffer_offset + read_length * unit_size;
         if (read_length < length)
             return buffer_offset;
@@ -85,7 +86,8 @@ size_t read_local_file_func(filesystem_file_data &file_data, void *buffer, size_
     {
         if (ptr == nullptr)
             ptr.reset(new char[unit_size]);
-        size_t read_length = file_data.data_func(file_data, ptr.get(), end_offset, 1);
+        size_t read_length = file_data.altrep_info.operations.get_region(&file_data.altrep_info,
+                                                                         ptr.get(), end_offset, 1);
         if (read_length != 1)
         {
             filesystem_log("Warning in read_local_file_func: The return size of the reading function is not 1!\n");

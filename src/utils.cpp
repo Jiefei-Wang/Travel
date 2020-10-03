@@ -16,19 +16,23 @@ static std::ofstream filesystem_log_stream;
 static bool filesystem_log_opened = false;
 
 // [[Rcpp::export]]
-void C_set_debug_print(bool x){
+void C_set_debug_print(bool x)
+{
 	debug_print_enabled = x;
 }
 // [[Rcpp::export]]
-void C_set_altrep_print(bool x){
+void C_set_altrep_print(bool x)
+{
 	altrep_print_enabled = x;
 }
 // [[Rcpp::export]]
-void C_set_filesystem_print(bool x){
+void C_set_filesystem_print(bool x)
+{
 	filesystem_print_enabled = x;
 }
 // [[Rcpp::export]]
-void C_set_filesystem_log(bool x){
+void C_set_filesystem_log(bool x)
+{
 	filesystem_log_enabled = x;
 }
 
@@ -50,7 +54,6 @@ void close_filesystem_log()
 		filesystem_log_opened = false;
 	}
 }
-
 
 void filesystem_log(const char *format, ...)
 {
@@ -119,12 +122,12 @@ size_t get_type_size(int type)
 	return elt_size;
 }
 
+
 size_t get_object_size(SEXP x)
 {
 	size_t elt_size = get_type_size(TYPEOF(x));
 	return elt_size * XLENGTH(x);
 }
-
 
 std::string to_linux_slash(std::string path)
 {

@@ -33,27 +33,27 @@ static void altptr_handle_finalizer(SEXP handle_extptr)
 /*
 
 */
-SEXP Travel_make_altptr(int type, size_t length, file_data_func read_func, void *private_data, SEXP protect)
+SEXP Travel_make_altptr(Travel_altrep_info altrep_info, SEXP protect)
 {
     if (!is_filesystem_running())
     {
         Rf_error("The filesystem is not running!\n");
     }
     PROTECT_GUARD guard;
-    R_altrep_class_t alt_class = get_altptr_class(type);
+    R_altrep_class_t alt_class = get_altptr_class(altrep_info.type);
     SEXP altptr_options = guard.protect(Rf_allocVector(VECSXP,SLOT_NUM));
-    SET_PROPS_LENGTH(altptr_options,Rcpp::wrap(length));
+    SET_PROPS_LENGTH(altptr_options,Rcpp::wrap(altrep_info.length));
     SEXP result = guard.protect(R_new_altrep(alt_class, protect, altptr_options));
     //Compute the total size
-    size_t unit_size = get_type_size(type);
-    size_t size = length * unit_size;
-    SET_PROPS_SIZE(altptr_options, Rcpp::wrap(size));
+    size_t unit_size = get_type_size(altrep_info.type);
+    size_t file_size = altrep_info.length * unit_size;
+    SET_PROPS_SIZE(altptr_options, Rcpp::wrap(file_size));
     //Create a virtual file
-    filesystem_file_info file_info = add_virtual_file(read_func, private_data, size, unit_size);
+    filesystem_file_info file_info = add_virtual_file(altrep_info, file_size);
     std::string file_name = file_info.file_name;
     SET_PROPS_NAME(altptr_options, Rcpp::wrap(file_name));
     file_map_handle *handle;
-    std::string status = memory_map(handle, file_info, size);
+    std::string status = memory_map(handle, file_info, file_size);
     if (status != "")
     {
         remove_virtual_file(file_info.file_name);
