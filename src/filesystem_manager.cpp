@@ -14,12 +14,114 @@
 static inode_type file_inode_counter = 1;
 double_key_map<inode_type, std::string, Filesystem_file_data> file_list;
 
-Filesystem_file_data::Filesystem_file_data(Travel_altrep_info altrep_info): 
-                  altrep_info(altrep_info)
+/*
+==========================================================================
+Filesystem_file_data struct
+==========================================================================
+*/
+Filesystem_file_data::Filesystem_file_data(Travel_altrep_info altrep_info) : altrep_info(altrep_info)
 {
   unit_size = get_type_size(altrep_info.type);
   file_size = altrep_info.length * unit_size;
   cache_size = lcm(MIN_CACHE_SIZE, unit_size);
+}
+
+/*
+==========================================================================
+Cache_block class
+==========================================================================
+*/
+
+Cache_block::Cache_block(size_t size) : size(size)
+{
+  ptr = new char[size];
+  counter = new size_t;
+  *counter = 1;
+  //Rprintf("Initializer, %llu\n", *counter);
+}
+Cache_block::~Cache_block()
+{
+  //Rprintf("destructor, %llu\n", *counter);
+  if (!is_shared())
+  {
+    delete[] ptr;
+    delete counter;
+  }else{
+    (*counter)--;
+  }
+}
+
+// Copy constructor
+Cache_block::Cache_block(const Cache_block &cb)
+{
+  ptr = cb.ptr;
+  counter = cb.counter;
+  size = cb.size;
+  (*counter)++;
+  //Rprintf("Const copy constructor, %llu\n", *counter);
+}
+Cache_block::Cache_block(Cache_block &cb)
+{
+  ptr = cb.ptr;
+  counter = cb.counter;
+  size = cb.size;
+  (*counter)++;
+  //Rprintf("Copy constructor, %llu\n", *counter);
+}
+Cache_block &Cache_block::operator=(const Cache_block &cb)
+{
+  //Rprintf("Assgnment, %llu\n", *counter);
+  if (&cb == this)
+    return *this;
+  if (counter != nullptr)
+  {
+    if (!is_shared())
+    {
+      delete[] ptr;
+      delete counter;
+    }
+    else
+    {
+      (*counter)--;
+    }
+  }
+  ptr = cb.ptr;
+  counter = cb.counter;
+  size = cb.size;
+  (*counter)++;
+  return *this;
+}
+
+// Reference count
+size_t Cache_block::use_count() const
+{
+  return *counter;
+}
+bool Cache_block::is_shared() const
+{
+  return (*counter) > 1;
+}
+size_t Cache_block::get_size() const{
+  return size;
+}
+// Get the pointer
+char *Cache_block::get()
+{
+  //Rprintf("get, %llu\n", *counter);
+  if (is_shared())
+  {
+    (*counter)--;
+    char *old_ptr = ptr;
+    ptr = new char[size];
+    memcpy(ptr, old_ptr, size);
+    counter = new size_t;
+    *counter = 1;
+  }
+  return ptr;
+}
+const char *Cache_block::get_const() const
+{
+  return ptr;
 }
 
 /*
@@ -31,12 +133,14 @@ Insert or delete files from the filesystem
 filesystem_file_info add_virtual_file(Travel_altrep_info altrep_info,
                                       const char *name)
 {
-  if(altrep_info.type==0){
-        Rf_error("Unspecified vector type!\n");
-    }
-    if(altrep_info.operations.get_region==NULL){
-        Rf_error("The function <get_region> is NULL!\n");
-    }
+  if (altrep_info.type == 0)
+  {
+    Rf_error("Unspecified vector type!\n");
+  }
+  if (altrep_info.operations.get_region == NULL)
+  {
+    Rf_error("The function <get_region> is NULL!\n");
+  }
   file_inode_counter++;
   std::string file_name;
   if (name == NULL)
@@ -49,48 +153,49 @@ filesystem_file_info add_virtual_file(Travel_altrep_info altrep_info,
   return {file_full_path, file_name, file_inode_counter};
 }
 
-
-const std::string& get_virtual_file_name(inode_type inode){
+const std::string &get_virtual_file_name(inode_type inode)
+{
   return file_list.get_key2(inode);
 }
-inode_type get_virtual_file_inode(const std::string name){
+inode_type get_virtual_file_inode(const std::string name)
+{
   return file_list.get_key1(name);
 }
 Filesystem_file_data &get_virtual_file(const std::string name)
 {
   return file_list.get_value_by_key2(name);
 }
-Filesystem_file_data& get_virtual_file(inode_type inode){
+Filesystem_file_data &get_virtual_file(inode_type inode)
+{
   return file_list.get_value_by_key1(inode);
 }
 
-bool has_virtual_file(const std::string name){
-    return file_list.has_key2(name);
+bool has_virtual_file(const std::string name)
+{
+  return file_list.has_key2(name);
 }
-bool has_virtual_file(inode_type inode){
-    return file_list.has_key1(inode);
+bool has_virtual_file(inode_type inode)
+{
+  return file_list.has_key1(inode);
 }
 bool remove_virtual_file(const std::string name)
 {
   if (has_virtual_file(name))
   {
-    Filesystem_file_data &file_data = file_list.get_value_by_key2(name);
-    for (auto i : file_data.write_cache)
-    {
-      delete i.second;
-    }
     return file_list.erase_value_by_key2(name);
   }
   return false;
 }
-typename std::map<const inode_type,const std::string>::iterator virtual_file_begin(){
+typename std::map<const inode_type, const std::string>::iterator virtual_file_begin()
+{
   return file_list.begin_key();
 }
-typename std::map<const inode_type,const std::string>::iterator virtual_file_end(){
+typename std::map<const inode_type, const std::string>::iterator virtual_file_end()
+{
   return file_list.end_key();
 }
 // [[Rcpp::export]]
-Rcpp::DataFrame C_list_virtual_files()
+Rcpp::DataFrame C_get_virtual_file_list()
 {
   using namespace Rcpp;
   int n = file_list.size();
@@ -100,6 +205,7 @@ Rcpp::DataFrame C_list_virtual_files()
   NumericVector file_size(n);
   NumericVector cache_size(n);
   NumericVector cache_number(n);
+  NumericVector shared_cache_number(n);
   int j = 0;
   for (auto i = file_list.begin_key(); i != file_list.end_key(); i++)
   {
@@ -110,6 +216,12 @@ Rcpp::DataFrame C_list_virtual_files()
     file_size[j] = file_data.file_size;
     cache_size[j] = file_data.cache_size;
     cache_number[j] = file_data.write_cache.size();
+    size_t count = 0;
+    for (const auto& it : file_data.write_cache)
+    {
+      count = count + it.second.is_shared();
+    }
+    shared_cache_number[j] = count;
     j++;
   }
   DataFrame df = DataFrame::create(Named("name") = name,
@@ -117,7 +229,8 @@ Rcpp::DataFrame C_list_virtual_files()
                                    Named("unit size") = unit_size,
                                    Named("file size") = file_size,
                                    Named("cache size") = cache_size,
-                                   Named("cache number") = cache_number);
+                                   Named("cache number") = cache_number,
+                                   Named("shared_cache_number") = shared_cache_number);
   return df;
 }
 

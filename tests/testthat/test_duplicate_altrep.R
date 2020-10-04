@@ -70,7 +70,7 @@ if(get_OS()!="linux"){
     
     gc()
     test_that("Check virtual file number",{
-        expect_true(nrow(C_list_virtual_files())==0)
+        expect_true(nrow(get_virtual_file_list())==0)
         expect_true(C_get_file_handle_number() == 0)
     })
     

@@ -71,3 +71,8 @@ deploy_filesystem <- function(){
     run_filesystem()
 }
 
+
+
+get_virtual_file_list <- function(){
+    C_get_virtual_file_list()
+}

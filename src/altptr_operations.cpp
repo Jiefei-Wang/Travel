@@ -129,13 +129,7 @@ SEXP altptr_duplicate(SEXP x, Rboolean deep)
     Filesystem_file_data &new_file_data = get_virtual_file(new_file_name);
     //Copy write cache
     claim(file_data.cache_size == new_file_data.cache_size);
-    size_t cache_size = file_data.cache_size;
-    for (auto i : file_data.write_cache)
-    {
-        char *ptr = new char[cache_size];
-        memcpy(ptr, i.second, cache_size);
-        new_file_data.write_cache[i.first] = ptr;
-    }
+    new_file_data.write_cache = file_data.write_cache;
     //Protect data
     SET_PROTECTED_DATA(res, GET_PROTECTED_DATA(x));
     Rf_unprotect(1);

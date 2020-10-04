@@ -151,3 +151,34 @@ SEXP C_get_file_path(SEXP x)
 {
     return get_file_path(x);
 }
+
+// [[Rcpp::export]]
+void C_inspect_altptr(SEXP x){
+    std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
+    Filesystem_file_data &file_data = get_virtual_file(file_name);
+    Rprintf("Altptr: len: %llu, file size: %llu, unit size: %llu, cache num: %llu, private: %p\n",
+            (uint64_t)Rf_xlength(x),
+            (uint64_t)file_data.file_size,
+            (uint64_t)file_data.unit_size,
+            (uint64_t)file_data.write_cache.size(),
+            file_data.altrep_info.private_data);
+    for(const auto& i: file_data.write_cache){
+        Rprintf("Cache block %llu, shared number %llu\n", i.first,i.second.use_count());
+    }
+}
+
+
+// [[Rcpp::export]]
+void C_test(){
+    std::map<size_t, Cache_block> m;
+    m.insert(std::pair<size_t,Cache_block>(1, Cache_block(1024)));
+    Rprintf("Start\n");
+    for(auto& i: m){
+        Rprintf("Cache block %llu, shared number %llu, ptr: %p\n", i.first,i.second.use_count(),i.second.get());
+    }
+    for(auto& i: m){
+        Rprintf("Cache block %llu, shared number %llu, ptr: %p\n", i.first,i.second.use_count(),i.second.get());
+    }
+    Rprintf("Shared number %llu, ptr: %p\n", m.find(1)->second.use_count(),m.find(1)->second.get());
+    Rprintf("Shared number %llu, ptr: %p\n", m.find(1)->second.use_count(),m.find(1)->second.get());
+}

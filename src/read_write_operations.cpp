@@ -130,12 +130,13 @@ size_t general_write_func(Filesystem_file_data &file_data, const void *buffer, s
         if (file_data.write_cache.find(block_id) == file_data.write_cache.end())
         {
             filesystem_log("Creating new block %llu\n", block_id);
-            file_data.write_cache[block_id] = new char[cache_size];
+            file_data.write_cache.insert(std::pair<size_t, Cache_block>(block_id, Cache_block(cache_size)));
+            //file_data.write_cache[block_id] = Cache_block(cache_size);
             if (block_offset != 0 || block_write_length != cache_size)
             {
                 size_t block_offset_in_file = block_id * cache_size;
                 size_t expect_read_size = get_valid_file_size(file_data.file_size, block_offset_in_file, cache_size);
-                size_t read_size = read_file_source_func(file_data, file_data.write_cache[block_id],
+                size_t read_size = read_file_source_func(file_data, file_data.write_cache.find(block_id)->second.get(),
                                                          block_offset_in_file, expect_read_size);
                 if (read_size != expect_read_size)
                 {
@@ -144,7 +145,7 @@ size_t general_write_func(Filesystem_file_data &file_data, const void *buffer, s
                 }
             }
         }
-        char *block_ptr = file_data.write_cache[block_id];
+        char *block_ptr = file_data.write_cache.find(block_id)->second.get();
         claim(buffer_offset + block_write_length <= size);
         claim(block_offset + block_write_length <= cache_size);
         memcpy(block_ptr + block_offset, (char *)buffer + buffer_offset, block_write_length);
@@ -196,7 +197,7 @@ size_t general_read_func(Filesystem_file_data &file_data, void *buffer, size_t o
             size_t block_read_length = std::min(cache_size - block_offset, size - buffer_offset);
             if (block_read_length == 0)
                 break;
-            char *block_ptr = it->second;
+            const char *block_ptr = it->second.get_const();
             claim(block_ptr != NULL);
             claim(block_offset + block_read_length <= cache_size);
             claim(buffer_offset + block_read_length <= size);

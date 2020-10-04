@@ -16,7 +16,7 @@ if(get_OS()!="linux"){
         expect_equal(x,y)
         
         ## Check if the cache number is 0
-        files <- C_list_virtual_files()
+        files <- get_virtual_file_list()
         expect_equal(files$cache.number, 0)
         
         
@@ -24,7 +24,7 @@ if(get_OS()!="linux"){
         C_set_int_value(x,1,-10)
         y[1] <- -10
         C_flush_altptr(x)
-        files <- C_list_virtual_files()
+        files <- get_virtual_file_list()
         expect_equal(files$cache.number, 1)
         
         ## Check the value of the file
@@ -50,7 +50,7 @@ if(get_OS()!="linux"){
             }
         }
         C_flush_altptr(x)
-        files <- C_list_virtual_files()
+        files <- get_virtual_file_list()
         expect_equal(files$cache.number, length(x)/files$cache.size*4)
         
         ## Check the value of the file
@@ -66,7 +66,7 @@ if(get_OS()!="linux"){
     
     gc()
     test_that("Check virtual file number",{
-        expect_true(nrow(C_list_virtual_files())==0)
+        expect_true(nrow(get_virtual_file_list())==0)
         expect_true(C_get_file_handle_number() == 0)
     })
 }
