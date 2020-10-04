@@ -62,8 +62,12 @@ Rboolean altptr_Inspect(SEXP x, int pre, int deep, int pvec,
     if (file_data.altrep_info.private_data != NULL &&
         file_data.altrep_info.operations.inspect_private != NULL)
     {
-        Rprintf("Private data:\n");
+        Rprintf("[Private data]\n");
         file_data.altrep_info.operations.inspect_private(&file_data.altrep_info);
+    }
+    Rprintf("[Cache info]\n");
+    for(const auto& i: file_data.write_cache){
+        Rprintf(" Cache block %llu, shared number %llu, ptr: %p\n", i.first,i.second.use_count(), i.second.get_const());
     }
     return TRUE;
 }

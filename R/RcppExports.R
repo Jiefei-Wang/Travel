@@ -33,10 +33,6 @@ C_get_file_path <- function(x) {
     .Call(`_Travel_C_get_file_path`, x)
 }
 
-C_inspect_altptr <- function(x) {
-    invisible(.Call(`_Travel_C_inspect_altptr`, x))
-}
-
 C_test <- function() {
     invisible(.Call(`_Travel_C_test`))
 }

@@ -92,16 +92,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// C_inspect_altptr
-void C_inspect_altptr(SEXP x);
-RcppExport SEXP _Travel_C_inspect_altptr(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    C_inspect_altptr(x);
-    return R_NilValue;
-END_RCPP
-}
 // C_test
 void C_test();
 RcppExport SEXP _Travel_C_test() {
@@ -385,7 +375,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_flush_altptr", (DL_FUNC) &_Travel_C_flush_altptr, 1},
     {"_Travel_C_get_file_name", (DL_FUNC) &_Travel_C_get_file_name, 1},
     {"_Travel_C_get_file_path", (DL_FUNC) &_Travel_C_get_file_path, 1},
-    {"_Travel_C_inspect_altptr", (DL_FUNC) &_Travel_C_inspect_altptr, 1},
     {"_Travel_C_test", (DL_FUNC) &_Travel_C_test, 0},
     {"_Travel_C_get_virtual_file_list", (DL_FUNC) &_Travel_C_get_virtual_file_list, 0},
     {"_Travel_run_filesystem_thread_func", (DL_FUNC) &_Travel_run_filesystem_thread_func, 0},
