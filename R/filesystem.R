@@ -26,9 +26,6 @@ get_mountpoint<- function(){
     C_get_mountpoint()
 }
 set_mountpoint <- function(path){
-    if(is_filesystem_running()){
-        stop("The filesystem is running, you cannot change the mountpoint")
-    }
     C_set_mountpoint(validate_path(path))
 }
 run_filesystem <- function(){
@@ -53,10 +50,6 @@ get_temp_mountpoint <- function(){
 }
 ## automatically deploy the filysystem in a temporary directory
 deploy_filesystem <- function(){
-    if(is_filesystem_running()){
-        message("The filesystem has been running")
-        return()
-    }
     mountpoint <- get_temp_mountpoint()
     set_mountpoint(mountpoint)
     run_filesystem()
