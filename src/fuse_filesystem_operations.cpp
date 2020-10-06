@@ -17,13 +17,7 @@
 
 #define FILE_SIZE 16777216
 #define FILE_NAME "inode2"
-/*
-Fuse specific objects
-*/
-static fuse_chan *channel = NULL;
-static fuse_session *session = NULL;
-static fuse_lowlevel_ops filesystem_operations;
-
+#define FILE_INODE 2
 static int fill_file_stat(fuse_ino_t ino, struct stat *stbuf)
 {
     stbuf->st_ino = ino;
@@ -33,7 +27,7 @@ static int fill_file_stat(fuse_ino_t ino, struct stat *stbuf)
         stbuf->st_nlink = 2;
         return 0;
     }
-    if (ino == 2)
+    if (ino == FILE_INODE)
     {
         stbuf->st_mode = S_IFREG | 0666;
         stbuf->st_nlink = 1;
@@ -59,7 +53,6 @@ static void filesystem_getattr(fuse_req_t req, fuse_ino_t ino,
         fuse_reply_attr(req, &stbuf, 1.0);
     }
 }
-
 //Assigned
 static void filesystem_loopup(fuse_req_t req, fuse_ino_t parent, const char *name)
 {
@@ -70,7 +63,7 @@ static void filesystem_loopup(fuse_req_t req, fuse_ino_t parent, const char *nam
         return;
     }
     memset(&e, 0, sizeof(e));
-    e.ino = 2;
+    e.ino = FILE_INODE;
     e.attr_timeout = 0;
     e.entry_timeout = 0;
     fill_file_stat(e.ino, &e.attr);
@@ -122,18 +115,17 @@ static void filesystem_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
         memset(&b, 0, sizeof(b));
         dirbuf_add(req, &b, ".", 1);
         dirbuf_add(req, &b, "..", 1);
-        dirbuf_add(req, &b, FILE_NAME, 2);
+        dirbuf_add(req, &b, FILE_NAME, FILE_INODE);
         reply_buf_limited(req, b.p, b.size, off, size);
         free(b.p);
     }
 }
-
 //Assigned
 static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
                             fuse_file_info *fi)
 {
 
-    if (ino != 2)
+    if (ino != FILE_INODE)
     {
         fuse_reply_err(req, ENOENT);
         return;
@@ -149,21 +141,26 @@ static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
 }
 
 //Data buffer
-static size_t buffer_size = 1024;
-std::unique_ptr<char[]> buffer(new char[buffer_size]);
+std::unique_ptr<char[]> unique_buffer;
 static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
                             off_t offset, fuse_file_info *fi)
 {
-    buffer.reset(new char[size]);
-    fuse_reply_buf(req, buffer.get(), size);
+    unique_buffer.reset(new char[size]);
+    fuse_reply_buf(req, unique_buffer.get(), size);
     return;
 }
-int ct = 0;
+#include <mutex>
+std::mutex m;
 static void filesystem_write(fuse_req_t req, fuse_ino_t ino, const char *buffer,
                              size_t buffer_length, off_t offset, struct fuse_file_info *fi)
 {
+    m.lock();
+    sleep(0.1);
+    printf("Write %llu, size: %llu\n", offset,buffer_length);
     fuse_reply_write(req, buffer_length);
-    char *block_ptr = (char *)malloc(4096);
+    new char[4096];
+    printf("Finish\n");
+    m.unlock();
 }
 
 /*
@@ -186,6 +183,12 @@ SEXP C_get_mountpoint(){
 	return Rf_mkString(get_mountpoint().c_str());
 }
 
+/*
+Fuse specific objects
+*/
+static fuse_chan *channel = NULL;
+static fuse_session *session = NULL;
+static fuse_lowlevel_ops filesystem_operations;
 // [[Rcpp::export]]
 void filesystem_thread_func()
 {
@@ -241,7 +244,7 @@ int C_mmp(SEXP path, size_t length, Rcpp::NumericVector ind, Rcpp::NumericVector
     }
     for(size_t i=0;i<length;i++){
         Rprintf("%llu: %llu\n",i, (size_t)ind(i)-1);
-        if(length<=ind(i)){
+        if(length<=ind(i)-1){
             Rf_error("error");
         }
         ptr[(size_t)ind(i)-1]=v(i);
