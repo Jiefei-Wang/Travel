@@ -124,7 +124,8 @@ size_t get_type_size(int type)
 	return elt_size;
 }
 
-std::string get_type_name(int type){
+std::string get_type_name(int type)
+{
 	std::string name;
 	switch (type)
 	{
@@ -145,7 +146,6 @@ std::string get_type_name(int type){
 	}
 	return name;
 }
-
 
 uint64_t get_object_size(SEXP x)
 {
@@ -216,7 +216,7 @@ std::string get_file_name_in_path(std::string path)
 		((double *)dest)[i] = src_value;     \
 		break;                               \
 	default:                                 \
-		claim(!"Unknown type");            \
+		claim(!"Unknown type");              \
 	}
 
 void copy_memory(int dest_type, int src_type, void *dest, const void *src, size_t length, bool reverse)
@@ -231,74 +231,43 @@ void copy_memory(int dest_type, int src_type, void *dest, const void *src, size_
 	}
 	if (length == 0)
 		return;
-	if (!reverse)
+
+	for (size_t j = 0; j < length; j++)
 	{
-		for (size_t i = 0; i < length; i++)
-		{
-			switch (src_type)
-			{
-			case RAWSXP:
-			{
-				char src_value = ((char *)src)[i];
-				PTR_ASSIGN;
-				break;
-			}
-			case INTSXP:
-			{
-				char src_value = ((int *)src)[i];
-				PTR_ASSIGN;
-				break;
-			}
-			case LGLSXP:
-			{
-				char src_value = ((int *)src)[i];
-				PTR_ASSIGN;
-				break;
-			}
-			case REALSXP:
-			{
-				char src_value = ((double *)src)[i];
-				PTR_ASSIGN;
-				break;
-			}
-			default:
-				claim(!"Unknown type");
-			}
+		size_t i;
+		if(reverse){
+			i = length - j - 1L;
+		}else{
+			i = j;
 		}
-	}
-	else
-	{
-		for (size_t i = length - 1; i >= 0; i--)
+		switch (src_type)
 		{
-			switch (src_type)
-			{
-			case RAWSXP:
-			{
-				char src_value = ((char *)src)[i];
-				PTR_ASSIGN;
-				break;
-			}
-			case INTSXP:
-			{
-				char src_value = ((int *)src)[i];
-				PTR_ASSIGN;
-				break;
-			}
-			case LGLSXP:
-			{
-				char src_value = ((int *)src)[i];
-				PTR_ASSIGN;
-				break;
-			}
-			case REALSXP:
-			{
-				char src_value = ((double *)src)[i];
-				PTR_ASSIGN;
-				break;
-			}
-			default:
-				claim(!"Unknown type");
-			}
+		case RAWSXP:
+		{
+			char src_value = ((char *)src)[i];
+			PTR_ASSIGN;
+			break;
+		}
+		case INTSXP:
+		{
+			int src_value = ((int *)src)[i];
+			PTR_ASSIGN;
+			break;
+		}
+		case LGLSXP:
+		{
+			int src_value = ((int *)src)[i];
+			PTR_ASSIGN;
+			break;
+		}
+		case REALSXP:
+		{
+			double src_value = ((double *)src)[i];
+			PTR_ASSIGN;
+			break;
+		}
+		default:
+			claim(!"Unknown type");
 		}
 	}
 }
@@ -308,21 +277,21 @@ An utility to get the true read size that will not read out-of-bound
 */
 size_t get_valid_file_size(size_t file_size, size_t offset, size_t size)
 {
-    if (offset + size > file_size)
-    {
-        if (offset >= file_size)
-        {
-            return 0;
-        }
-        else
-        {
-            return file_size - offset;
-        }
-    }
-    else
-    {
-        return size;
-    }
+	if (offset + size > file_size)
+	{
+		if (offset >= file_size)
+		{
+			return 0;
+		}
+		else
+		{
+			return file_size - offset;
+		}
+	}
+	else
+	{
+		return size;
+	}
 }
 
 #ifndef _WIN32

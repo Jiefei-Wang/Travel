@@ -82,4 +82,3 @@ SEXP C_get_ptr(SEXP x){
 
 
 
-

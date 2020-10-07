@@ -193,40 +193,41 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
 {
     size_t current_counter = print_counter++;
     Filesystem_file_data &file_data = get_virtual_file(ino);
-    uint8_t &unit_size = file_data.unit_size;
     size_t &file_size = file_data.file_size;
-    size = get_valid_file_size(file_size, offset, size);
+    size_t desired_size = get_valid_file_size(file_size, offset, size);
     filesystem_log("%llu: Read, ino %lu, name %s, offset:%llu, size:%llu\n",
                    current_counter, ino, get_virtual_file_name(ino).c_str(),
-                   offset, size);
+                   offset, desired_size);
     if (size == 0){
         fuse_reply_buf(req, NULL, 0);
         return;
     }
+    RESERVE_BUFFER(buffer,buffer_size,desired_size);
     size_t read_size = general_read_func(file_data, buffer.get(),
-                                         desired_read_offset,
-                                         desired_read_size);
-    int status = fuse_reply_buf(req, buffer.get() + misalignment_begin, size);
+                                         offset,
+                                         desired_size);
+    int status = fuse_reply_buf(req, buffer.get(), read_size);
     if (status != 0)
     {
         filesystem_log("%llu: error in read! code %d\n", current_counter, status);
     }
-    if (desired_read_size != read_size)
+    if (desired_size != read_size)
     {
         filesystem_log("%llu: expect size and read size do not match!\n");
     }
+    RELEASE_BUFFER(buffer, buffer_size);
 }
 
 static void filesystem_write(fuse_req_t req, fuse_ino_t ino, const char *buffer,
-                             size_t buffer_length, off_t offset, struct fuse_file_info *fi)
+                             size_t buffer_size, off_t offset, struct fuse_file_info *fi)
 {
     Filesystem_file_data &file_data = get_virtual_file(ino);
 	size_t &file_size = file_data.file_size;
-	size_t write_length = get_valid_file_size(file_size, offset, buffer_length);
-	size_t true_write_length = general_write_func(file_data, buffer, offset, write_length);
-	filesystem_log("file_size:%llu, offset:%llu, request write %llu, matched write size:%llu, true write size\n", 
-	file_size, offset, buffer_length, write_length,true_write_length);
-    fuse_reply_write(req, true_write_length);
+	size_t write_size = get_valid_file_size(file_size, offset, buffer_size);
+	size_t true_write_size = general_write_func(file_data, buffer, offset, write_size);
+	filesystem_log("file_size:%llu, offset:%llu, request write %llu, matched write size:%llu, true write size:%llu\n", 
+	file_size, offset, buffer_size, write_size,true_write_size);
+    fuse_reply_write(req, true_write_size);
 }
 
 /*

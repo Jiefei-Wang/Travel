@@ -37,8 +37,8 @@ C_get_altptr_cache <- function(x) {
     .Call(`_Travel_C_get_altptr_cache`, x)
 }
 
-C_test <- function() {
-    invisible(.Call(`_Travel_C_test`))
+C_print_cache <- function(x, i) {
+    invisible(.Call(`_Travel_C_print_cache`, x, i))
 }
 
 C_get_virtual_file_list <- function() {

@@ -45,11 +45,15 @@ Rboolean altptr_Inspect(SEXP x, int pre, int deep, int pvec,
 {
     std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
     Filesystem_file_data &file_data = get_virtual_file(file_name);
-    Rprintf("Altptr: data type: %s, len: %llu, size: %llu, cache num: %llu, private: %p",
-            get_type_name(file_data.altrep_info.type).c_str(),
-            (uint64_t)Rf_xlength(x),
+    Rprintf("File type: %s, size: %llu, cache num: %llu\n",
+            get_type_name(file_data.coerced_type).c_str(),
             (uint64_t)file_data.file_size,
-            (uint64_t)file_data.write_cache.size(),
+            (uint64_t)file_data.write_cache.size());
+
+    Rprintf("[Source info]\n");
+    Rprintf("   Type: %s, length: %llu, private: %p",
+            (uint64_t)get_type_name(file_data.altrep_info.type).c_str(),
+            (uint64_t)file_data.altrep_info.length,
             file_data.altrep_info.private_data);
     if (file_data.altrep_info.operations.get_private_size != NULL)
     {
@@ -60,6 +64,23 @@ Rboolean altptr_Inspect(SEXP x, int pre, int deep, int pvec,
     {
         Rprintf("\n");
     }
+
+    Rprintf("[Defined operations]\n");
+    if (file_data.altrep_info.operations.get_region != 0)
+        Rprintf("   get_region\n");
+    if (file_data.altrep_info.operations.extract_subset != 0)
+        Rprintf("   extract_subset\n");
+    if (file_data.altrep_info.operations.coerce != 0)
+        Rprintf("   coerce\n");
+    if (file_data.altrep_info.operations.get_private_size != 0)
+        Rprintf("   get_private_size\n");
+    if (file_data.altrep_info.operations.inspect_private != 0)
+        Rprintf("   inspect_private\n");
+    if (file_data.altrep_info.operations.serialize != 0)
+        Rprintf("   serialize\n");
+    if (file_data.altrep_info.operations.unserialize != 0)
+        Rprintf("   unserialize\n");
+
     if (file_data.altrep_info.private_data != NULL &&
         file_data.altrep_info.operations.inspect_private != NULL)
     {
@@ -71,7 +92,7 @@ Rboolean altptr_Inspect(SEXP x, int pre, int deep, int pvec,
         Rprintf("[Cache info]\n");
         for (const auto &i : file_data.write_cache)
         {
-            Rprintf("\tCache block %llu, shared number %llu, ptr: %p\n", i.first, i.second.use_count(), i.second.get_const());
+            Rprintf("   Cache block %llu, shared number %llu, ptr: %p\n", i.first, i.second.use_count(), i.second.get_const());
         }
     }
     return TRUE;
@@ -170,7 +191,7 @@ SEXP altptr_coerce(SEXP x, int type)
     //Convert the write_cache
     size_t old_file_unit_size = get_type_size(old_file_data.coerced_type);
     size_t new_file_unit_size = get_type_size(new_file_data.coerced_type);
-    size_t buffer_size = std::min(
+    size_t buffer_size = std::max(
         old_file_data.cache_size,
         old_file_data.cache_size / old_file_unit_size * new_file_unit_size);
     std::unique_ptr<char[]> buffer(new char[buffer_size]);
@@ -179,6 +200,7 @@ SEXP altptr_coerce(SEXP x, int type)
         size_t read_offset = i.first * old_file_data.cache_size;
         size_t read_size = get_valid_file_size(old_file_data.file_size, read_offset, old_file_data.cache_size);
         general_read_func(old_file_data, buffer.get(), read_offset, read_size);
+        double *ptr = (double *)buffer.get();
         copy_memory(new_file_data.coerced_type, old_file_data.coerced_type,
                     buffer.get(), buffer.get(),
                     old_file_data.cache_size / old_file_unit_size,

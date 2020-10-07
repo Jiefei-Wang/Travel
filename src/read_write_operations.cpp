@@ -16,7 +16,8 @@ size_t read_local_file(Travel_altrep_info &altrep_info, char *buffer, size_t off
     if (unit_size == 1 ||
         (misalign_begin == 0 && misalign_end == 0))
     {
-        return altrep_info.operations.get_region(&altrep_info, buffer, offset / unit_size, size / unit_size);
+        size_t read_length = altrep_info.operations.get_region(&altrep_info, buffer, offset / unit_size, size / unit_size);
+        return read_length* unit_size;
     }
     //Otherwise, we must convert the request to fit the unit size requirement
     size_t buffer_offset = 0;
@@ -113,6 +114,11 @@ size_t read_source_with_coercion(Filesystem_file_data &file_data, void *buffer, 
     size_t source_size = source_length * source_unit_size;
     size_t source_offset = offset / file_unit_size * source_unit_size;
 
+    printf("%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu\n",
+    offset, size,
+    source_unit_size, file_unit_size,
+    misalign_begin,misalign_end,
+    source_length,source_size,source_offset);
     size_t required_buffer_size = std::max(
         size,
         source_size);
@@ -131,6 +137,7 @@ size_t read_source_with_coercion(Filesystem_file_data &file_data, void *buffer, 
         memcpy(buffer, read_buffer.get() + misalign_begin, size);
     }
     RELEASE_BUFFER(read_buffer, buffer_size);
+    printf("%llu\n",true_read_size);
     return true_read_size / source_unit_size * file_unit_size;
 }
 
@@ -208,7 +215,7 @@ size_t read_file_with_cache(Filesystem_file_data &file_data, void *buffer, size_
                                                          offset + buffer_offset, expect_read_size);
             if (read_size != expect_read_size)
             {
-                filesystem_log("Warning in general_read_func: Read size mismatch, expected: %llu, actual: %llu\n",
+                filesystem_log("Warning in read_file_with_cache: Read size mismatch, expected: %llu, actual: %llu\n",
                                expect_read_size, read_size);
             }
             buffer_offset = buffer_offset + read_size;
@@ -239,7 +246,7 @@ size_t read_file_with_cache(Filesystem_file_data &file_data, void *buffer, size_
                                                          offset + buffer_offset, expect_read_size);
             if (read_size != expect_read_size)
             {
-                filesystem_log("Warning in general_read_func: Read size mismatch, expected: %llu, actual: %llu\n",
+                filesystem_log("Warning in read_file_with_cache: Read size mismatch, expected: %llu, actual: %llu\n",
                                expect_read_size, read_size);
             }
             buffer_offset = buffer_offset + read_size;
@@ -251,7 +258,7 @@ size_t read_file_with_cache(Filesystem_file_data &file_data, void *buffer, size_
     }
     if (buffer_offset != size)
     {
-        filesystem_log("Warning in general_read_func: Final read size mismatch, expected: %llu, actual: %llu\n",
+        filesystem_log("Warning in read_file_with_cache: Final read size mismatch, expected: %llu, actual: %llu\n",
                        size, buffer_offset);
     }
     claim(buffer_offset <= size);

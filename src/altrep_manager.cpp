@@ -185,19 +185,13 @@ SEXP C_get_altptr_cache(SEXP x)
 }
 
 // [[Rcpp::export]]
-void C_test()
-{
-    std::map<size_t, Cache_block> m;
-    m.insert(std::pair<size_t, Cache_block>(1, Cache_block(1024)));
-    Rprintf("Start\n");
-    for (auto &i : m)
-    {
-        Rprintf("Cache block %llu, shared number %llu, ptr: %p\n", i.first, i.second.use_count(), i.second.get());
+void C_print_cache(SEXP x, size_t i){
+    std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
+    Filesystem_file_data &file_data = get_virtual_file(file_name);
+    if(file_data.write_cache.find(i)!=file_data.write_cache.end()){
+        const double* ptr = (const double *) file_data.write_cache.find(i)->second.get_const();
+        for(size_t j = 0; j<4096/8;j++){
+            Rprintf("%f,", ptr[j]);
+        }
     }
-    for (auto &i : m)
-    {
-        Rprintf("Cache block %llu, shared number %llu, ptr: %p\n", i.first, i.second.use_count(), i.second.get());
-    }
-    Rprintf("Shared number %llu, ptr: %p\n", m.find(1)->second.use_count(), m.find(1)->second.get());
-    Rprintf("Shared number %llu, ptr: %p\n", m.find(1)->second.use_count(), m.find(1)->second.get());
 }
