@@ -147,19 +147,22 @@ SEXP altptr_duplicate(SEXP x, Rboolean deep)
     }
     //Pass all changes to the filesystem
     flush_altrep(x);
+
     //Get the file name
     std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
     Filesystem_file_data &old_file_data = get_virtual_file(file_name);
-    //Duplicate the object
-    SEXP res = PROTECT(Travel_make_altptr(old_file_data.altrep_info));
-    //Get the new file name
-    std::string new_file_name = Rcpp::as<std::string>(GET_ALT_NAME(res));
+
+    //Create a new virtual file
+    filesystem_file_info new_file_info = add_virtual_file(old_file_data.coerced_type, old_file_data.altrep_info);
+    std::string new_file_name = new_file_info.file_name;
     Filesystem_file_data &new_file_data = get_virtual_file(new_file_name);
-    new_file_data.coerced_type = old_file_data.coerced_type;
+
     //Copy write cache
     claim(old_file_data.cache_size == new_file_data.cache_size);
     new_file_data.write_cache = old_file_data.write_cache;
-    Rf_unprotect(1);
+
+    //Duplicate the object
+    SEXP res = Travel_make_altptr_internal(new_file_info);
     return res;
 }
 
@@ -176,16 +179,16 @@ SEXP altptr_coerce(SEXP x, int type)
     std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
     Filesystem_file_data &old_file_data = get_virtual_file(file_name);
 
-    //Create the new altrep info
+    //Create a new altrep info
     Travel_altrep_info new_altrep_info;
     if (old_file_data.altrep_info.operations.coerce == NULL)
         new_altrep_info = old_file_data.altrep_info;
     else
         new_altrep_info = old_file_data.altrep_info.operations.coerce(&old_file_data.altrep_info, type);
 
-    //Duplicate the object
-    SEXP res = PROTECT(Travel_make_altptr_internal(type, new_altrep_info));
-    std::string new_file_name = Rcpp::as<std::string>(GET_ALT_NAME(res));
+    //Create a new virtual file
+    filesystem_file_info new_file_info = add_virtual_file(type, new_altrep_info);
+    std::string new_file_name = new_file_info.file_name;
     Filesystem_file_data &new_file_data = get_virtual_file(new_file_name);
 
     //Convert the write_cache
@@ -200,7 +203,6 @@ SEXP altptr_coerce(SEXP x, int type)
         size_t read_offset = i.first * old_file_data.cache_size;
         size_t read_size = get_valid_file_size(old_file_data.file_size, read_offset, old_file_data.cache_size);
         general_read_func(old_file_data, buffer.get(), read_offset, read_size);
-        double *ptr = (double *)buffer.get();
         copy_memory(new_file_data.coerced_type, old_file_data.coerced_type,
                     buffer.get(), buffer.get(),
                     old_file_data.cache_size / old_file_unit_size,
@@ -209,7 +211,8 @@ SEXP altptr_coerce(SEXP x, int type)
         size_t write_size = read_size / old_file_unit_size * new_file_unit_size;
         general_write_func(new_file_data, buffer.get(), write_offset, write_size);
     }
-    Rf_unprotect(1);
+    //Make the new altrep
+    SEXP res = Travel_make_altptr_internal(new_file_info);
     return res;
 }
 

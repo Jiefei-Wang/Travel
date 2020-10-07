@@ -1,15 +1,15 @@
 context("Testing the safety of the shared write cache")
 set_verbose(FALSE)
-deploy_filesystem()
 rm(list=ls())
 gc()
+deploy_filesystem()
 
 n <- 1024*16
 
 test_that("write to an integer cache",{
     expect_error(x <- C_make_test_integer_altrep(n),NA)
     C_set_int_value(x,1,11)
-    C_flush_altptr(x)
+    C_flush_altrep(x)
     expect_true(x[1]==11)
     ## There is a single block in x
     expect_equal(C_get_altptr_cache(x)$block.id, 0)
@@ -37,7 +37,7 @@ test_that("write to an integer cache",{
     
     ## Set the second block of x
     C_set_int_value(x,1025,1)
-    C_flush_altptr(x)
+    C_flush_altrep(x)
     expect_true(x[1025]==1)
     expect_equal(C_get_altptr_cache(x)$block.id, c(0,1))
     expect_equal(C_get_altptr_cache(x)$shared, c(TRUE, FALSE))
@@ -56,7 +56,7 @@ test_that("write to an integer cache",{
     ## Write to the 0th block of y
     ## The block will be unshared
     C_set_int_value(y,2,12)
-    C_flush_altptr(y)
+    C_flush_altrep(y)
     expect_equal(C_get_altptr_cache(y)$block.id, 0)
     expect_equal(C_get_altptr_cache(y)$shared, FALSE)
     expect_true(C_get_altptr_cache(y)$ptr!=y_cache_info$ptr)

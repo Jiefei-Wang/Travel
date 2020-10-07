@@ -1,12 +1,11 @@
 context("Testing altrep duplication")
 set_verbose(FALSE)
+rm(list=ls())
+gc()
+deploy_filesystem()
 
 ## Skip it for linux for there is a know bug
 if(get_OS()!="linux"){
-    rm(list=ls())
-    gc()
-    
-    deploy_filesystem()
     block_size <- 1024*1024
     
     test_that("Duplicate an integer sequece using C API",{
@@ -27,7 +26,7 @@ if(get_OS()!="linux"){
         for(i in ind){
             C_set_int_value(x,i,-i - 1)
         }
-        C_flush_altptr(x)
+        C_flush_altrep(x)
         expect_true(all(x[ind] != y[ind]))
         expect_true(all(x[-ind]== y[-ind]))
         ## synchronize x and y
@@ -42,7 +41,7 @@ if(get_OS()!="linux"){
         for(i in ind){
             C_set_int_value(y,i,-i - 2)
         }
-        C_flush_altptr(y)
+        C_flush_altrep(y)
         expect_true(all(x[ind] != y[ind]))
         expect_true(all(x[-ind]== y[-ind]))
     })
@@ -61,8 +60,8 @@ if(get_OS()!="linux"){
         expect_true(all(x[ind] != y[ind]))
         expect_true(all(x[-ind]== y[-ind]))
         
-        C_flush_altptr(x)
-        C_flush_altptr(y)
+        C_flush_altrep(x)
+        C_flush_altrep(y)
         
         expect_true(all(x[ind] != y[ind]))
         expect_true(all(x[-ind]== y[-ind]))

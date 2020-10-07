@@ -114,11 +114,6 @@ size_t read_source_with_coercion(Filesystem_file_data &file_data, void *buffer, 
     size_t source_size = source_length * source_unit_size;
     size_t source_offset = offset / file_unit_size * source_unit_size;
 
-    printf("%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu\n",
-    offset, size,
-    source_unit_size, file_unit_size,
-    misalign_begin,misalign_end,
-    source_length,source_size,source_offset);
     size_t required_buffer_size = std::max(
         size,
         source_size);
@@ -137,7 +132,6 @@ size_t read_source_with_coercion(Filesystem_file_data &file_data, void *buffer, 
         memcpy(buffer, read_buffer.get() + misalign_begin, size);
     }
     RELEASE_BUFFER(read_buffer, buffer_size);
-    printf("%llu\n",true_read_size);
     return true_read_size / source_unit_size * file_unit_size;
 }
 

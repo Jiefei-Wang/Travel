@@ -1,6 +1,6 @@
 #include <Rcpp.h>
 #include <R_ext/Altrep.h>
-#include "Travel_package_types.h"
+#include "filesystem_manager.h"
 #define SLOT_NUM 4
 #define NAME_SLOT 0
 #define FILE_HANDLE_SLOT 1
@@ -40,4 +40,4 @@ R_altrep_class_t get_altfile_class(int type);
 
 //altrep_manager
 void flush_altrep(SEXP x);
-SEXP Travel_make_altptr_internal(int type, Travel_altrep_info& altrep_info);
+SEXP Travel_make_altptr_internal(filesystem_file_info& file_info);

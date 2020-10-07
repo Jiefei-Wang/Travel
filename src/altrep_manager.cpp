@@ -32,23 +32,22 @@ static void altptr_handle_finalizer(SEXP handle_extptr)
 The internal function allows to create an altrep object with specific type
 that is not consistent with the type in the altrep_info
 */
-SEXP Travel_make_altptr_internal(int type, Travel_altrep_info& altrep_info)
+SEXP Travel_make_altptr_internal(filesystem_file_info& file_info)
 {
-    if(altrep_info.protected_data==NULL){
-        altrep_info.protected_data = R_NilValue;
+    Filesystem_file_data &file_data = get_virtual_file(file_info.file_name);
+    if(file_data.altrep_info.protected_data==NULL){
+        file_data.altrep_info.protected_data = R_NilValue;
     }
     if (!is_filesystem_running())
     {
         Rf_error("The filesystem is not running!\n");
     }
     PROTECT_GUARD guard;
-    R_altrep_class_t alt_class = get_altptr_class(type);
+    R_altrep_class_t alt_class = get_altptr_class(file_data.coerced_type);
     SEXP altptr_options = guard.protect(Rf_allocVector(VECSXP, SLOT_NUM));
-    SET_PROPS_LENGTH(altptr_options, Rcpp::wrap(altrep_info.length));
-    SEXP result = guard.protect(R_new_altrep(alt_class, altrep_info.protected_data, altptr_options));
-    //Create a virtual file
-    filesystem_file_info file_info = add_virtual_file(type, altrep_info);
-    Filesystem_file_data &file_data = get_virtual_file(file_info.file_inode);
+    SET_PROPS_LENGTH(altptr_options, Rcpp::wrap(file_data.altrep_info.length));
+    SEXP result = guard.protect(R_new_altrep(alt_class, file_data.altrep_info.protected_data, altptr_options));
+    
     SET_PROPS_NAME(altptr_options, Rcpp::wrap(file_info.file_name));
     SET_PROPS_SIZE(altptr_options, Rcpp::wrap(file_data.file_size));
     file_map_handle *handle;
@@ -68,7 +67,9 @@ SEXP Travel_make_altptr_internal(int type, Travel_altrep_info& altrep_info)
     return result;
 }
 SEXP Travel_make_altptr(Travel_altrep_info altrep_info){
-    return Travel_make_altptr_internal(altrep_info.type, altrep_info);
+    //Create a virtual file
+    filesystem_file_info file_info = add_virtual_file(altrep_info.type, altrep_info);
+    return Travel_make_altptr_internal(file_info);
 }
 
 

@@ -1,8 +1,8 @@
 context("Testing filesystem reading feature with altrep")
 set_verbose(FALSE)
-deploy_filesystem()
 rm(list=ls())
 gc()
+deploy_filesystem()
 
 
 n <- 1024*1024*16/4

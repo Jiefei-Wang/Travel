@@ -1,8 +1,8 @@
 context("Testing filesystem writting feature with altrep")
 set_verbose(FALSE)
-deploy_filesystem()
 rm(list=ls())
 gc()
+deploy_filesystem()
 
 ## Skip it for linux for there is a know bug
 if(get_OS()!="linux"){
@@ -22,7 +22,7 @@ if(get_OS()!="linux"){
         ## Change the first value of x, expect creating 1 block
         C_set_int_value(x,1,-10)
         y[1] <- -10
-        C_flush_altptr(x)
+        C_flush_altrep(x)
         files <- get_virtual_file_list()
         expect_equal(files$cache.number, 1)
         
@@ -45,10 +45,10 @@ if(get_OS()!="linux"){
             j = j + 1
             if(j>n/5){
                 j <- 0
-                C_flush_altptr(x)
+                C_flush_altrep(x)
             }
         }
-        C_flush_altptr(x)
+        C_flush_altrep(x)
         files <- get_virtual_file_list()
         expect_equal(files$cache.number, length(x)/files$cache.size*4)
         
