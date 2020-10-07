@@ -155,7 +155,6 @@ static void filesystem_write(fuse_req_t req, fuse_ino_t ino, const char *buffer,
                              size_t buffer_length, off_t offset, struct fuse_file_info *fi)
 {
     m.lock();
-    sleep(0.1);
     printf("Write %llu, size: %llu\n", offset,buffer_length);
     fuse_reply_write(req, buffer_length);
     new char[4096];
