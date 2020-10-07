@@ -29,22 +29,25 @@ static void altptr_handle_finalizer(SEXP handle_extptr)
 }
 
 /*
-
+The internal function allows to create an altrep object with specific type
+that is not consistent with the type in the altrep_info
 */
-SEXP Travel_make_altptr(Travel_altrep_info altrep_info, SEXP protect)
+SEXP Travel_make_altptr_internal(int type, Travel_altrep_info& altrep_info)
 {
-
+    if(altrep_info.protected_data==NULL){
+        altrep_info.protected_data = R_NilValue;
+    }
     if (!is_filesystem_running())
     {
         Rf_error("The filesystem is not running!\n");
     }
     PROTECT_GUARD guard;
-    R_altrep_class_t alt_class = get_altptr_class(altrep_info.type);
+    R_altrep_class_t alt_class = get_altptr_class(type);
     SEXP altptr_options = guard.protect(Rf_allocVector(VECSXP, SLOT_NUM));
     SET_PROPS_LENGTH(altptr_options, Rcpp::wrap(altrep_info.length));
-    SEXP result = guard.protect(R_new_altrep(alt_class, protect, altptr_options));
+    SEXP result = guard.protect(R_new_altrep(alt_class, altrep_info.protected_data, altptr_options));
     //Create a virtual file
-    filesystem_file_info file_info = add_virtual_file(altrep_info);
+    filesystem_file_info file_info = add_virtual_file(type, altrep_info);
     Filesystem_file_data &file_data = get_virtual_file(file_info.file_inode);
     SET_PROPS_NAME(altptr_options, Rcpp::wrap(file_info.file_name));
     SET_PROPS_SIZE(altptr_options, Rcpp::wrap(file_data.file_size));
@@ -64,6 +67,11 @@ SEXP Travel_make_altptr(Travel_altrep_info altrep_info, SEXP protect)
     SET_PROPS_EXTPTR(altptr_options, handle_extptr);
     return result;
 }
+SEXP Travel_make_altptr(Travel_altrep_info altrep_info){
+    return Travel_make_altptr_internal(altrep_info.type, altrep_info);
+}
+
+
 
 static void altfile_handle_finalizer(SEXP handle_extptr)
 {
@@ -109,7 +117,7 @@ SEXP make_altptr_from_file(std::string path, int type, size_t length)
     }
     SEXP handle_extptr = guard.protect(R_MakeExternalPtr(handle,
                                                          GET_PROPS_NAME(altfile_options),
-                                                          R_NilValue));
+                                                         R_NilValue));
     //Register finalizer for the pointer
     R_RegisterCFinalizerEx(handle_extptr, altfile_handle_finalizer, TRUE);
     SET_PROPS_EXTPTR(altfile_options, handle_extptr);
@@ -126,7 +134,7 @@ SEXP get_file_path(SEXP x)
     return Rf_mkString(handle->file_info.file_full_path.c_str());
 }
 
-void flush_altptr(SEXP x)
+void flush_altrep(SEXP x)
 {
     file_map_handle *handle = GET_ALT_FILE_HANDLE(x);
     std::string status = flush_handle(handle);
@@ -137,9 +145,9 @@ void flush_altptr(SEXP x)
 }
 
 // [[Rcpp::export]]
-void C_flush_altptr(SEXP x)
+void C_flush_altrep(SEXP x)
 {
-    flush_altptr(x);
+    flush_altrep(x);
 }
 // [[Rcpp::export]]
 SEXP C_get_file_name(SEXP x)
@@ -152,18 +160,44 @@ SEXP C_get_file_path(SEXP x)
     return get_file_path(x);
 }
 
+// [[Rcpp::export]]
+SEXP C_get_altptr_cache(SEXP x)
+{
+    using namespace Rcpp;
+    std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
+    Filesystem_file_data &file_data = get_virtual_file(file_name);
+    size_t n = file_data.write_cache.size();
+    Rcpp::NumericVector block_id(n);
+    Rcpp::StringVector ptr(n);
+    Rcpp::LogicalVector shared(n);
+    size_t j = 0;
+    for (const auto &i : file_data.write_cache)
+    {
+        block_id(j) = i.first;
+        ptr(j) = std::to_string((size_t)i.second.get_const());
+        shared(j) = i.second.is_shared();
+        j++;
+    }
+    DataFrame df = DataFrame::create(Named("block.id") = block_id,
+                                     Named("shared") = shared,
+                                     Named("ptr") = ptr);
+    return df;
+}
 
 // [[Rcpp::export]]
-void C_test(){
+void C_test()
+{
     std::map<size_t, Cache_block> m;
-    m.insert(std::pair<size_t,Cache_block>(1, Cache_block(1024)));
+    m.insert(std::pair<size_t, Cache_block>(1, Cache_block(1024)));
     Rprintf("Start\n");
-    for(auto& i: m){
-        Rprintf("Cache block %llu, shared number %llu, ptr: %p\n", i.first,i.second.use_count(),i.second.get());
+    for (auto &i : m)
+    {
+        Rprintf("Cache block %llu, shared number %llu, ptr: %p\n", i.first, i.second.use_count(), i.second.get());
     }
-    for(auto& i: m){
-        Rprintf("Cache block %llu, shared number %llu, ptr: %p\n", i.first,i.second.use_count(),i.second.get());
+    for (auto &i : m)
+    {
+        Rprintf("Cache block %llu, shared number %llu, ptr: %p\n", i.first, i.second.use_count(), i.second.get());
     }
-    Rprintf("Shared number %llu, ptr: %p\n", m.find(1)->second.use_count(),m.find(1)->second.get());
-    Rprintf("Shared number %llu, ptr: %p\n", m.find(1)->second.use_count(),m.find(1)->second.get());
+    Rprintf("Shared number %llu, ptr: %p\n", m.find(1)->second.use_count(), m.find(1)->second.get());
+    Rprintf("Shared number %llu, ptr: %p\n", m.find(1)->second.use_count(), m.find(1)->second.get());
 }

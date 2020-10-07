@@ -2,7 +2,7 @@
 #include "utils.h"
 #include "filesystem_manager.h"
 
-size_t read_altrep(Travel_altrep_info* altrep_info, void *buffer, size_t offset, size_t length)
+size_t read_altrep(const Travel_altrep_info* altrep_info, void *buffer, size_t offset, size_t length)
 {
     SEXP wrapped_object = (SEXP)altrep_info->private_data;
     switch (TYPEOF(wrapped_object))
@@ -23,7 +23,6 @@ size_t read_altrep(Travel_altrep_info* altrep_info, void *buffer, size_t offset,
     return length;
 }
 
-//Travel_make_altptr(int type, void *data, size_t length, unsigned int unit_size, read_data_func read_func, SEXP protect)
 //[[Rcpp::export]]
 SEXP C_make_altptr_from_altrep(SEXP x)
 {

@@ -1,8 +1,7 @@
-
+#ifndef HEADER_MEMORY_MAPPED_FILE
+#define HEADER_MEMORY_MAPPED_FILE
 #include <string>
 #include "filesystem_manager.h"
-
-
 
 
 struct file_map_handle
@@ -29,3 +28,5 @@ std::string flush_handle(file_map_handle *handle);
 
 bool has_mapped_file_handle(void *handle);
 std::string unmap_all_files();
+
+#endif

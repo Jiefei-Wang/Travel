@@ -138,11 +138,11 @@ NTSTATUS DOKAN_CALLBACK dokan_read_file(LPCWSTR wide_file_path, LPVOID buffer,
 
 	Filesystem_file_data &file_data = get_virtual_file(file_name);
 	size_t &file_size = file_data.file_size;
-	*read_length = get_valid_file_size(file_size, offset, buffer_length);
-	size_t read_size = general_read_func(file_data, buffer, offset, *read_length);
-	filesystem_log("file_size:%llu, offset:%llu, request read %llu, modified read size:%u, true read:%llu\n", 
-	file_size, offset, buffer_length, *read_length, read_size);
-	*read_length = read_size;
+	size_t desired_read_size = get_valid_file_size(file_size, offset, buffer_length);
+	size_t true_read_size = general_read_func(file_data, buffer, offset, desired_read_size);
+	filesystem_log("file_size:%llu, offset:%llu, request read %llu, desired read size:%u, true read:%llu\n", 
+	file_size, offset, buffer_length, desired_read_size, true_read_size);
+	*read_length = desired_read_size;
 	return STATUS_SUCCESS;
 }
 

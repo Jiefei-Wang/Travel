@@ -2,7 +2,7 @@
 #define HEADER_FILESYSTEM_MANAGER
 
 #include <string>
-#include "Travel_types.h"
+#include "Travel_package_types.h"
 
 /*
 A struct that holds File name, full path and inode number
@@ -20,12 +20,13 @@ private:
     size_t size;
     size_t *counter = nullptr;
     char *ptr = nullptr;
+
 public:
     Cache_block(size_t size);
     ~Cache_block();
     Cache_block(const Cache_block &cb);
     Cache_block(Cache_block &cb);
-    Cache_block& operator = (const Cache_block &cb);
+    Cache_block &operator=(const Cache_block &cb);
     size_t use_count() const;
     bool is_shared() const;
     size_t get_size() const;
@@ -36,27 +37,29 @@ public:
 /*
 The struct that holds all data of a file
 member variables:
-  data_func: The function to read the data from the file
+  altrep_info: The data of the source. Source has its own data type
   file_size: The file size in bytes
-  unit_size: The unit size of the data in bytes. The offset and length
-             that are passed to the function data_func will be calculated based on this unit.
+  unit_size: The unit size of the data in bytes.
   cache_size: The write cache size. 
-  write_cache: All the changes to the data will be stored here by block. 
+  coerced_type: The type of the file. It may be different from the source type
+  write_cache: All the changes to the data will be stored here by block. It
+    should be stored in the format of the coerced type.
 */
 struct Filesystem_file_data
 {
-    Filesystem_file_data(Travel_altrep_info altrep_info);
+    Filesystem_file_data(int type, const Travel_altrep_info altrep_info);
     Travel_altrep_info altrep_info;
-    uint8_t unit_size;
     size_t file_size;
     size_t cache_size;
+    int coerced_type;
     std::map<size_t, Cache_block> write_cache;
 };
 
 /*
 Manage virtual files
 */
-filesystem_file_info add_virtual_file(Travel_altrep_info altrep_info,
+filesystem_file_info add_virtual_file(int type,
+                                      Travel_altrep_info altrep_info,
                                       const char *name = NULL);
 const std::string &get_virtual_file_name(inode_type inode);
 inode_type get_virtual_file_inode(const std::string name);

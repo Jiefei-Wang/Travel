@@ -119,9 +119,31 @@ size_t get_type_size(int type)
 		elt_size = 1;
 		break;
 	default:
-		Rf_error("Unknown type %d\n", type);
+		claim(!"Unknown type");
 	}
 	return elt_size;
+}
+
+std::string get_type_name(int type){
+	std::string name;
+	switch (type)
+	{
+	case INTSXP:
+		name = "integer";
+		break;
+	case LGLSXP:
+		name = "logical";
+		break;
+	case REALSXP:
+		name = "real";
+		break;
+	case RAWSXP:
+		name = "raw";
+		break;
+	default:
+		claim(!"Unknown type");
+	}
+	return name;
 }
 
 
@@ -173,22 +195,134 @@ std::string build_path(std::string path1, std::string path2)
 	}
 }
 
-size_t gcd(size_t a, size_t b)
-{
-	if (a == 0)
-		return b;
-	return gcd(b % a, a);
-}
-
-// Function to return LCM of two numbers
-size_t lcm(size_t a, size_t b)
-{
-	return (a * b) / gcd(a, b);
-}
-
 std::string get_file_name_in_path(std::string path)
 {
 	return path.substr(path.find_last_of("\\/") + 1);
+}
+
+#define PTR_ASSIGN                           \
+	switch (dest_type)                       \
+	{                                        \
+	case RAWSXP:                             \
+		((char *)dest)[i] = src_value;       \
+		break;                               \
+	case INTSXP:                             \
+		((int *)dest)[i] = src_value;        \
+		break;                               \
+	case LGLSXP:                             \
+		((int *)dest)[i] = (src_value != 0); \
+		break;                               \
+	case REALSXP:                            \
+		((double *)dest)[i] = src_value;     \
+		break;                               \
+	default:                                 \
+		claim(!"Unknown type");            \
+	}
+
+void copy_memory(int dest_type, int src_type, void *dest, const void *src, size_t length, bool reverse)
+{
+	if (dest_type == src_type)
+	{
+		if (dest != src)
+		{
+			memcpy(dest, src, length * get_type_size(dest_type));
+		}
+		return;
+	}
+	if (length == 0)
+		return;
+	if (!reverse)
+	{
+		for (size_t i = 0; i < length; i++)
+		{
+			switch (src_type)
+			{
+			case RAWSXP:
+			{
+				char src_value = ((char *)src)[i];
+				PTR_ASSIGN;
+				break;
+			}
+			case INTSXP:
+			{
+				char src_value = ((int *)src)[i];
+				PTR_ASSIGN;
+				break;
+			}
+			case LGLSXP:
+			{
+				char src_value = ((int *)src)[i];
+				PTR_ASSIGN;
+				break;
+			}
+			case REALSXP:
+			{
+				char src_value = ((double *)src)[i];
+				PTR_ASSIGN;
+				break;
+			}
+			default:
+				claim(!"Unknown type");
+			}
+		}
+	}
+	else
+	{
+		for (size_t i = length - 1; i >= 0; i--)
+		{
+			switch (src_type)
+			{
+			case RAWSXP:
+			{
+				char src_value = ((char *)src)[i];
+				PTR_ASSIGN;
+				break;
+			}
+			case INTSXP:
+			{
+				char src_value = ((int *)src)[i];
+				PTR_ASSIGN;
+				break;
+			}
+			case LGLSXP:
+			{
+				char src_value = ((int *)src)[i];
+				PTR_ASSIGN;
+				break;
+			}
+			case REALSXP:
+			{
+				char src_value = ((double *)src)[i];
+				PTR_ASSIGN;
+				break;
+			}
+			default:
+				claim(!"Unknown type");
+			}
+		}
+	}
+}
+
+/*
+An utility to get the true read size that will not read out-of-bound
+*/
+size_t get_valid_file_size(size_t file_size, size_t offset, size_t size)
+{
+    if (offset + size > file_size)
+    {
+        if (offset >= file_size)
+        {
+            return 0;
+        }
+        else
+        {
+            return file_size - offset;
+        }
+    }
+    else
+    {
+        return size;
+    }
 }
 
 #ifndef _WIN32

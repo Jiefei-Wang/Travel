@@ -19,11 +19,13 @@ double_key_map<inode_type, std::string, Filesystem_file_data> file_list;
 Filesystem_file_data struct
 ==========================================================================
 */
-Filesystem_file_data::Filesystem_file_data(Travel_altrep_info altrep_info) : altrep_info(altrep_info)
+Filesystem_file_data::Filesystem_file_data(int type, const Travel_altrep_info altrep_info) : altrep_info(altrep_info)
 {
-  unit_size = get_type_size(altrep_info.type);
+  size_t unit_size = get_type_size(type);
   file_size = altrep_info.length * unit_size;
-  cache_size = lcm(MIN_CACHE_SIZE, unit_size);
+  coerced_type = type;
+  cache_size = CACHE_SIZE;
+  claim(cache_size % unit_size == 0);
 }
 
 /*
@@ -46,7 +48,9 @@ Cache_block::~Cache_block()
   {
     delete[] ptr;
     delete counter;
-  }else{
+  }
+  else
+  {
     (*counter)--;
   }
 }
@@ -101,7 +105,8 @@ bool Cache_block::is_shared() const
 {
   return (*counter) > 1;
 }
-size_t Cache_block::get_size() const{
+size_t Cache_block::get_size() const
+{
   return size;
 }
 // Get the pointer
@@ -130,7 +135,8 @@ Insert or delete files from the filesystem
 ==========================================================================
 */
 
-filesystem_file_info add_virtual_file(Travel_altrep_info altrep_info,
+filesystem_file_info add_virtual_file(int type,
+                                      const Travel_altrep_info altrep_info,
                                       const char *name)
 {
   if (altrep_info.type == 0)
@@ -147,7 +153,7 @@ filesystem_file_info add_virtual_file(Travel_altrep_info altrep_info,
     file_name = "inode_" + std::to_string(file_inode_counter);
   else
     file_name = std::string(name);
-  Filesystem_file_data file_data(altrep_info);
+  Filesystem_file_data file_data(type, altrep_info);
   file_list.insert(file_inode_counter, file_name, file_data);
   std::string file_full_path = build_path(get_mountpoint(), file_name);
   return {file_full_path, file_name, file_inode_counter};
@@ -201,7 +207,6 @@ Rcpp::DataFrame C_get_virtual_file_list()
   int n = file_list.size();
   CharacterVector name(n);
   NumericVector inode(n);
-  NumericVector unit_size(n);
   NumericVector file_size(n);
   NumericVector cache_size(n);
   NumericVector cache_number(n);
@@ -212,12 +217,11 @@ Rcpp::DataFrame C_get_virtual_file_list()
     name[j] = i->second;
     inode[j] = i->first;
     Filesystem_file_data &file_data = file_list.get_value_by_key1(i->first);
-    unit_size[j] = file_data.unit_size;
     file_size[j] = file_data.file_size;
     cache_size[j] = file_data.cache_size;
     cache_number[j] = file_data.write_cache.size();
     size_t count = 0;
-    for (const auto& it : file_data.write_cache)
+    for (const auto &it : file_data.write_cache)
     {
       count = count + it.second.is_shared();
     }
@@ -226,13 +230,13 @@ Rcpp::DataFrame C_get_virtual_file_list()
   }
   DataFrame df = DataFrame::create(Named("name") = name,
                                    Named("inode") = inode,
-                                   Named("unit size") = unit_size,
-                                   Named("file size") = file_size,
-                                   Named("cache size") = cache_size,
-                                   Named("cache number") = cache_number,
-                                   Named("shared_cache_number") = shared_cache_number);
+                                   Named("file.size") = file_size,
+                                   Named("cache.size") = cache_size,
+                                   Named("cache.number") = cache_number,
+                                   Named("shared.cache.number") = shared_cache_number);
   return df;
 }
+
 
 /*
 ==========================================================================

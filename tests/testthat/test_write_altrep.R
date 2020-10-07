@@ -1,12 +1,11 @@
 context("Testing filesystem writting feature with altrep")
 set_verbose(FALSE)
+deploy_filesystem()
+rm(list=ls())
+gc()
 
 ## Skip it for linux for there is a know bug
 if(get_OS()!="linux"){
-    rm(list=ls())
-    gc()
-    
-    deploy_filesystem()
     block_size <- 1024*1024
     
     test_that("write to an integer sequece",{

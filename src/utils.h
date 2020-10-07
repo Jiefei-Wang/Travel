@@ -1,7 +1,6 @@
 #ifndef HEADER_UTILS
 #define HEADER_UTILS
 
-#include "Travel_types.h"
 #define TRAVEL_PACKAGE_DEBUG
 
 #ifdef TRAVEL_PACKAGE_DEBUG
@@ -11,7 +10,17 @@
 #define claim(x)
 #endif
 
-
+//Reserve a unique pointer buffer with a given size
+#define RESERVE_BUFFER(buf, buf_size, reserve_size) \
+if(buf_size < reserve_size){\
+    buf.reset(new char[reserve_size]);\
+    buf_size = reserve_size;\
+}
+#define RELEASE_BUFFER(buf, buf_size)\
+if(buf_size>1024*1024){\
+    buf.reset(nullptr);\
+    buf_size = 0;\
+}
 
 #ifdef _WIN32
 #undef ERROR
@@ -72,11 +81,10 @@ void debug_print(const char *format, ...);
 void filesystem_print(const char *format, ...);
 void altrep_print(const char *format, ...);
 size_t get_type_size(int type);
+std::string get_type_name(int type);
 void mySleep(int sleepMs);
+size_t get_valid_file_size(size_t file_size, size_t offset, size_t size);
 
-size_t gcd(size_t a, size_t b);
-//Least Common Multiple
-size_t lcm(size_t a, size_t b);
 /*
 Examples:
 build_path("", "bucket") = "bucket"
@@ -88,6 +96,10 @@ build_path("bucket/", "/test") = "bucket/test"
 */
 std::string build_path(std::string path1, std::string path2);
 std::string get_file_name_in_path(std::string path);
+/*Copy data between two pointer with different types*/
+void copy_memory(int dest_type, int src_type, void *dest, const void *src, size_t length, bool reverse=false);
+
+
 #ifdef _WIN32
 std::wstring stringToWstring(const char *utf8Bytes);
 std::string wstringToString(const wchar_t *utf16Bytes);

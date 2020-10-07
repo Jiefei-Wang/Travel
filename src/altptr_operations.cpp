@@ -4,6 +4,7 @@
 #include "memory_mapped_file.h"
 #include "package_settings.h"
 #include "Travel.h"
+#include "read_write_operations.h"
 
 R_altrep_class_t altptr_real_class;
 R_altrep_class_t altptr_integer_class;
@@ -44,10 +45,10 @@ Rboolean altptr_Inspect(SEXP x, int pre, int deep, int pvec,
 {
     std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
     Filesystem_file_data &file_data = get_virtual_file(file_name);
-    Rprintf("Altptr: len: %llu, file size: %llu, unit size: %llu, cache num: %llu, private: %p",
+    Rprintf("Altptr: data type: %s, len: %llu, size: %llu, cache num: %llu, private: %p",
+            get_type_name(file_data.altrep_info.type).c_str(),
             (uint64_t)Rf_xlength(x),
             (uint64_t)file_data.file_size,
-            (uint64_t)file_data.unit_size,
             (uint64_t)file_data.write_cache.size(),
             file_data.altrep_info.private_data);
     if (file_data.altrep_info.operations.get_private_size != NULL)
@@ -65,9 +66,13 @@ Rboolean altptr_Inspect(SEXP x, int pre, int deep, int pvec,
         Rprintf("[Private data]\n");
         file_data.altrep_info.operations.inspect_private(&file_data.altrep_info);
     }
-    Rprintf("[Cache info]\n");
-    for(const auto& i: file_data.write_cache){
-        Rprintf(" Cache block %llu, shared number %llu, ptr: %p\n", i.first,i.second.use_count(), i.second.get_const());
+    if (file_data.write_cache.size() > 0)
+    {
+        Rprintf("[Cache info]\n");
+        for (const auto &i : file_data.write_cache)
+        {
+            Rprintf("\tCache block %llu, shared number %llu, ptr: %p\n", i.first, i.second.use_count(), i.second.get_const());
+        }
     }
     return TRUE;
 }
@@ -119,23 +124,69 @@ SEXP altptr_duplicate(SEXP x, Rboolean deep)
     {
         Rf_error("The filesystem is not running!\n");
     }
-    SEXP handle_extptr = GET_ALT_HANDLE_EXTPTR(x);
-    file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
     //Pass all changes to the filesystem
-    flush_handle(handle);
+    flush_altrep(x);
     //Get the file name
     std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
-    Filesystem_file_data &file_data = get_virtual_file(file_name);
+    Filesystem_file_data &old_file_data = get_virtual_file(file_name);
     //Duplicate the object
-    SEXP res = PROTECT(Travel_make_altptr(file_data.altrep_info, GET_PROTECTED_DATA(x)));
+    SEXP res = PROTECT(Travel_make_altptr(old_file_data.altrep_info));
     //Get the new file name
     std::string new_file_name = Rcpp::as<std::string>(GET_ALT_NAME(res));
     Filesystem_file_data &new_file_data = get_virtual_file(new_file_name);
+    new_file_data.coerced_type = old_file_data.coerced_type;
     //Copy write cache
-    claim(file_data.cache_size == new_file_data.cache_size);
-    new_file_data.write_cache = file_data.write_cache;
-    //Protect data
-    SET_PROTECTED_DATA(res, GET_PROTECTED_DATA(x));
+    claim(old_file_data.cache_size == new_file_data.cache_size);
+    new_file_data.write_cache = old_file_data.write_cache;
+    Rf_unprotect(1);
+    return res;
+}
+
+SEXP altptr_coerce(SEXP x, int type)
+{
+    altrep_print("Coercing object\n");
+    if (!is_filesystem_running())
+    {
+        Rf_error("The filesystem is not running!\n");
+    }
+    //Pass all changes to the filesystem
+    flush_altrep(x);
+    //Get the file name
+    std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
+    Filesystem_file_data &old_file_data = get_virtual_file(file_name);
+
+    //Create the new altrep info
+    Travel_altrep_info new_altrep_info;
+    if (old_file_data.altrep_info.operations.coerce == NULL)
+        new_altrep_info = old_file_data.altrep_info;
+    else
+        new_altrep_info = old_file_data.altrep_info.operations.coerce(&old_file_data.altrep_info, type);
+
+    //Duplicate the object
+    SEXP res = PROTECT(Travel_make_altptr_internal(type, new_altrep_info));
+    std::string new_file_name = Rcpp::as<std::string>(GET_ALT_NAME(res));
+    Filesystem_file_data &new_file_data = get_virtual_file(new_file_name);
+
+    //Convert the write_cache
+    size_t old_file_unit_size = get_type_size(old_file_data.coerced_type);
+    size_t new_file_unit_size = get_type_size(new_file_data.coerced_type);
+    size_t buffer_size = std::min(
+        old_file_data.cache_size,
+        old_file_data.cache_size / old_file_unit_size * new_file_unit_size);
+    std::unique_ptr<char[]> buffer(new char[buffer_size]);
+    for (const auto &i : old_file_data.write_cache)
+    {
+        size_t read_offset = i.first * old_file_data.cache_size;
+        size_t read_size = get_valid_file_size(old_file_data.file_size, read_offset, old_file_data.cache_size);
+        general_read_func(old_file_data, buffer.get(), read_offset, read_size);
+        copy_memory(new_file_data.coerced_type, old_file_data.coerced_type,
+                    buffer.get(), buffer.get(),
+                    old_file_data.cache_size / old_file_unit_size,
+                    new_file_unit_size > old_file_unit_size);
+        size_t write_offset = read_offset / old_file_unit_size * new_file_unit_size;
+        size_t write_size = read_size / old_file_unit_size * new_file_unit_size;
+        general_write_func(new_file_data, buffer.get(), write_offset, write_size);
+    }
     Rf_unprotect(1);
     return res;
 }
@@ -150,6 +201,7 @@ Register ALTREP class
     R_set_altrep_Inspect_method(ALT_CLASS, altptr_Inspect);               \
     R_set_altrep_Length_method(ALT_CLASS, altptr_length);                 \
     R_set_altrep_Duplicate_method(ALT_CLASS, altptr_duplicate);           \
+    R_set_altrep_Coerce_method(ALT_CLASS, altptr_coerce);                 \
     /* ALTVEC methods */                                                  \
     R_set_altvec_Dataptr_method(ALT_CLASS, altptr_dataptr);               \
     R_set_altvec_Dataptr_or_null_method(ALT_CLASS, altptr_dataptr_or_null);

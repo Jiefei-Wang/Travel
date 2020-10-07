@@ -5,7 +5,7 @@
 /*
 Create an integer vector for testing the altrep functions
 */
-size_t fake_integer_read(Travel_altrep_info* altrep_info, void *buffer, size_t offset, size_t length)
+size_t fake_integer_read(const Travel_altrep_info* altrep_info, void *buffer, size_t offset, size_t length)
 {
     for (size_t i = 0; i < length; i++)
     {
@@ -27,7 +27,7 @@ SEXP C_make_test_integer_altrep(double n)
 /*
 Create a fake file in the mounted filesystem
 */
-size_t fake_read(Travel_altrep_info* altrep_info, void *buffer, size_t offset, size_t length)
+size_t fake_read(const Travel_altrep_info* altrep_info, void *buffer, size_t offset, size_t length)
 {
     std::string data = "fake read data\n";
     for (size_t i = 0; i < length; i++)
@@ -44,7 +44,7 @@ void C_make_fake_file(size_t size)
     altrep_info.type = RAWSXP;
     altrep_info.length = size;
     altrep_info.operations.get_region = fake_read;
-    add_virtual_file(altrep_info);
+    add_virtual_file(RAWSXP,altrep_info);
 }
 
 //[[Rcpp::export]]
@@ -54,7 +54,7 @@ void C_make_fake_file2(size_t size)
     altrep_info.operations.get_region = fake_integer_read;
     altrep_info.type = RAWSXP;
     altrep_info.length = size;
-    add_virtual_file(altrep_info);
+    add_virtual_file(RAWSXP,altrep_info);
 }
 
 SEXP make_altptr_from_file(std::string path, int type, size_t length);

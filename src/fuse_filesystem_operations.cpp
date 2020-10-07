@@ -141,7 +141,6 @@ static void filesystem_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
 {
 
     filesystem_log("%lu: readdir, ino %lu\n", print_counter++, ino);
-    (void)fi;
 
     if (ino != 1)
         fuse_reply_err(req, ENOTDIR);
@@ -203,29 +202,6 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
     if (size == 0){
         fuse_reply_buf(req, NULL, 0);
         return;
-    }
-    /*
-    Compute the misalignment.
-    E.g. Data is int[3], 12 bytes in total, request to read from offset 3 and size 2
-    unit_size = 4;
-    misalignment_begin = 3;
-    misalignment_end = 3;
-    desired_read_offset = 0;
-    desired_read_size = 8;
-    */
-    size_t misalignment_begin = offset % unit_size;
-    size_t misalignment_end = unit_size - (offset + size) % unit_size;
-    misalignment_end = (misalignment_end == unit_size ? 0 : misalignment_end);
-    size_t desired_read_offset = offset - misalignment_begin;
-    size_t desired_read_size = size + misalignment_begin + misalignment_end;
-
-    filesystem_log("%llu: mismatch begin:%llu, end:%llu, aligned off:%llu, size:%llu\n",
-                   current_counter, misalignment_begin, misalignment_end,
-                   desired_read_offset, desired_read_size);
-    if (desired_read_size > buffer_size)
-    {
-        buffer.reset(new char[desired_read_size]);
-        buffer_size = desired_read_size;
     }
     size_t read_size = general_read_func(file_data, buffer.get(),
                                          desired_read_offset,
