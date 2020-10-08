@@ -9,8 +9,8 @@ package_lib= Travel.dll
 
 .PHONY: all copy-header
 
-all: ${package_lib}
-#all: remove-file copy-header ${package_lib}
+#all: ${package_lib}
+all: remove-file copy-header ${package_lib}
 
 
 remove-file:

@@ -4,7 +4,7 @@
 #ifndef Rcpp_hpp
 #include <Rinternals.h>
 #endif
-#include "Travel_types.h"
+#include "Travel_package_types.h"
 
 /*
 Create an ALTREP object given the data reading function. There
@@ -22,7 +22,7 @@ Arguments:
         to manage the lifespan of your private data
         (see the function `Travel_shared_ptr`).
 */
-SEXP Travel_make_altptr(Travel_altrep_info altrep_info, SEXP protect = R_NilValue);
+SEXP Travel_make_altptr(Travel_altrep_info altrep_info);
 /*
 Get file info from the ALTREP object returned by Travel_make_altptr
 */

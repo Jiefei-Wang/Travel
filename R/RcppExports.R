@@ -121,6 +121,14 @@ C_is_altrep <- function(x) {
     .Call(`_Travel_C_is_altrep`, x)
 }
 
+C_allzero <- function(n) {
+    .Call(`_Travel_C_allzero`, n)
+}
+
+C_RLE <- function(length, value) {
+    .Call(`_Travel_C_RLE`, length, value)
+}
+
 C_set_debug_print <- function(x) {
     invisible(.Call(`_Travel_C_set_debug_print`, x))
 }

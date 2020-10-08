@@ -319,6 +319,29 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// C_allzero
+SEXP C_allzero(size_t n);
+RcppExport SEXP _Travel_C_allzero(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< size_t >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_allzero(n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// C_RLE
+SEXP C_RLE(std::vector<double> length, std::vector<double> value);
+RcppExport SEXP _Travel_C_RLE(SEXP lengthSEXP, SEXP valueSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<double> >::type length(lengthSEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type value(valueSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_RLE(length, value));
+    return rcpp_result_gen;
+END_RCPP
+}
 // C_set_debug_print
 void C_set_debug_print(bool x);
 RcppExport SEXP _Travel_C_set_debug_print(SEXP xSEXP) {
@@ -409,6 +432,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_reset_int", (DL_FUNC) &_Travel_C_reset_int, 1},
     {"_Travel_C_duplicate", (DL_FUNC) &_Travel_C_duplicate, 1},
     {"_Travel_C_is_altrep", (DL_FUNC) &_Travel_C_is_altrep, 1},
+    {"_Travel_C_allzero", (DL_FUNC) &_Travel_C_allzero, 1},
+    {"_Travel_C_RLE", (DL_FUNC) &_Travel_C_RLE, 2},
     {"_Travel_C_set_debug_print", (DL_FUNC) &_Travel_C_set_debug_print, 1},
     {"_Travel_C_set_altrep_print", (DL_FUNC) &_Travel_C_set_altrep_print, 1},
     {"_Travel_C_set_filesystem_print", (DL_FUNC) &_Travel_C_set_filesystem_print, 1},
