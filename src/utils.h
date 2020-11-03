@@ -22,6 +22,10 @@ if(buf_size>1024*1024){\
     buf_size = 0;\
 }
 
+//math macro
+#define round_up_division(x,y) (x/y + (x % y != 0))
+#define zero_bounded_minus(x, y) (x>y?x-y:0)
+
 #ifdef _WIN32
 #undef ERROR
 #endif
@@ -83,7 +87,8 @@ void altrep_print(const char *format, ...);
 size_t get_type_size(int type);
 std::string get_type_name(int type);
 void mySleep(int sleepMs);
-size_t get_valid_file_size(size_t file_size, size_t offset, size_t size);
+size_t get_file_read_size(size_t file_size, size_t offset, size_t size);
+
 
 /*
 Examples:

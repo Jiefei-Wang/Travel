@@ -50,7 +50,7 @@ size_t C_get_file_handle_number()
 
 #ifndef _WIN32
 #include <cstring>
-std::string memory_map(file_map_handle *&handle, const filesystem_file_info file_info, const size_t size, bool filesystem_handle)
+std::string memory_map(file_map_handle *&handle, const Filesystem_file_info file_info, const size_t size, bool filesystem_handle)
 {
     const std::string &file_full_path = file_info.file_full_path;
     //Wait until the file exist or timeout(5s)
@@ -115,7 +115,7 @@ std::string flush_handle(file_map_handle *handle)
     return "";
 }
 #else
-std::string memory_map(file_map_handle *&handle, const filesystem_file_info file_info, const size_t size, bool filesystem_handle)
+std::string memory_map(file_map_handle *&handle, const Filesystem_file_info file_info, const size_t size, bool filesystem_handle)
 {
     Timer timer(FILESYSTEM_WAIT_TIME);
     HANDLE file_handle = INVALID_HANDLE_VALUE;

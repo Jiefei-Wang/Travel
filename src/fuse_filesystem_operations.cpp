@@ -29,7 +29,7 @@ static const std::string& get_file_name(fuse_ino_t ino)
 {
     if (ino != 1)
     {
-        return get_virtual_file_name(ino);
+        return get_filesystem_file_name(ino);
     }
     else
     {
@@ -45,12 +45,12 @@ static int fill_file_stat(fuse_ino_t ino, struct stat *stbuf)
         stbuf->st_nlink = 2;
         return 0;
     }
-    if (has_virtual_file(ino))
+    if (has_filesystem_file(ino))
     {
         stbuf->st_mode = S_IFREG | 0666;
         stbuf->st_nlink = 1;
 
-        stbuf->st_size = get_virtual_file(ino).file_size;
+        stbuf->st_size = get_filesystem_file_data(ino).file_size;
         return 0;
     }
     return -1;
@@ -83,7 +83,7 @@ static void filesystem_loopup(fuse_req_t req, fuse_ino_t parent, const char *nam
     filesystem_log("%lu: lookup, parent %lu, name %s\n", print_counter++, parent, name);
     struct fuse_entry_param e;
     {
-        if (parent != FUSE_ROOT_ID || !has_virtual_file(name))
+        if (parent != FUSE_ROOT_ID || !has_filesystem_file(name))
         {
             filesystem_log("File is not found\n");
             fuse_reply_err(req, ENOENT);
@@ -92,7 +92,7 @@ static void filesystem_loopup(fuse_req_t req, fuse_ino_t parent, const char *nam
         filesystem_log("File is found\n");
 
         memset(&e, 0, sizeof(e));
-        e.ino = get_virtual_file_inode(name);
+        e.ino = get_filesystem_file_inode(name);
     }
     e.attr_timeout = 0;
     e.entry_timeout = 0;
@@ -151,7 +151,7 @@ static void filesystem_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
         memset(&b, 0, sizeof(b));
         dirbuf_add(req, &b, ".", 1);
         dirbuf_add(req, &b, "..", 1);
-        for (auto i = virtual_file_begin(); i != virtual_file_end(); ++i)
+        for (auto i = filesystem_file_begin(); i != filesystem_file_end(); ++i)
         {
             filesystem_log("File Added: %s\n", i->second.c_str());
             dirbuf_add(req, &b, i->second.c_str(), i->first);
@@ -168,7 +168,7 @@ static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
     size_t current_counter = print_counter++;
     filesystem_log("%lu: open, ino %lu\n", current_counter, ino);
     {
-        if (!has_virtual_file(ino))
+        if (!has_filesystem_file(ino))
         {
             fuse_reply_err(req, ENOENT);
             return;
@@ -192,11 +192,11 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
                             off_t offset, fuse_file_info *fi)
 {
     size_t current_counter = print_counter++;
-    Filesystem_file_data &file_data = get_virtual_file(ino);
+    Filesystem_file_data &file_data = get_filesystem_file_data(ino);
     size_t &file_size = file_data.file_size;
-    size_t desired_size = get_valid_file_size(file_size, offset, size);
+    size_t desired_size = get_valid_file_read_size(file_size, offset, size);
     filesystem_log("%llu: Read, ino %lu, name %s, offset:%llu, size:%llu\n",
-                   current_counter, ino, get_virtual_file_name(ino).c_str(),
+                   current_counter, ino, get_filesystem_file_name(ino).c_str(),
                    offset, desired_size);
     if (size == 0){
         fuse_reply_buf(req, NULL, 0);
@@ -221,9 +221,9 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
 static void filesystem_write(fuse_req_t req, fuse_ino_t ino, const char *buffer,
                              size_t buffer_size, off_t offset, struct fuse_file_info *fi)
 {
-    Filesystem_file_data &file_data = get_virtual_file(ino);
+    Filesystem_file_data &file_data = get_filesystem_file_data(ino);
 	size_t &file_size = file_data.file_size;
-	size_t write_size = get_valid_file_size(file_size, offset, buffer_size);
+	size_t write_size = get_valid_file_read_size(file_size, offset, buffer_size);
 	size_t true_write_size = general_write_func(file_data, buffer, offset, write_size);
 	filesystem_log("file_size:%llu, offset:%llu, request write %llu, matched write size:%llu, true write size:%llu\n", 
 	file_size, offset, buffer_size, write_size,true_write_size);

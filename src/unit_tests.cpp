@@ -44,7 +44,7 @@ void C_make_fake_file(size_t size)
     altrep_info.type = RAWSXP;
     altrep_info.length = size;
     altrep_info.operations.get_region = fake_read;
-    add_virtual_file(RAWSXP,altrep_info);
+    add_filesystem_file(RAWSXP,altrep_info);
 }
 
 //[[Rcpp::export]]
@@ -54,7 +54,7 @@ void C_make_fake_file2(size_t size)
     altrep_info.operations.get_region = fake_integer_read;
     altrep_info.type = RAWSXP;
     altrep_info.length = size;
-    add_virtual_file(RAWSXP,altrep_info);
+    add_filesystem_file(RAWSXP,altrep_info);
 }
 
 SEXP make_altptr_from_file(std::string path, int type, size_t length);

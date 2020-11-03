@@ -275,7 +275,7 @@ void copy_memory(int dest_type, int src_type, void *dest, const void *src, size_
 /*
 An utility to get the true read size that will not read out-of-bound
 */
-size_t get_valid_file_size(size_t file_size, size_t offset, size_t size)
+size_t get_file_read_size(size_t file_size, size_t offset, size_t size)
 {
 	if (offset + size > file_size)
 	{
@@ -293,6 +293,8 @@ size_t get_valid_file_size(size_t file_size, size_t offset, size_t size)
 		return size;
 	}
 }
+
+
 
 #ifndef _WIN32
 #include <unistd.h>

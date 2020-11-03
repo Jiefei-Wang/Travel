@@ -71,7 +71,7 @@ dokan_create_file(LPCWSTR wide_file_path, PDOKAN_IO_SECURITY_CONTEXT SecurityCon
 	filesystem_log("creation_disposition = 0x%x:\n", creation_disposition);
 
 	NTSTATUS status = STATUS_ACCESS_DENIED;
-	if (IS_ROOT(file_path) || has_virtual_file(file_name))
+	if (IS_ROOT(file_path) || has_filesystem_file(file_name))
 	{
 		if (creation_disposition == OPEN_ALWAYS)
 		{
@@ -136,9 +136,9 @@ NTSTATUS DOKAN_CALLBACK dokan_read_file(LPCWSTR wide_file_path, LPVOID buffer,
 	string file_name = get_file_name_in_path(file_path);
 	filesystem_log("ReadFile: %s, ", file_path.c_str());
 
-	Filesystem_file_data &file_data = get_virtual_file(file_name);
+	Filesystem_file_data &file_data = get_filesystem_file_data(file_name);
 	size_t &file_size = file_data.file_size;
-	size_t desired_read_size = get_valid_file_size(file_size, offset, buffer_length);
+	size_t desired_read_size = get_valid_file_read_size(file_size, offset, buffer_length);
 	size_t true_read_size = general_read_func(file_data, buffer, offset, desired_read_size);
 	filesystem_log("file_size:%llu, offset:%llu, request read %llu, desired read size:%u, true read:%llu\n", 
 	file_size, offset, buffer_length, desired_read_size, true_read_size);
@@ -156,9 +156,9 @@ NTSTATUS DOKAN_CALLBACK dokan_write_file(LPCWSTR wide_file_path, LPCVOID buffer,
 	filesystem_log("WriteFile: %s\n", file_path.c_str());
 	
 	string file_name = get_file_name_in_path(file_path);
-	Filesystem_file_data &file_data = get_virtual_file(file_name);
+	Filesystem_file_data &file_data = get_filesystem_file_data(file_name);
 	size_t &file_size = file_data.file_size;
-	size_t expect_write = get_valid_file_size(file_size, offset, buffer_length);
+	size_t expect_write = get_valid_file_read_size(file_size, offset, buffer_length);
 	size_t true_write = general_write_func(file_data, buffer, offset, expect_write);
 	filesystem_log("file_size:%llu, offset:%llu, request write %llu, true write size:%u\n", 
 	file_size, offset, buffer_length, true_write);
@@ -195,12 +195,12 @@ NTSTATUS DOKAN_CALLBACK dokan_get_file_information(
 	}
 	else
 	{
-		if (!has_virtual_file(file_name))
+		if (!has_filesystem_file(file_name))
 		{
 			return STATUS_NO_SUCH_FILE;
 		}
 		HandleFileInformation->dwFileAttributes = FILE_ATTRIBUTE_READONLY;
-		Filesystem_file_data &file_data = get_virtual_file(file_name);
+		Filesystem_file_data &file_data = get_filesystem_file_data(file_name);
 		HandleFileInformation->nFileSizeLow = (unsigned long)file_data.file_size;
 		HandleFileInformation->nFileSizeHigh = file_data.file_size >> 32;
 	}
@@ -232,7 +232,7 @@ dokan_find_files(LPCWSTR wide_file_path,
 	if (IS_ROOT(file_path))
 	{
 		BY_HANDLE_FILE_INFORMATION info;
-		for (auto i = virtual_file_begin(); i != virtual_file_end(); ++i)
+		for (auto i = filesystem_file_begin(); i != filesystem_file_end(); ++i)
 		{
 			wstring wide_sub_file_path = stringToWstring(i->second);
 			dokan_get_file_information((L"\\" + wide_sub_file_path).c_str(), &info, dokan_file_info);

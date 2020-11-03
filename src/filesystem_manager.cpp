@@ -25,6 +25,8 @@ Filesystem_file_data::Filesystem_file_data(int type, const Travel_altrep_info al
   file_size = altrep_info.length * unit_size;
   coerced_type = type;
   cache_size = CACHE_SIZE;
+  start_offset = 0;
+  step = 1;
   claim(cache_size % unit_size == 0);
 }
 
@@ -109,6 +111,8 @@ size_t Cache_block::get_size() const
 {
   return size;
 }
+
+
 // Get the pointer
 char *Cache_block::get()
 {
@@ -135,7 +139,7 @@ Insert or delete files from the filesystem
 ==========================================================================
 */
 
-filesystem_file_info add_virtual_file(int type,
+Filesystem_file_info add_filesystem_file(int type,
                                       const Travel_altrep_info altrep_info,
                                       const char *name)
 {
@@ -159,44 +163,44 @@ filesystem_file_info add_virtual_file(int type,
   return {file_full_path, file_name, file_inode_counter};
 }
 
-const std::string &get_virtual_file_name(inode_type inode)
+const std::string &get_filesystem_file_name(inode_type inode)
 {
   return file_list.get_key2(inode);
 }
-inode_type get_virtual_file_inode(const std::string name)
+inode_type get_filesystem_file_inode(const std::string name)
 {
   return file_list.get_key1(name);
 }
-Filesystem_file_data &get_virtual_file(const std::string name)
+Filesystem_file_data &get_filesystem_file_data(const std::string name)
 {
   return file_list.get_value_by_key2(name);
 }
-Filesystem_file_data &get_virtual_file(inode_type inode)
+Filesystem_file_data &get_filesystem_file_data(inode_type inode)
 {
   return file_list.get_value_by_key1(inode);
 }
 
-bool has_virtual_file(const std::string name)
+bool has_filesystem_file(const std::string name)
 {
   return file_list.has_key2(name);
 }
-bool has_virtual_file(inode_type inode)
+bool has_filesystem_file(inode_type inode)
 {
   return file_list.has_key1(inode);
 }
-bool remove_virtual_file(const std::string name)
+bool remove_filesystem_file(const std::string name)
 {
-  if (has_virtual_file(name))
+  if (has_filesystem_file(name))
   {
     return file_list.erase_value_by_key2(name);
   }
   return false;
 }
-typename std::map<const inode_type, const std::string>::iterator virtual_file_begin()
+typename std::map<const inode_type, const std::string>::iterator filesystem_file_begin()
 {
   return file_list.begin_key();
 }
-typename std::map<const inode_type, const std::string>::iterator virtual_file_end()
+typename std::map<const inode_type, const std::string>::iterator filesystem_file_end()
 {
   return file_list.end_key();
 }

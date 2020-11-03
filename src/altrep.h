@@ -40,4 +40,4 @@ R_altrep_class_t get_altfile_class(int type);
 
 //altrep_manager
 void flush_altrep(SEXP x);
-SEXP Travel_make_altptr_internal(filesystem_file_info& file_info);
+SEXP Travel_make_altptr_internal(Filesystem_file_info& file_info);

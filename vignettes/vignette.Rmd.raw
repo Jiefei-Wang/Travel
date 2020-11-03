@@ -130,7 +130,7 @@ code <-
     }
   return ScalarReal(total);
 '
-my_sum <- cxxfunction(signature(x="SEXP"),
+my_sum <- inline::cxxfunction(signature(x="SEXP"),
                     body=code)
 
 ## An error will be given for x

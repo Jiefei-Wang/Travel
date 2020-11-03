@@ -25,16 +25,16 @@ static void altptr_handle_finalizer(SEXP handle_extptr)
             Rf_warning(status.c_str());
         }
     }
-    remove_virtual_file(name);
+    remove_filesystem_file(name);
 }
 
 /*
 The internal function allows to create an altrep object with specific type
 that is not consistent with the type in the altrep_info
 */
-SEXP Travel_make_altptr_internal(filesystem_file_info& file_info)
+SEXP Travel_make_altptr_internal(Filesystem_file_info& file_info)
 {
-    Filesystem_file_data &file_data = get_virtual_file(file_info.file_name);
+    Filesystem_file_data &file_data = get_filesystem_file_data(file_info.file_name);
     if(file_data.altrep_info.protected_data==NULL){
         file_data.altrep_info.protected_data = R_NilValue;
     }
@@ -54,7 +54,7 @@ SEXP Travel_make_altptr_internal(filesystem_file_info& file_info)
     std::string status = memory_map(handle, file_info, file_data.file_size);
     if (status != "")
     {
-        remove_virtual_file(file_info.file_name);
+        remove_filesystem_file(file_info.file_name);
         Rf_warning(status.c_str());
         return R_NilValue;
     }
@@ -68,7 +68,7 @@ SEXP Travel_make_altptr_internal(filesystem_file_info& file_info)
 }
 SEXP Travel_make_altptr(Travel_altrep_info altrep_info){
     //Create a virtual file
-    filesystem_file_info file_info = add_virtual_file(altrep_info.type, altrep_info);
+    Filesystem_file_info file_info = add_filesystem_file(altrep_info.type, altrep_info);
     return Travel_make_altptr_internal(file_info);
 }
 
@@ -106,7 +106,7 @@ SEXP make_altptr_from_file(std::string path, int type, size_t length)
     SET_PROPS_SIZE(altfile_options, Rcpp::wrap(size));
     std::string file_name = get_file_name_in_path(path);
     SET_PROPS_NAME(altfile_options, Rcpp::wrap(file_name));
-    filesystem_file_info file_info;
+    Filesystem_file_info file_info;
     file_info.file_name = file_name;
     file_info.file_full_path = path;
     file_map_handle *handle;
@@ -166,7 +166,7 @@ SEXP C_get_altptr_cache(SEXP x)
 {
     using namespace Rcpp;
     std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
-    Filesystem_file_data &file_data = get_virtual_file(file_name);
+    Filesystem_file_data &file_data = get_filesystem_file_data(file_name);
     size_t n = file_data.write_cache.size();
     Rcpp::NumericVector block_id(n);
     Rcpp::StringVector ptr(n);
@@ -188,7 +188,7 @@ SEXP C_get_altptr_cache(SEXP x)
 // [[Rcpp::export]]
 void C_print_cache(SEXP x, size_t i){
     std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
-    Filesystem_file_data &file_data = get_virtual_file(file_name);
+    Filesystem_file_data &file_data = get_filesystem_file_data(file_name);
     if(file_data.write_cache.find(i)!=file_data.write_cache.end()){
         const double* ptr = (const double *) file_data.write_cache.find(i)->second.get_const();
         for(size_t j = 0; j<4096/8;j++){

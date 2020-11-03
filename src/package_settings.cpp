@@ -6,6 +6,7 @@ using namespace Rcpp;
 
 static std::string print_location;
 
+
 // [[Rcpp::export]]
 void C_set_print_location(SEXP x){
 	print_location = CHAR(Rf_asChar(x));
@@ -19,8 +20,6 @@ SEXP C_get_print_location(){
 std::string get_print_location(){
     return print_location;
 }
-
-
 
 // mount point
 static std::string mount_point;
