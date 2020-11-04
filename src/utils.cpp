@@ -101,9 +101,9 @@ void altrep_print(const char *format, ...)
 	}
 }
 
-size_t get_type_size(int type)
+uint8_t get_type_size(int type)
 {
-	size_t elt_size = 0;
+	uint8_t elt_size = 0;
 	switch (type)
 	{
 	case INTSXP:

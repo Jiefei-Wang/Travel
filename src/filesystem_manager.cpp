@@ -16,20 +16,39 @@ double_key_map<inode_type, std::string, Filesystem_file_data> file_list;
 
 /*
 ==========================================================================
-Filesystem_file_data struct
+Subset_index class
 ==========================================================================
 */
-Filesystem_file_data::Filesystem_file_data(int type, const Travel_altrep_info altrep_info) : altrep_info(altrep_info)
+bool Subset_index::is_consecutive() const
 {
-  size_t unit_size = get_type_size(type);
-  file_size = altrep_info.length * unit_size;
-  coerced_type = type;
-  cache_size = CACHE_SIZE;
-  start_offset = 0;
-  step = 1;
-  claim(cache_size % unit_size == 0);
+  return step == block_length;
+}
+size_t Subset_index::get_source_index(size_t i) const
+{
+  size_t block_id = i / block_length;
+  size_t within_block_offset = i % block_length;
+  //the start offset of the block in the source
+  size_t source_block_offset = block_id * step + start;
+  size_t source_index = source_block_offset + within_block_offset;
+  return source_index;
 }
 
+size_t Subset_index::get_subset_index(size_t i) const
+{
+  size_t block_id = (i - start) / step;
+  size_t within_block_offset = (i - start) % step;
+  size_t subset_index = block_id * block_length + within_block_offset;
+  return subset_index;
+}
+
+size_t Subset_index::get_length(size_t source_length) const
+{
+  size_t source_length_from_start = zero_bounded_minus(source_length, start);
+  size_t block_num = source_length_from_start / step;
+  size_t within_last_block_offset = source_length_from_start % step;
+  size_t subset_length = block_num * block_length + std::min(within_last_block_offset, block_length);
+  return subset_length;
+}
 /*
 ==========================================================================
 Cache_block class
@@ -112,7 +131,6 @@ size_t Cache_block::get_size() const
   return size;
 }
 
-
 // Get the pointer
 char *Cache_block::get()
 {
@@ -132,16 +150,61 @@ const char *Cache_block::get_const() const
 {
   return ptr;
 }
+/*
+==========================================================================
+Filesystem_file_data class
+==========================================================================
+*/
+Filesystem_file_data::Filesystem_file_data(int coerced_type,
+                                           const Subset_index &index,
+                                           const Travel_altrep_info &altrep_info) : altrep_info(altrep_info),
+                                                                                    index(index),
+                                                                                    coerced_type(coerced_type)
+{
+  unit_size = get_type_size(coerced_type);
+  file_length = index.get_length(altrep_info.length);
+  file_size = file_length * unit_size;
+  cache_size = CACHE_SIZE;
+  claim(cache_size % unit_size == 0);
+}
 
+size_t Filesystem_file_data::get_data_offset(size_t i)
+{
+  return i * unit_size;
+}
+
+size_t Filesystem_file_data::get_cache_id(size_t data_offset)
+{
+  return data_offset / cache_size;
+}
+
+size_t Filesystem_file_data::get_cache_offset(size_t cache_id)
+{
+  return cache_size * cache_id;
+}
+size_t Filesystem_file_data::get_cache_offset_by_data_offset(size_t data_offset)
+{
+  return get_cache_offset(get_cache_id(data_offset));
+}
+
+bool Filesystem_file_data::has_cache_id(size_t cache_id)
+{
+  return write_cache.find(cache_id) != write_cache.end();
+}
+Cache_block &Filesystem_file_data::get_cache_block(size_t cache_id)
+{
+  return write_cache.at(cache_id);
+}
 /*
 ==========================================================================
 Insert or delete files from the filesystem
 ==========================================================================
 */
 
-Filesystem_file_info add_filesystem_file(int type,
-                                      const Travel_altrep_info altrep_info,
-                                      const char *name)
+Filesystem_file_info add_filesystem_file(const int type,
+                                         const Subset_index &index,
+                                         const Travel_altrep_info &altrep_info,
+                                         const char *name)
 {
   if (altrep_info.type == 0)
   {
@@ -157,7 +220,7 @@ Filesystem_file_info add_filesystem_file(int type,
     file_name = "inode_" + std::to_string(file_inode_counter);
   else
     file_name = std::string(name);
-  Filesystem_file_data file_data(type, altrep_info);
+  Filesystem_file_data file_data(type, index, altrep_info);
   file_list.insert(file_inode_counter, file_name, file_data);
   std::string file_full_path = build_path(get_mountpoint(), file_name);
   return {file_full_path, file_name, file_inode_counter};
@@ -240,7 +303,6 @@ Rcpp::DataFrame C_get_virtual_file_list()
                                    Named("shared.cache.number") = shared_cache_number);
   return df;
 }
-
 
 /*
 ==========================================================================

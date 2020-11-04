@@ -84,7 +84,7 @@ void filesystem_log(const char *format, ...);
 void debug_print(const char *format, ...);
 void filesystem_print(const char *format, ...);
 void altrep_print(const char *format, ...);
-size_t get_type_size(int type);
+uint8_t get_type_size(int type);
 std::string get_type_name(int type);
 void mySleep(int sleepMs);
 size_t get_file_read_size(size_t file_size, size_t offset, size_t size);
