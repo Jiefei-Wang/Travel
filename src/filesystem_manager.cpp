@@ -158,8 +158,8 @@ Filesystem_file_data class
 Filesystem_file_data::Filesystem_file_data(int coerced_type,
                                            const Subset_index &index,
                                            const Travel_altrep_info &altrep_info) : altrep_info(altrep_info),
-                                                                                    index(index),
-                                                                                    coerced_type(coerced_type)
+                                                                                    coerced_type(coerced_type),
+                                                                                    subset_index(index)
 {
   unit_size = get_type_size(coerced_type);
   file_length = index.get_length(altrep_info.length);

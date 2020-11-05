@@ -67,8 +67,7 @@ member variables:
   unit_size: The unit size of the data in bytes.
   cache_size: The write cache size. 
   coerced_type: The R type of the file. It may be different from the source type
-  start_offset: starting offset of the source, the unit is the element
-  step: the interval between the data in the source, the unit is the element
+  subset_index: the index of the subsetted vector for the original vector
   write_cache: All the changes to the data will be stored here by block. It
     should be stored in the format of the coerced type.
 */
@@ -92,7 +91,7 @@ public:
     size_t file_size;
     size_t cache_size;
     int coerced_type;
-    Subset_index index;
+    Subset_index subset_index;
     std::map<size_t, Cache_block> write_cache;
 };
 

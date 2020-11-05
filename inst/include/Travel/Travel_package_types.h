@@ -60,7 +60,7 @@ Extract a subset from the altrep(optional function)
 
 Args:
   altrep_info: The altrep info
-  idx: The 1-based subset index. The index is always positive, you do not
+  idx: an 1-based subset index. The index is always positive, you do not
   need to do out-of-bound check 
 
 Return:

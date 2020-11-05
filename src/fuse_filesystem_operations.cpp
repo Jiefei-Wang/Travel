@@ -186,15 +186,14 @@ static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
 }
 
 //Data buffer
-static size_t buffer_size = 1024;
-std::unique_ptr<char[]> buffer(new char[buffer_size]);
+static Unique_buffer buffer();
 static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
                             off_t offset, fuse_file_info *fi)
 {
     size_t current_counter = print_counter++;
     Filesystem_file_data &file_data = get_filesystem_file_data(ino);
     size_t &file_size = file_data.file_size;
-    size_t desired_size = get_valid_file_read_size(file_size, offset, size);
+    size_t desired_size = get_file_read_size(file_size, offset, size);
     filesystem_log("%llu: Read, ino %lu, name %s, offset:%llu, size:%llu\n",
                    current_counter, ino, get_filesystem_file_name(ino).c_str(),
                    offset, desired_size);
@@ -202,7 +201,7 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
         fuse_reply_buf(req, NULL, 0);
         return;
     }
-    RESERVE_BUFFER(buffer,buffer_size,desired_size);
+    buffer.reserve(desired_size);
     size_t read_size = general_read_func(file_data, buffer.get(),
                                          offset,
                                          desired_size);
@@ -215,7 +214,7 @@ static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
     {
         filesystem_log("%llu: expect size and read size do not match!\n");
     }
-    RELEASE_BUFFER(buffer, buffer_size);
+   buffer.release();
 }
 
 static void filesystem_write(fuse_req_t req, fuse_ino_t ino, const char *buffer,
@@ -223,7 +222,7 @@ static void filesystem_write(fuse_req_t req, fuse_ino_t ino, const char *buffer,
 {
     Filesystem_file_data &file_data = get_filesystem_file_data(ino);
 	size_t &file_size = file_data.file_size;
-	size_t write_size = get_valid_file_read_size(file_size, offset, buffer_size);
+	size_t write_size = get_file_read_size(file_size, offset, buffer_size);
 	size_t true_write_size = general_write_func(file_data, buffer, offset, write_size);
 	filesystem_log("file_size:%llu, offset:%llu, request write %llu, matched write size:%llu, true write size:%llu\n", 
 	file_size, offset, buffer_size, write_size,true_write_size);

@@ -66,9 +66,13 @@ SEXP Travel_make_altptr_internal(Filesystem_file_info& file_info)
     SET_PROPS_EXTPTR(altptr_options, handle_extptr);
     return result;
 }
+
+
+
 SEXP Travel_make_altptr(Travel_altrep_info altrep_info){
+    Subset_index index;
     //Create a virtual file
-    Filesystem_file_info file_info = add_filesystem_file(altrep_info.type, altrep_info);
+    Filesystem_file_info file_info = add_filesystem_file(altrep_info.type,index, altrep_info);
     return Travel_make_altptr_internal(file_info);
 }
 

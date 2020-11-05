@@ -5,8 +5,8 @@
 
 Filesystem_cache_copier::Filesystem_cache_copier(
     Filesystem_file_data &dest_file_info,
-    Filesystem_file_data &source_file_info) : source_file_info(source_file_info),
-                                              dest_file_info(dest_file_info)
+    Filesystem_file_data &source_file_info) : dest_file_info(dest_file_info),
+                                              source_file_info(source_file_info)
 {
 }
 Filesystem_cache_copier::~Filesystem_cache_copier()
