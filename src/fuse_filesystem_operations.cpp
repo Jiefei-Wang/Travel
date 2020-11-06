@@ -186,7 +186,7 @@ static void filesystem_open(fuse_req_t req, fuse_ino_t ino,
 }
 
 //Data buffer
-static Unique_buffer buffer();
+static Unique_buffer buffer;
 static void filesystem_read(fuse_req_t req, fuse_ino_t ino, size_t size,
                             off_t offset, fuse_file_info *fi)
 {
