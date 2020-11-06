@@ -29,6 +29,7 @@ SEXP C_make_altptr_from_altrep(SEXP x)
     Travel_altrep_info altrep_info = {};
     altrep_info.length = XLENGTH(x);
     altrep_info.private_data = x;
+    altrep_info.protected_data= x;
     altrep_info.type = TYPEOF(x);
     altrep_info.operations.get_region = read_altrep;
     SEXP altptr_object = Travel_make_altptr(altrep_info);
