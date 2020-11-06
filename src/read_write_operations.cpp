@@ -6,54 +6,58 @@
 
 static size_t read_local_source(Travel_altrep_info *altrep_info, char *buffer, size_t offset, size_t length)
 {
-    return altrep_info->operations.get_region(altrep_info, buffer, offset, length);
+    size_t true_read_length = altrep_info->operations.get_region(altrep_info, buffer, offset, length);
+    if (length != true_read_length)
+    {
+        filesystem_log("Warning in read_local_source: read length mismatch, "
+                       "offset: %llu, expected: %llu, actual: %llu\n",
+                       (uint64_t)offset, (uint64_t)length, (uint64_t)true_read_length);
+    }
+    return true_read_length;
 }
 static size_t read_source(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t length)
 {
     return read_local_source(&file_data.altrep_info, buffer, offset, length);
 }
 /*
-read the vector from the file source. 
+map from the index of the vector to the index of the source vector. 
 the unit of offset and length are the element of the vector
-The index is based on offset and the space between each element is step
 */
 static size_t read_source_with_subset(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t length)
 {
     Subset_index &subset_index = file_data.subset_index;
-    size_t read_length = 0;
+    size_t buffer_read_length = 0;
+    //If the subset_index is consecutive, we simply
+    //find out the start index of the offset in the source file
     if (subset_index.is_consecutive())
     {
-        read_length = read_source(file_data, buffer, subset_index.get_source_index(offset), length);
-        if (read_length != length)
-        {
-            filesystem_log("Warning in read_source_with_subset: read length mismatch, expected: %llu, actual: %llu\n",
-                           (uint64_t)length, (uint64_t)read_length);
-        }
+        buffer_read_length = read_source(file_data, buffer, subset_index.get_source_index(offset), length);
     }
     else
     {
+        //If subset_index is not consecutive, we read it block by block
         size_t &block_length = file_data.subset_index.block_length;
         size_t type_size = get_type_size(file_data.altrep_info.type);
         do
         {
-            size_t current_read_offset = offset + read_length;
-            size_t expect_read_length = std::min(block_length - current_read_offset % block_length, length - read_length);
+            size_t current_read_offset = offset + buffer_read_length;
+            size_t within_block_offset = current_read_offset % block_length;
+            size_t expect_read_length = std::min(block_length - within_block_offset, length - buffer_read_length);
             size_t true_read_length = read_source(file_data,
-                                                  buffer + read_length * type_size,
+                                                  buffer + buffer_read_length * type_size,
                                                   subset_index.get_source_index(current_read_offset),
                                                   expect_read_length);
             if (true_read_length != expect_read_length)
             {
-                filesystem_log("Warning in read_source_with_subset: read length mismatch, expected: %llu, actual: %llu\n",
-                               (uint64_t)expect_read_length, (uint64_t)true_read_length);
                 break;
             }
-            read_length = read_length + true_read_length;
-        } while (read_length < length);
+            buffer_read_length = buffer_read_length + true_read_length;
+        } while (buffer_read_length < length);
     }
-    return read_length;
+    return buffer_read_length;
 }
 
+//This buffer will hold a certain amount of data in memory
 static Unique_buffer coercion_buffer;
 /*
 Coerce the data that is read from the file source
@@ -61,16 +65,16 @@ the return value is the number of the element that has been read
 */
 static size_t read_source_with_coercion(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t length)
 {
+    //If the type of the file is the same as the type of the source
+    //We just pass the request to the downstream function
     if (file_data.coerced_type == file_data.altrep_info.type)
     {
         return read_source_with_subset(file_data, buffer, offset, length);
     }
     uint8_t source_unit_size = get_type_size(file_data.altrep_info.type);
-    uint8_t &data_unit_size = file_data.unit_size;
+    uint8_t &file_unit_size = file_data.unit_size;
 
-    size_t required_buffer_size = std::max(
-        length * data_unit_size,
-        length * source_unit_size);
+    size_t required_buffer_size = length * std::max(file_unit_size, source_unit_size);
     coercion_buffer.reserve(required_buffer_size);
     size_t true_read_length = read_source_with_subset(file_data, coercion_buffer.get(), offset, length);
     copy_memory(file_data.coerced_type, file_data.altrep_info.type,
@@ -89,11 +93,11 @@ static size_t read_with_alignment(Filesystem_file_data &file_data, char *buffer,
     uint8_t &unit_size = file_data.unit_size;
     size_t misalign_begin = offset % unit_size;
     size_t misalign_end = (offset + size) % unit_size;
-    // If the unit size is 1, there is nothing to do
+    // If the unit size is 1 or there is no misalignment,
+    // we just pass the request to the downstream function
     if (unit_size == 1 ||
         (misalign_begin == 0 && misalign_end == 0))
     {
-        //size_t read_length = altrep_info.operations.get_region(&altrep_info, buffer, offset / unit_size, size / unit_size);
         size_t read_length = read_source_with_coercion(file_data, buffer, offset / unit_size, size / unit_size);
         return read_length * unit_size;
     }
@@ -105,25 +109,21 @@ static size_t read_with_alignment(Filesystem_file_data &file_data, char *buffer,
     if (misalign_begin != 0)
     {
         ptr.reset(new char[unit_size]);
-        //size_t read_length = altrep_info.operations.get_region(&altrep_info, ptr.get(), offset_begin, 1);
         size_t read_length = read_source_with_coercion(file_data, ptr.get(), offset_begin, 1);
         if (read_length != 1)
         {
-            filesystem_log("Warning in read_local_file: The return size of the reading function is not 1!\n");
             return buffer_read_size;
         }
         size_t copy_size = std::min(size, unit_size - misalign_begin);
-        claim(copy_size + misalign_begin <= unit_size);
-        claim(copy_size <= size);
         memcpy(buffer, ptr.get() + misalign_begin, copy_size);
         buffer_read_size = buffer_read_size + copy_size;
         offset_begin++;
     }
-    if (buffer_read_size >= size)
+    if (buffer_read_size == size)
     {
         return buffer_read_size;
     }
-
+    //If we still need to read the data after reading the first element
     size_t offset_end = (offset + size) / unit_size;
     //Fill the middle of the data
     size_t length = offset_end - offset_begin;
@@ -131,9 +131,6 @@ static size_t read_with_alignment(Filesystem_file_data &file_data, char *buffer,
     {
         claim(buffer_read_size + length * unit_size <= size);
         claim(buffer_read_size + (length + 1) * unit_size > size);
-        /* size_t read_length = altrep_info.operations.get_region(&altrep_info,
-                                                               buffer + buffer_offset,
-                                                               offset_begin, length);*/
 
         size_t read_length = read_source_with_coercion(file_data,
                                                        buffer + buffer_read_size,
@@ -147,20 +144,15 @@ static size_t read_with_alignment(Filesystem_file_data &file_data, char *buffer,
     {
         if (ptr == nullptr)
             ptr.reset(new char[unit_size]);
-        //size_t read_length = altrep_info.operations.get_region(&altrep_info,
-        //                                                       ptr.get(), offset_end, 1);
         size_t read_length = read_source_with_subset(file_data, ptr.get(), offset_end, 1);
         if (read_length != 1)
         {
-            filesystem_log("Warning in read_local_file: The return size of the reading function is not 1!\n");
             return buffer_read_size;
         }
-        claim(misalign_end < unit_size);
-        claim(buffer_read_size + misalign_end == size);
         memcpy(buffer + buffer_read_size, ptr.get(), misalign_end);
         buffer_read_size = buffer_read_size + misalign_end;
     }
-    claim(buffer_read_size <= size);
+    claim(buffer_read_size == size);
     return buffer_read_size;
 }
 
@@ -193,9 +185,7 @@ static size_t read_data_with_cache(Filesystem_file_data &file_data, char *buffer
             buffer_read_size = buffer_read_size + read_size;
             if (read_size != expect_read_size)
             {
-                filesystem_log("Warning in read_data_with_cache: Read size mismatch, expected: %llu, actual: %llu\n",
-                               expect_read_size, read_size);
-                break;
+                return buffer_read_size;
             }
         }
         //If the current region is cached
@@ -204,7 +194,6 @@ static size_t read_data_with_cache(Filesystem_file_data &file_data, char *buffer
             size_t within_cache_offset = (current_data_offset) % cache_size;
             size_t expect_read_size = std::min(cache_size - within_cache_offset, size - buffer_read_size);
             const char *cache_ptr = it->second.get_const();
-            claim(cache_ptr != NULL);
             claim(within_cache_offset + expect_read_size <= cache_size);
             claim(buffer_read_size + expect_read_size <= size);
             memcpy(buffer + buffer_read_size, cache_ptr + within_cache_offset, expect_read_size);
@@ -216,25 +205,18 @@ static size_t read_data_with_cache(Filesystem_file_data &file_data, char *buffer
             //If the current region is not cached but
             //there exists other cached cache
             size_t next_cache_offset = file_data.get_cache_offset(it->first);
-            size_t expect_read_size = next_cache_offset - (offset + buffer_read_size);
+            size_t expect_read_size = next_cache_offset - current_data_offset;
             claim(buffer_read_size + expect_read_size <= size);
             size_t read_size = read_with_alignment(file_data, buffer + buffer_read_size,
                                                    offset + buffer_read_size, expect_read_size);
             buffer_read_size = buffer_read_size + read_size;
             if (read_size != expect_read_size)
             {
-                filesystem_log("Warning in read_data_with_cache: Read size mismatch, expected: %llu, actual: %llu\n",
-                               expect_read_size, read_size);
-                break;
+                return buffer_read_size;
             }
         }
     }
-    if (buffer_read_size != size)
-    {
-        filesystem_log("Warning in read_data_with_cache: Final read size mismatch, expected: %llu, actual: %llu\n",
-                       size, buffer_read_size);
-    }
-    claim(buffer_read_size <= size);
+    claim(buffer_read_size == size);
     return buffer_read_size;
 }
 
@@ -259,38 +241,50 @@ size_t general_write_func(Filesystem_file_data &file_data, const void *buffer, s
     if (size == 0)
         return 0;
     size_t &cache_size = file_data.cache_size;
-    size_t buffer_offset = 0;
-    while (buffer_offset < size)
+    size_t write_offset = 0;
+    while (write_offset < size)
     {
-        size_t cache_id = (offset + buffer_offset) / cache_size;
-        size_t cache_offset = (offset + buffer_offset) % cache_size;
-        size_t cache_write_length = std::min(cache_size - cache_offset, size - buffer_offset);
+        size_t unwrite_size = size - write_offset;
+        size_t cache_id = file_data.get_cache_id(offset + write_offset);
+        size_t within_cache_offset = (offset + write_offset) % cache_size;
+        size_t cache_write_size = std::min(cache_size - within_cache_offset, unwrite_size);
 
-        if (file_data.write_cache.find(cache_id) == file_data.write_cache.end())
+        if (!file_data.has_cache_id(cache_id))
         {
             filesystem_log("Creating new cache %llu\n", cache_id);
-            //file_data.write_cache[cache_id] = Cache_block(cache_size);
-            Cache_block cache(cache_size);
-            if (cache_offset != 0 || cache_write_length != cache_size)
+            //if the data in the cache will be overwritten by the write data,
+            //we will just create the empty cache
+            if (within_cache_offset == 0 && cache_write_size == cache_size)
             {
-                size_t cache_offset_in_file = cache_id * cache_size;
-                size_t expect_read_size = get_file_read_size(file_data.file_size, cache_offset_in_file, cache_size);
-                size_t read_size = general_read_func(file_data, cache.get(),
-                                                     cache_offset_in_file, expect_read_size);
-                if (read_size != expect_read_size)
-                {
-                    filesystem_log("Warning in general_write_func: Read size mismatch, expected: %llu, actual: %llu\n",
-                                   expect_read_size, read_size);
-                }
+                Cache_block cache(cache_size);
+                file_data.write_cache.insert(std::pair<size_t, Cache_block>(cache_id, cache));
             }
-            file_data.write_cache.insert(std::pair<size_t, Cache_block>(cache_id, cache));
+            else
+            {
+                load_cache(file_data, cache_id);
+            }
         }
-        char *cache_ptr = file_data.write_cache.find(cache_id)->second.get();
-        claim(buffer_offset + cache_write_length <= size);
-        claim(cache_offset + cache_write_length <= cache_size);
-        memcpy(cache_ptr + cache_offset, (char *)buffer + buffer_offset, cache_write_length);
-        buffer_offset = buffer_offset + cache_write_length;
+        char *cache_ptr = file_data.get_cache_block(cache_id).get();
+        claim(write_offset + cache_write_size <= size);
+        memcpy(cache_ptr + within_cache_offset, (char *)buffer + write_offset, cache_write_size);
+        write_offset = write_offset + cache_write_size;
     }
-    claim(buffer_offset <= size);
-    return buffer_offset;
+    claim(write_offset <= size);
+    return write_offset;
+}
+
+void *load_cache(Filesystem_file_data &file_data, size_t cache_id)
+{
+    if (file_data.has_cache_id(cache_id))
+    {
+        return file_data.get_cache_block(cache_id).get();
+    }
+    size_t cache_offset_in_file = file_data.get_cache_offset(cache_id);
+    size_t expect_read_size = file_data.get_cache_size(cache_id);
+    Cache_block cache(file_data.cache_size);
+    void *ptr = cache.get();
+    general_read_func(file_data, ptr,
+                      cache_offset_in_file, expect_read_size);
+    file_data.write_cache.insert(std::pair<size_t, Cache_block>(cache_id, cache));
+    return ptr;
 }

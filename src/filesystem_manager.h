@@ -77,10 +77,9 @@ public:
     Filesystem_file_data(int coerced_type,
                          const Subset_index &index,
                          const Travel_altrep_info &altrep_info);
-    size_t get_data_offset(size_t i);
     size_t get_cache_id(size_t data_offset);
     size_t get_cache_offset(size_t cache_id);
-    size_t get_cache_offset_by_data_offset(size_t data_offset);
+    size_t get_cache_size(size_t cache_id);
     bool has_cache_id(size_t cache_id);
     Cache_block& get_cache_block(size_t cache_id);
 

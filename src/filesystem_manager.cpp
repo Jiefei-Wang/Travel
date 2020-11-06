@@ -37,6 +37,7 @@ size_t Subset_index::get_subset_index(size_t i) const
 {
   size_t block_id = (i - start) / step;
   size_t within_block_offset = (i - start) % step;
+  claim(within_block_offset<block_length);
   size_t subset_index = block_id * block_length + within_block_offset;
   return subset_index;
 }
@@ -46,7 +47,8 @@ size_t Subset_index::get_length(size_t source_length) const
   size_t source_length_from_start = zero_bounded_minus(source_length, start);
   size_t block_num = source_length_from_start / step;
   size_t within_last_block_offset = source_length_from_start % step;
-  size_t subset_length = block_num * block_length + std::min(within_last_block_offset, block_length);
+  claim(within_last_block_offset<block_length);
+  size_t subset_length = block_num * block_length + within_last_block_offset;
   return subset_length;
 }
 /*
@@ -168,10 +170,6 @@ Filesystem_file_data::Filesystem_file_data(int coerced_type,
   claim(cache_size % unit_size == 0);
 }
 
-size_t Filesystem_file_data::get_data_offset(size_t i)
-{
-  return i * unit_size;
-}
 
 size_t Filesystem_file_data::get_cache_id(size_t data_offset)
 {
@@ -182,9 +180,10 @@ size_t Filesystem_file_data::get_cache_offset(size_t cache_id)
 {
   return cache_size * cache_id;
 }
-size_t Filesystem_file_data::get_cache_offset_by_data_offset(size_t data_offset)
+size_t Filesystem_file_data::get_cache_size(size_t cache_id)
 {
-  return get_cache_offset(get_cache_id(data_offset));
+  size_t true_size = get_file_read_size(file_size, get_cache_offset(cache_id), cache_size);
+  return true_size;
 }
 
 bool Filesystem_file_data::has_cache_id(size_t cache_id)
