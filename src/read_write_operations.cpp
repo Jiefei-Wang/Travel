@@ -186,6 +186,8 @@ static size_t read_data_with_cache(Filesystem_file_data &file_data, char *buffer
             if (read_size != expect_read_size)
             {
                 return buffer_read_size;
+            }else{
+                break;
             }
         }
         //If the current region is cached
