@@ -1,5 +1,4 @@
-
-#include <memory>
+#include <cstring>
 #include "class_Cache_block.h"
 
 /*

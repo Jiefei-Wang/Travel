@@ -228,9 +228,10 @@ void test_read_write_functions_internal(
     uint8_t &type_size = file_data.unit_size;
 
     //Create the test data
-    std::unique_ptr<char[]> data(new char[type_size *index.get_length(length)]);
+    size_t data_length = index.get_length(length);
+    std::unique_ptr<char[]> data(new char[type_size *data_length]);
     char *data_ptr = data.get();
-    for (size_t i = 0; i < length; i++)
+    for (size_t i = 0; i < data_length; i++)
     {
         if (type == INTSXP)
         {
