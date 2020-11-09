@@ -16,6 +16,7 @@
 #include <string>
 #include <set>
 #include <time.h>
+#include "Rinternals.h"
 #include "package_settings.h"
 #include "filesystem_manager.h"
 #include "memory_mapped_file.h"

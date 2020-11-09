@@ -1,4 +1,6 @@
+#ifndef R_INTERNALS_H_
 #include <Rcpp.h>
+#endif
 #include <R_ext/Altrep.h>
 #include "filesystem_manager.h"
 #define SLOT_NUM 4
@@ -41,3 +43,24 @@ R_altrep_class_t get_altfile_class(int type);
 //altrep_manager
 void flush_altrep(SEXP x);
 SEXP Travel_make_altptr_internal(Filesystem_file_info& file_info);
+
+
+
+#define DO_BY_TYPE(x_cast, x, OPERATION)                 \
+    switch (TYPEOF(x))                                   \
+    {                                                    \
+    case INTSXP:                                         \
+    {                                                    \
+        Rcpp::IntegerVector x_cast = x;                  \
+        OPERATION;                                       \
+        break;                                           \
+    }                                                    \
+    case REALSXP:                                        \
+    {                                                    \
+        Rcpp::NumericVector x_cast = x;                  \
+        OPERATION;                                       \
+        break;                                           \
+    }                                                    \
+    default:                                             \
+        Rf_error("Unexpected index type %d", TYPEOF(x)); \
+    }

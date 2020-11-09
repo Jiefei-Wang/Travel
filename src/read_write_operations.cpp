@@ -25,7 +25,7 @@ the unit of offset and length are the element of the vector
 */
 static size_t read_source_with_subset(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t length)
 {
-    Subset_index &subset_index = file_data.subset_index;
+    Subset_index &subset_index = file_data.index;
     size_t buffer_read_length = 0;
     //If the subset_index is consecutive, we simply
     //find out the start index of the offset in the source file
@@ -36,7 +36,7 @@ static size_t read_source_with_subset(Filesystem_file_data &file_data, char *buf
     else
     {
         //If subset_index is not consecutive, we read it block by block
-        size_t &block_length = file_data.subset_index.block_length;
+        size_t &block_length = file_data.index.block_length;
         size_t type_size = get_type_size(file_data.altrep_info.type);
         do
         {

@@ -19,7 +19,9 @@
 #endif
 
 #ifdef UTILS_ENABLE_R
-#include <Rcpp.h>
+#ifndef R_INTERNALS_H_
+#include "Rcpp.h"
+#endif
 size_t get_object_size(SEXP x);
 class PROTECT_GUARD
 {
