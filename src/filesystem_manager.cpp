@@ -258,6 +258,14 @@ bool remove_filesystem_file(const std::string name)
   }
   return false;
 }
+bool remove_filesystem_file(inode_type inode)
+{
+  if (has_filesystem_file(inode))
+  {
+    return file_list.erase_value_by_key1(inode);
+  }
+  return false;
+}
 typename std::map<const inode_type, const std::string>::iterator filesystem_file_begin()
 {
   return file_list.begin_key();

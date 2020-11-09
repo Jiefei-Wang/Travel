@@ -108,6 +108,7 @@ Filesystem_file_data &get_filesystem_file_data(inode_type inode);
 bool has_filesystem_file(const std::string name);
 bool has_filesystem_file(inode_type inode);
 bool remove_filesystem_file(const std::string name);
+bool remove_filesystem_file(inode_type inode);
 typename std::map<const inode_type, const std::string>::iterator filesystem_file_begin();
 typename std::map<const inode_type, const std::string>::iterator filesystem_file_end();
 

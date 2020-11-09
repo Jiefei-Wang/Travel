@@ -129,6 +129,18 @@ C_RLE <- function(length, value) {
     .Call(`_Travel_C_RLE`, length, value)
 }
 
+C_test_read_write_functions_native <- function(length, write_starts, write_length, read_starts, read_length) {
+    invisible(.Call(`_Travel_C_test_read_write_functions_native`, length, write_starts, write_length, read_starts, read_length))
+}
+
+C_test_read_write_functions_with_coercion <- function(length, write_starts, write_length, read_starts, read_length) {
+    invisible(.Call(`_Travel_C_test_read_write_functions_with_coercion`, length, write_starts, write_length, read_starts, read_length))
+}
+
+C_test_read_write_functions_with_coercion_and_subset <- function(length, start, step, block_length, write_starts, write_length, read_starts, read_length) {
+    invisible(.Call(`_Travel_C_test_read_write_functions_with_coercion_and_subset`, length, start, step, block_length, write_starts, write_length, read_starts, read_length))
+}
+
 C_set_debug_print <- function(x) {
     invisible(.Call(`_Travel_C_set_debug_print`, x))
 }

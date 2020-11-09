@@ -342,6 +342,51 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// C_test_read_write_functions_native
+void C_test_read_write_functions_native(size_t length, Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length, Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length);
+RcppExport SEXP _Travel_C_test_read_write_functions_native(SEXP lengthSEXP, SEXP write_startsSEXP, SEXP write_lengthSEXP, SEXP read_startsSEXP, SEXP read_lengthSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< size_t >::type length(lengthSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type write_starts(write_startsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type write_length(write_lengthSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type read_starts(read_startsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type read_length(read_lengthSEXP);
+    C_test_read_write_functions_native(length, write_starts, write_length, read_starts, read_length);
+    return R_NilValue;
+END_RCPP
+}
+// C_test_read_write_functions_with_coercion
+void C_test_read_write_functions_with_coercion(size_t length, Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length, Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length);
+RcppExport SEXP _Travel_C_test_read_write_functions_with_coercion(SEXP lengthSEXP, SEXP write_startsSEXP, SEXP write_lengthSEXP, SEXP read_startsSEXP, SEXP read_lengthSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< size_t >::type length(lengthSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type write_starts(write_startsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type write_length(write_lengthSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type read_starts(read_startsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type read_length(read_lengthSEXP);
+    C_test_read_write_functions_with_coercion(length, write_starts, write_length, read_starts, read_length);
+    return R_NilValue;
+END_RCPP
+}
+// C_test_read_write_functions_with_coercion_and_subset
+void C_test_read_write_functions_with_coercion_and_subset(size_t length, size_t start, size_t step, size_t block_length, Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length, Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length);
+RcppExport SEXP _Travel_C_test_read_write_functions_with_coercion_and_subset(SEXP lengthSEXP, SEXP startSEXP, SEXP stepSEXP, SEXP block_lengthSEXP, SEXP write_startsSEXP, SEXP write_lengthSEXP, SEXP read_startsSEXP, SEXP read_lengthSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< size_t >::type length(lengthSEXP);
+    Rcpp::traits::input_parameter< size_t >::type start(startSEXP);
+    Rcpp::traits::input_parameter< size_t >::type step(stepSEXP);
+    Rcpp::traits::input_parameter< size_t >::type block_length(block_lengthSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type write_starts(write_startsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type write_length(write_lengthSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type read_starts(read_startsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type read_length(read_lengthSEXP);
+    C_test_read_write_functions_with_coercion_and_subset(length, start, step, block_length, write_starts, write_length, read_starts, read_length);
+    return R_NilValue;
+END_RCPP
+}
 // C_set_debug_print
 void C_set_debug_print(bool x);
 RcppExport SEXP _Travel_C_set_debug_print(SEXP xSEXP) {
@@ -434,6 +479,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_is_altrep", (DL_FUNC) &_Travel_C_is_altrep, 1},
     {"_Travel_C_allzero", (DL_FUNC) &_Travel_C_allzero, 1},
     {"_Travel_C_RLE", (DL_FUNC) &_Travel_C_RLE, 2},
+    {"_Travel_C_test_read_write_functions_native", (DL_FUNC) &_Travel_C_test_read_write_functions_native, 5},
+    {"_Travel_C_test_read_write_functions_with_coercion", (DL_FUNC) &_Travel_C_test_read_write_functions_with_coercion, 5},
+    {"_Travel_C_test_read_write_functions_with_coercion_and_subset", (DL_FUNC) &_Travel_C_test_read_write_functions_with_coercion_and_subset, 8},
     {"_Travel_C_set_debug_print", (DL_FUNC) &_Travel_C_set_debug_print, 1},
     {"_Travel_C_set_altrep_print", (DL_FUNC) &_Travel_C_set_altrep_print, 1},
     {"_Travel_C_set_filesystem_print", (DL_FUNC) &_Travel_C_set_filesystem_print, 1},
