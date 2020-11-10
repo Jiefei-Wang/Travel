@@ -103,20 +103,24 @@ typedef Travel_altrep_info (*Travel_coerce)(const Travel_altrep_info *altrep_inf
 /*
 Serialize the altrep object(optional function)
 
+An R function that takes an external pointer as the input,
+The external pointer points to the Travel_altrep_info struct that 
+is used to construct the ALTREP object.
+
 Return:
   Any R object
 */
-typedef SEXP (*Travel_serialize)(const Travel_altrep_info *altrep_info);
+typedef SEXP Travel_serialize;
 /*
 unserialize the altrep object(optional function)
 
-Arg:
-  data: The serialized altrep data
+An R function that takes the serialized data as the input,
+it returns the unserialized object.
 
 Return:
   altrep info 
 */
-typedef Travel_altrep_info (*Travel_unserialize)(SEXP data);
+typedef SEXP Travel_unserialize;
 
 
 
@@ -128,16 +132,15 @@ members:
   set_region: Optional, function to set a region data of the R vector(Not implemented yet!)
   get_private_size: Optional, count the size of the private data
   duplicate: Optional, duplicate an altrep info
-  extract_subset: Optional, extract subset from ALTREP(Not implemented yet!)
+  extract_subset: Optional, extract subset from ALTREP
   coerce: Optional, coerce ALTREP to the other type
   serialize: Optional, serialize the ALTREP object(Not implemented yet!)
   unserialize: Optional, unserialize the ALTREP object(Not implemented yet!)
   inspect_private: Optional, inspect private data when the R vector is inspected
 
 Dependencies:
-  set_region: duplicate
-  serialize: unserialize
-  unserialize: serialize
+  set_region depends on duplicate
+  serialize and unserialize depend on each other
 */
 struct Travel_altrep_operations
 {
@@ -147,8 +150,8 @@ struct Travel_altrep_operations
   Travel_extract_subset extract_subset = NULL;
   Travel_duplicate duplicate = NULL;
   Travel_coerce coerce = NULL;
-  Travel_serialize serialize = NULL;
-  Travel_unserialize unserialize = NULL;
+  Travel_serialize serialize = R_NilValue;
+  Travel_unserialize unserialize = R_NilValue;
   Travel_inspect_private inspect_private = NULL;
 };
 
@@ -173,6 +176,8 @@ members:
   type: R's vector type(e.g. RAWSXP, LGLSXP, INTSXP, REALSXP)
   length: Length of the vector
   private_data: A pointer that can be used to store the private data of the ALTREP
+  protected_data: An SEXP that will be protected when the ALTREP object is still in used.
+  It will be automatically unprotected when the ALTREP object is released.
 */
 struct Travel_altrep_info
 {

@@ -39,3 +39,14 @@ Cache_block &Filesystem_file_data::get_cache_block(size_t cache_id)
 {
   return write_cache.at(cache_id);
 }
+Exported_file_data Filesystem_file_data::serialize(){
+    Exported_file_data data;
+    data.unit_size= unit_size;
+    data.file_length= file_length;
+    data.file_size= file_size;
+    data.source_length = altrep_info.length;
+    data.cache_size= cache_size;
+    data.coerced_type= coerced_type;
+    data.index= index;
+    return data;
+}

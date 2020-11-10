@@ -4,6 +4,18 @@
 #include "class_Cache_block.h"
 #include "class_Subset_index.h"
 #include "Travel_package_types.h"
+
+struct Exported_file_data{
+    uint8_t unit_size;
+    size_t file_length;
+    size_t source_length;
+    size_t file_size;
+    size_t cache_size;
+    int coerced_type;
+    Subset_index index;
+};
+
+
 /*
 The object that holds all data of a file
 member variables:
@@ -27,7 +39,7 @@ public:
     size_t get_cache_size(size_t cache_id);
     bool has_cache_id(size_t cache_id);
     Cache_block& get_cache_block(size_t cache_id);
-
+    Exported_file_data serialize();
 public:
     Travel_altrep_info altrep_info;
     uint8_t unit_size;

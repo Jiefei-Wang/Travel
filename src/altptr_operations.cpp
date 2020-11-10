@@ -1,10 +1,10 @@
 #include "altrep.h"
+#define UTILS_ENABLE_R
 #include "utils.h"
 #include "filesystem_manager.h"
 #include "memory_mapped_file.h"
 #include "package_settings.h"
 #include "Travel.h"
-#include "read_write_operations.h"
 #include "class_Filesystem_cache_copier.h"
 
 size_t default_subset_length_cutoff = 3;
@@ -37,6 +37,28 @@ R_altrep_class_t get_altptr_class(int type)
     // Just for suppressing the annoying warning, it should never be excuted
     return altptr_real_class;
 }
+
+bool is_altptr(SEXP x)
+{
+    if (R_altrep_inherits(x, altptr_real_class))
+    {
+        return true;
+    }
+    if (R_altrep_inherits(x, altptr_integer_class))
+    {
+        return true;
+    }
+    if (R_altrep_inherits(x, altptr_logical_class))
+    {
+        return true;
+    }
+    if (R_altrep_inherits(x, altptr_raw_class))
+    {
+        return true;
+    }
+    return false;
+}
+
 /*
 ==========================================
 ALTREP operations
@@ -240,9 +262,6 @@ SEXP altptr_coerce(SEXP x, int type)
     return res;
 }
 
-
-
-
 SEXP altptr_subset(SEXP x, SEXP idx, SEXP call)
 {
     altrep_print("subsetting object\n");
@@ -346,6 +365,99 @@ SEXP altptr_subset(SEXP x, SEXP idx, SEXP call)
     return res;
 }
 
+SEXP altptr_serialized(SEXP x)
+{
+    altrep_print("serialize function\n");
+    if (!is_filesystem_running())
+    {
+        Rf_error("The filesystem is not running!\n");
+    }
+    //Pass all changes to the filesystem
+    flush_altrep(x);
+    //Get the file data
+    std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
+    Filesystem_file_data &file_data = get_filesystem_file_data(file_name);
+    Travel_altrep_info &altrep_info = file_data.altrep_info;
+
+    SEXP serialized_altrep_data;
+    PROTECT_GUARD guard;
+    SEXP serialized_object;
+    if (altrep_info.operations.serialize == R_NilValue)
+    {
+        //If the serialize function is not set
+        //We just pass a regular vector
+        serialized_object = guard.protect(Rf_allocVector(file_data.coerced_type, file_data.file_length));
+        memcpy(DATAPTR(serialized_object), DATAPTR(x), file_data.file_size);
+    }
+    else
+    {
+        //If the serialize function has been set,
+        //we use the user-provided function to serialize
+        //the altrep_info
+        Rcpp::Function serialize_func(altrep_info.operations.serialize);
+        SEXP altrep_info_extptr = guard.protect(R_MakeExternalPtr(&altrep_info, R_NilValue, R_NilValue));
+        SEXP serialized_altrep_info = guard.protect(serialize_func(altrep_info_extptr));
+        Exported_file_data exported_data = file_data.serialize();
+        SEXP serialized_file_data = guard.protect(Rf_allocVector(RAWSXP, sizeof(Exported_file_data)));
+        //prepare the file data
+        void *file_ptr = (void *)DATAPTR(serialized_file_data);
+        memcpy(file_ptr, &exported_data, sizeof(Exported_file_data));
+        //prepare the cache data
+        size_t cache_num = file_data.write_cache.size();
+        size_t cache_size = file_data.cache_size;
+        Rcpp::NumericVector cache_id(cache_num);
+        Rcpp::RawVector cache_data(cache_num * file_data.cache_size);
+        size_t j = 0;
+        char *cache_ptr = (char *)DATAPTR(cache_data);
+        for (const auto &i : file_data.write_cache)
+        {
+            cache_id[j] = i.first;
+            memcpy(cache_ptr + j * cache_size, i.second.get_const(), cache_size);
+            j++;
+        }
+        serialized_object = guard.protect(Rf_allocVector(VECSXP, 5));
+        SET_VECTOR_ELT(serialized_object, 0, altrep_info.operations.unserialize);
+        SET_VECTOR_ELT(serialized_object, 1, serialized_altrep_info);
+        SET_VECTOR_ELT(serialized_object, 2, serialized_file_data);
+        SET_VECTOR_ELT(serialized_object, 3, cache_id);
+        SET_VECTOR_ELT(serialized_object, 4, cache_data);
+    }
+    return serialized_object;
+}
+
+SEXP altptr_unserialize(SEXP R_class, SEXP serialized_object)
+{
+    altrep_print("serialize function\n");
+    //If the serialized object is a regular vector, we just return it.
+    if (TYPEOF(serialized_object) != VECSXP)
+    {
+        return serialized_object;
+    }
+    //Otherwise, we build the ALTREP object from scratch
+    if (!is_filesystem_running())
+    {
+        Rf_error("The filesystem is not running!\n");
+    }
+    Rcpp::List serialized_list = serialized_object;
+    Rcpp::Function unserialize_func = serialized_list[0];
+    PROTECT_GUARD guard;
+    SEXP x = guard.protect(unserialize_func(serialized_list[1]));
+    SEXP serialized_file_data = serialized_list[2];
+    Exported_file_data *file_data_ptr = (Exported_file_data *)DATAPTR(serialized_file_data);
+    Rcpp::NumericVector cache_id = serialized_list[3];
+    Rcpp::RawVector cache_data = serialized_list[4];
+    //If the length of the unserialized object does not match
+    //the length of the orignal one, we directly return the object
+    //with a warning
+    if (file_data_ptr->source_length != XLENGTH(x))
+    {
+        Rf_warning("The length of the unserialized object does not match the orignal one, "
+                   "expected: %llu, true: %llu\n",
+                   (uint64_t)file_data_ptr->source_length, (uint64_t)XLENGTH(x));
+        return x;
+    }
+}
+
 /*
 Register ALTREP class
 */
@@ -359,7 +471,8 @@ Register ALTREP class
     R_set_altrep_Coerce_method(ALT_CLASS, altptr_coerce);                 \
     /* ALTVEC methods */                                                  \
     R_set_altvec_Dataptr_method(ALT_CLASS, altptr_dataptr);               \
-    R_set_altvec_Dataptr_or_null_method(ALT_CLASS, altptr_dataptr_or_null);
+    R_set_altvec_Dataptr_or_null_method(ALT_CLASS, altptr_dataptr_or_null);\
+	R_set_altvec_Extract_subset_method(ALT_CLASS, altptr_subset);
 
 //R_set_altvec_Extract_subset_method(ALT_CLASS, numeric_subset<R_TYPE, C_TYPE>);
 
