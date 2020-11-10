@@ -379,7 +379,6 @@ SEXP altptr_serialized(SEXP x)
     Filesystem_file_data &file_data = get_filesystem_file_data(file_name);
     Travel_altrep_info &altrep_info = file_data.altrep_info;
 
-    SEXP serialized_altrep_data;
     PROTECT_GUARD guard;
     SEXP serialized_object;
     if (altrep_info.operations.serialize == R_NilValue)
@@ -449,7 +448,7 @@ SEXP altptr_unserialize(SEXP R_class, SEXP serialized_object)
     //If the length of the unserialized object does not match
     //the length of the orignal one, we directly return the object
     //with a warning
-    if (file_data_ptr->source_length != XLENGTH(x))
+    if (file_data_ptr->source_length != (size_t)XLENGTH(x))
     {
         Rf_warning("The length of the unserialized object does not match the orignal one, "
                    "expected: %llu, true: %llu\n",

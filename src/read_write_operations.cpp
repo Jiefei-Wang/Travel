@@ -233,6 +233,7 @@ source layer: read_source
 size_t general_read_func(Filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
 {
     size = std::min(zero_bounded_minus(file_data.file_size, offset), size);
+    claim(offset + size <= file_data.file_size);
     return read_data_with_cache(file_data, (char *)buffer, offset, size);
 }
 
