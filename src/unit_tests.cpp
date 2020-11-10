@@ -44,7 +44,7 @@ void C_make_fake_file(size_t size)
     altrep_info.type = RAWSXP;
     altrep_info.length = size;
     altrep_info.operations.get_region = fake_read;
-    Subset_index index;
+    Subset_index index(altrep_info.length);
     add_filesystem_file(RAWSXP, index, altrep_info);
 }
 
@@ -55,7 +55,7 @@ void C_make_fake_file2(size_t size)
     altrep_info.operations.get_region = fake_integer_read;
     altrep_info.type = RAWSXP;
     altrep_info.length = size;
-    Subset_index index;
+    Subset_index index(altrep_info.length);
     add_filesystem_file(RAWSXP, index, altrep_info);
 }
 
@@ -228,7 +228,7 @@ void test_read_write_functions_internal(
     uint8_t &type_size = file_data.unit_size;
 
     //Create the test data
-    size_t data_length = index.get_length(length);
+    size_t data_length = index.length;
     std::unique_ptr<char[]> data(new char[type_size *data_length]);
     char *data_ptr = data.get();
     for (size_t i = 0; i < data_length; i++)
@@ -315,7 +315,7 @@ void C_test_read_write_functions_native(
     Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
     Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
 {
-    Subset_index index;
+    Subset_index index(length);
     test_read_write_functions_internal(
         INTSXP, length, index,
         write_starts, write_length,
@@ -328,12 +328,14 @@ void C_test_read_write_functions_with_coercion(
     Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
     Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
 {
-    Subset_index index;
+    Subset_index index(length);
     test_read_write_functions_internal(
         REALSXP, length, index,
         write_starts, write_length,
         read_starts, read_length);
 }
+
+
 
 // [[Rcpp::export]]
 void C_test_read_write_functions_with_coercion_and_subset(
@@ -341,7 +343,7 @@ void C_test_read_write_functions_with_coercion_and_subset(
     Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
     Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
 {
-    Subset_index index;
+    Subset_index index(Subset_index::infer_subset_length(length,start,step, block_length));
     index.start = start;
     index.step = step;
     index.block_length = block_length;

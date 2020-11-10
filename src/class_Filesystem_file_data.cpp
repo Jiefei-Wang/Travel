@@ -9,7 +9,7 @@ Filesystem_file_data::Filesystem_file_data(int coerced_type,
                                                                                     index(index)
 {
   unit_size = get_type_size(coerced_type);
-  file_length = index.get_length(altrep_info.length);
+  file_length = index.length;
   file_size = file_length * unit_size;
   cache_size = CACHE_SIZE;
   claim(cache_size % unit_size == 0);

@@ -70,7 +70,7 @@ SEXP Travel_make_altptr_internal(Filesystem_file_info& file_info)
 
 
 SEXP Travel_make_altptr(Travel_altrep_info altrep_info){
-    Subset_index index;
+    Subset_index index(altrep_info.length);
     //Create a virtual file
     Filesystem_file_info file_info = add_filesystem_file(altrep_info.type,index, altrep_info);
     return Travel_make_altptr_internal(file_info);

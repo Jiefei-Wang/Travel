@@ -7,28 +7,32 @@
 class Subset_index
 {
 public:
-    size_t start = 0;
-    size_t step = 1;
+    Subset_index(size_t length=0, size_t start = 0, size_t step = 1, size_t block_length = 1);
+    size_t start;
+    size_t step;
     //The length of each block
-    size_t block_length = 1;
+    size_t block_length;
+    //The total length of the subset
+    size_t length;
     //Is the subset index consecutive?
     bool is_consecutive() const;
     /*
     Get the index of the element in the source 
     from the index of the element in the subset
     */
-    size_t get_source_index(size_t i) const;
+    size_t get_source_index(size_t subset_index) const;
     /*
     Get the index of the element in the subset 
     from the index of the element in the source
     */
-    size_t get_subset_index(size_t i) const;
-    //Length of the subset vector
-    size_t get_length(size_t source_length) const;
+    size_t get_subset_index(size_t source_index) const;
     //turn the idx into a subset index object
     //The idx is the index of the old_index
     //If successful, the subset_index object will be returned by new_index
     static bool to_subset_index(SEXP idx, Subset_index &new_index, Subset_index &old_index);
+
+    //Infer the subset length given the source length and start, step, block length information
+    static size_t infer_subset_length(size_t source_length, size_t start, size_t step, size_t block_length);
 };
 
 #endif

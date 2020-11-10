@@ -289,7 +289,7 @@ SEXP altptr_subset(SEXP x, SEXP idx, SEXP call)
         new_altrep_info = old_altrep_info.operations.extract_subset(&old_file_data.altrep_info, idx);
     }
 
-    Subset_index index;
+    Subset_index index(XLENGTH(idx));
     //If no subset method defined for the idx or
     //The method return an invalid altrep_info
     if (old_altrep_info.operations.extract_subset == NULL ||
@@ -298,17 +298,16 @@ SEXP altptr_subset(SEXP x, SEXP idx, SEXP call)
         altrep_print("Using the default subset method\n");
         //Check if the index is an arithmetic sequence
         bool arithmetic = Subset_index::to_subset_index(idx, index, old_file_data.index);
-        size_t subset_length = XLENGTH(idx);
         //If index is not an arithmetic sequence or the length of the subsetted vector
         //is less than cutoff, we return a regular vector
-        if (!arithmetic || subset_length < default_subset_length_cutoff)
+        if (!arithmetic || index.length < default_subset_length_cutoff)
         {
             SEXP x_new = PROTECT(Rf_allocVector(TYPEOF(x), XLENGTH(idx)));
             char *ptr_old = (char *)DATAPTR(x);
             char *ptr_new = (char *)DATAPTR(x_new);
             uint8_t &unit_size = old_file_data.unit_size;
             DO_BY_TYPE(idx_cast, idx, {
-                for (size_t i = 0; i < subset_length; i++)
+                for (size_t i = 0; i < index.length; i++)
                 {
                     memcpy(ptr_new + i * unit_size, ptr_old + ((size_t)idx_cast[i]) * unit_size, unit_size);
                 }
