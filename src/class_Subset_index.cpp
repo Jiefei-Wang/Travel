@@ -43,26 +43,26 @@ bool Subset_index::to_subset_index(SEXP idx, Subset_index &new_index, Subset_ind
         return false;
     }
     DO_BY_TYPE(cast_idx, idx, {
-        new_index.start = old_index.get_source_index(cast_idx[0]);
+        new_index.start = old_index.get_source_index(cast_idx[0]-1);
         bool step_found = false;
         for (size_t i = 2; i < new_index.length; i++)
         {
             if (!step_found)
             {
-                size_t index_gap = old_index.get_source_index(cast_idx[i]) -
-                                   old_index.get_source_index(cast_idx[i - 1]);
+                size_t index_gap = old_index.get_source_index(cast_idx[i]-1) -
+                                   old_index.get_source_index(cast_idx[i - 1]-1);
                 if (index_gap != 1)
                 {
                     step_found = true;
-                    new_index.step = old_index.get_source_index(cast_idx[i]) -
-                                 old_index.get_source_index(cast_idx[0]);
-                    new_index.block_length = old_index.get_source_index(cast_idx[i - 1]) -
-                                         old_index.get_source_index(cast_idx[0]);
+                    new_index.step = old_index.get_source_index(cast_idx[i]-1) -
+                                 old_index.get_source_index(cast_idx[0]-1);
+                    new_index.block_length = old_index.get_source_index(cast_idx[i - 1]-1) -
+                                         old_index.get_source_index(cast_idx[0]-1);
                 }
             }
             else
             {
-                if (new_index.get_source_index(i) != old_index.get_source_index(cast_idx[i]))
+                if (new_index.get_source_index(i) != old_index.get_source_index(cast_idx[i]-1))
                 {
                     return false;
                 }
