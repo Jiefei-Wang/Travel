@@ -311,7 +311,7 @@ SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
             DO_BY_TYPE(idx_cast, idx, {
                 for (size_t i = 0; i < index.length; i++)
                 {
-                    memcpy(ptr_new + i * unit_size, ptr_old + ((size_t)idx_cast[i]) * unit_size, unit_size);
+                    memcpy(ptr_new + i * unit_size, ptr_old + ((size_t)idx_cast[i]-1) * unit_size, unit_size);
                 }
             })
             UNPROTECT(1);

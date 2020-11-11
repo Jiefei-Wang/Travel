@@ -10,7 +10,7 @@ size_t fake_integer_read(const Travel_altrep_info *altrep_info, void *buffer, si
 {
     for (size_t i = 0; i < length; i++)
     {
-        ((int *)buffer)[i] = (offset + i) % (1024 * 1024) + 1;
+        ((int *)buffer)[i] = (offset + i) % (1024) + 1;
     }
     return length;
 }

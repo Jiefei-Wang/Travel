@@ -30,7 +30,7 @@ public:
     */
     size_t get_subset_index(size_t source_index) const;
     //turn the idx into a subset index object
-    //The idx is the index of the old_index
+    //The idx is the 1-based index of the old_index
     //If successful, the subset_index object will be returned by new_index
     static bool to_subset_index(SEXP idx, Subset_index &new_index, Subset_index &old_index);
 

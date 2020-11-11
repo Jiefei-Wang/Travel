@@ -47,7 +47,7 @@ SEXP Travel_make_altmmap(Filesystem_file_info& file_info)
     PROTECT_GUARD guard;
     R_altrep_class_t alt_class = get_altmmap_class(file_data.coerced_type);
     SEXP altmmap_options = guard.protect(Rf_allocVector(VECSXP, SLOT_NUM));
-    SET_PROPS_LENGTH(altmmap_options, Rcpp::wrap(file_data.altrep_info.length));
+    SET_PROPS_LENGTH(altmmap_options, Rcpp::wrap(file_data.file_length));
     SEXP result = guard.protect(R_new_altrep(alt_class, file_data.altrep_info.protected_data, altmmap_options));
     
     SET_PROPS_NAME(altmmap_options, Rcpp::wrap(file_info.file_name));
