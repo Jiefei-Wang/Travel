@@ -1,8 +1,6 @@
 #ifndef R_INTERNALS_H_
 #include <Rcpp.h>
 #endif
-#include <R_ext/Altrep.h>
-#include "filesystem_manager.h"
 #define SLOT_NUM 4
 #define NAME_SLOT 0
 #define FILE_HANDLE_SLOT 1
@@ -37,12 +35,7 @@
 #define GET_ALT_LENGTH(x) (GET_PROPS_LENGTH(GET_PROPS(x)))
 
 
-R_altrep_class_t get_altptr_class(int type);
-R_altrep_class_t get_altfile_class(int type);
 
-//altrep_manager
-void flush_altrep(SEXP x);
-SEXP Travel_make_altptr_internal(Filesystem_file_info& file_info);
 
 
 

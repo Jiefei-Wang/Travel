@@ -1,58 +1,60 @@
-#include "altrep.h"
-#define UTILS_ENABLE_R
-#include "utils.h"
+#include <Rcpp.h>
+#include <R_ext/Altrep.h>
+#include "altrep_macros.h"
+#include "altrep_manager.h"
 #include "filesystem_manager.h"
 #include "memory_mapped_file.h"
 #include "package_settings.h"
-#include "Travel.h"
 #include "class_Filesystem_cache_copier.h"
+#define UTILS_ENABLE_R
+#include "utils.h"
 
 size_t default_subset_length_cutoff = 3;
 
-R_altrep_class_t altptr_real_class;
-R_altrep_class_t altptr_integer_class;
-R_altrep_class_t altptr_logical_class;
-R_altrep_class_t altptr_raw_class;
-//R_altrep_class_t altptr_complex_class;
+R_altrep_class_t altmmap_real_class;
+R_altrep_class_t altmmap_integer_class;
+R_altrep_class_t altmmap_logical_class;
+R_altrep_class_t altmmap_raw_class;
+//R_altrep_class_t altmmap_complex_class;
 
-R_altrep_class_t get_altptr_class(int type)
+R_altrep_class_t get_altmmap_class(int type)
 {
     switch (type)
     {
     case REALSXP:
-        return altptr_real_class;
+        return altmmap_real_class;
     case INTSXP:
-        return altptr_integer_class;
+        return altmmap_integer_class;
     case LGLSXP:
-        return altptr_logical_class;
+        return altmmap_logical_class;
     case RAWSXP:
-        return altptr_raw_class;
+        return altmmap_raw_class;
     case CPLXSXP:
-        //return altptr_complex_class;
+        //return altmmap_complex_class;
     case STRSXP:
-        //return altptr_str_class;
+        //return altmmap_str_class;
     default:
         Rf_error("Type of %d is not supported yet", type);
     }
     // Just for suppressing the annoying warning, it should never be excuted
-    return altptr_real_class;
+    return altmmap_real_class;
 }
 
-bool is_altptr(SEXP x)
+bool is_altmmap(SEXP x)
 {
-    if (R_altrep_inherits(x, altptr_real_class))
+    if (R_altrep_inherits(x, altmmap_real_class))
     {
         return true;
     }
-    if (R_altrep_inherits(x, altptr_integer_class))
+    if (R_altrep_inherits(x, altmmap_integer_class))
     {
         return true;
     }
-    if (R_altrep_inherits(x, altptr_logical_class))
+    if (R_altrep_inherits(x, altmmap_logical_class))
     {
         return true;
     }
-    if (R_altrep_inherits(x, altptr_raw_class))
+    if (R_altrep_inherits(x, altmmap_raw_class))
     {
         return true;
     }
@@ -65,8 +67,8 @@ ALTREP operations
 ==========================================
 */
 
-Rboolean altptr_Inspect(SEXP x, int pre, int deep, int pvec,
-                        void (*inspect_subtree)(SEXP, int, int, int))
+Rboolean altmmap_Inspect(SEXP x, int pre, int deep, int pvec,
+                         void (*inspect_subtree)(SEXP, int, int, int))
 {
     std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
     Filesystem_file_data &file_data = get_filesystem_file_data(file_name);
@@ -124,14 +126,14 @@ Rboolean altptr_Inspect(SEXP x, int pre, int deep, int pvec,
     return TRUE;
 }
 
-R_xlen_t altptr_length(SEXP x)
+R_xlen_t altmmap_length(SEXP x)
 {
     R_xlen_t size = Rcpp::as<size_t>(GET_ALT_LENGTH(x));
     altrep_print("accessing length: %llu\n", size);
     return size;
 }
 
-void *altptr_dataptr(SEXP x, Rboolean writeable)
+void *altmmap_dataptr(SEXP x, Rboolean writeable)
 {
     altrep_print("accessing data pointer\n");
     if (!is_filesystem_running())
@@ -151,12 +153,12 @@ void *altptr_dataptr(SEXP x, Rboolean writeable)
     return handle->ptr;
 }
 
-const void *altptr_dataptr_or_null(SEXP x)
+const void *altmmap_dataptr_or_null(SEXP x)
 {
     altrep_print("accessing data pointer or null\n");
     if (is_filesystem_running())
     {
-        return altptr_dataptr(x, Rboolean::TRUE);
+        return altmmap_dataptr(x, Rboolean::TRUE);
     }
     else
     {
@@ -164,7 +166,7 @@ const void *altptr_dataptr_or_null(SEXP x)
     }
 }
 
-SEXP altptr_duplicate(SEXP x, Rboolean deep)
+SEXP altmmap_duplicate(SEXP x, Rboolean deep)
 {
     altrep_print("Duplicating object\n");
     if (!is_filesystem_running())
@@ -204,11 +206,11 @@ SEXP altptr_duplicate(SEXP x, Rboolean deep)
     new_file_data.write_cache = old_file_data.write_cache;
 
     //Duplicate the object
-    SEXP res = Travel_make_altptr_internal(new_file_info);
+    SEXP res = Travel_make_altmmap(new_file_info);
     return res;
 }
 
-SEXP altptr_coerce(SEXP x, int type)
+SEXP altmmap_coerce(SEXP x, int type)
 {
     altrep_print("Coercing object\n");
     if (!is_filesystem_running())
@@ -258,11 +260,11 @@ SEXP altptr_coerce(SEXP x, int type)
         }
     }
     //Make the new altrep
-    SEXP res = Travel_make_altptr_internal(new_file_info);
+    SEXP res = Travel_make_altmmap(new_file_info);
     return res;
 }
 
-SEXP altptr_subset(SEXP x, SEXP idx, SEXP call)
+SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
 {
     altrep_print("subsetting object\n");
     if (!is_filesystem_running())
@@ -360,11 +362,11 @@ SEXP altptr_subset(SEXP x, SEXP idx, SEXP call)
         }
     }
     //Make the new altrep
-    SEXP res = Travel_make_altptr_internal(new_file_info);
+    SEXP res = Travel_make_altmmap(new_file_info);
     return res;
 }
 
-SEXP altptr_serialized(SEXP x)
+SEXP altmmap_serialize(SEXP x)
 {
     altrep_print("serialize function\n");
     if (!is_filesystem_running())
@@ -423,7 +425,7 @@ SEXP altptr_serialized(SEXP x)
     return serialized_object;
 }
 
-SEXP altptr_unserialize(SEXP R_class, SEXP serialized_object)
+SEXP altmmap_unserialize(SEXP R_class, SEXP serialized_object)
 {
     altrep_print("serialize function\n");
     //If the serialized object is a regular vector, we just return it.
@@ -441,62 +443,73 @@ SEXP altptr_unserialize(SEXP R_class, SEXP serialized_object)
     PROTECT_GUARD guard;
     SEXP x = guard.protect(unserialize_func(serialized_list[1]));
     SEXP serialized_file_data = serialized_list[2];
-    Exported_file_data *file_data_ptr = (Exported_file_data *)DATAPTR(serialized_file_data);
+    Exported_file_data *exported_data = (Exported_file_data *)DATAPTR(serialized_file_data);
     Rcpp::NumericVector cache_id = serialized_list[3];
     Rcpp::RawVector cache_data = serialized_list[4];
     //If the length of the unserialized object does not match
     //the length of the orignal one, we directly return the object
     //with a warning
-    if (file_data_ptr->source_length != (size_t)XLENGTH(x))
+    if (exported_data->source_length != (size_t)XLENGTH(x))
     {
         Rf_warning("The length of the unserialized object does not match the orignal one, "
                    "expected: %llu, true: %llu\n",
-                   (uint64_t)file_data_ptr->source_length, (uint64_t)XLENGTH(x));
+                   (uint64_t)exported_data->source_length, (uint64_t)XLENGTH(x));
         return x;
     }
+    //Otherwise, we overwrite the original data with the cache data
+    char *x_ptr = (char *)DATAPTR(x);
+    char *cache_ptr = (char *)DATAPTR(cache_data);
+    for (size_t i = 0; i < (size_t)cache_id.size(); i++)
+    {
+        size_t cache_offset = cache_id[i] * exported_data->cache_size;
+        memcpy(x_ptr + cache_offset, cache_ptr + i * exported_data->cache_size, exported_data->cache_size);
+    }
+    return x;
 }
 
 /*
 Register ALTREP class
 */
 
-#define ALT_COMMOM_REGISTRATION(ALT_CLASS, ALT_TYPE, FUNC_PREFIX)         \
-    ALT_CLASS = R_make_##ALT_TYPE##_class(class_name, PACKAGE_NAME, dll); \
-    /* common ALTREP methods */                                           \
-    R_set_altrep_Inspect_method(ALT_CLASS, altptr_Inspect);               \
-    R_set_altrep_Length_method(ALT_CLASS, altptr_length);                 \
-    R_set_altrep_Duplicate_method(ALT_CLASS, altptr_duplicate);           \
-    R_set_altrep_Coerce_method(ALT_CLASS, altptr_coerce);                 \
-    /* ALTVEC methods */                                                  \
-    R_set_altvec_Dataptr_method(ALT_CLASS, altptr_dataptr);               \
-    R_set_altvec_Dataptr_or_null_method(ALT_CLASS, altptr_dataptr_or_null);\
-	R_set_altvec_Extract_subset_method(ALT_CLASS, altptr_subset);
+#define ALT_COMMOM_REGISTRATION(ALT_CLASS, ALT_TYPE, FUNC_PREFIX)            \
+    ALT_CLASS = R_make_##ALT_TYPE##_class(class_name, PACKAGE_NAME, dll);    \
+    /* common ALTREP methods */                                              \
+    R_set_altrep_Inspect_method(ALT_CLASS, altmmap_Inspect);                 \
+    R_set_altrep_Length_method(ALT_CLASS, altmmap_length);                   \
+    R_set_altrep_Duplicate_method(ALT_CLASS, altmmap_duplicate);             \
+    R_set_altrep_Coerce_method(ALT_CLASS, altmmap_coerce);                   \
+    R_set_altrep_Serialized_state_method(ALT_CLASS, altmmap_serialize);      \
+    R_set_altrep_Unserialize_method(ALT_CLASS, altmmap_unserialize);         \
+    /* ALTVEC methods */                                                     \
+    R_set_altvec_Dataptr_method(ALT_CLASS, altmmap_dataptr);                 \
+    R_set_altvec_Dataptr_or_null_method(ALT_CLASS, altmmap_dataptr_or_null); \
+    R_set_altvec_Extract_subset_method(ALT_CLASS, altmmap_subset);
 
 //R_set_altvec_Extract_subset_method(ALT_CLASS, numeric_subset<R_TYPE, C_TYPE>);
 
 //[[Rcpp::init]]
-void init_altptr_logical_class(DllInfo *dll)
+void init_altmmap_logical_class(DllInfo *dll)
 {
-    char class_name[] = "travel_altptr_logical";
-    ALT_COMMOM_REGISTRATION(altptr_logical_class, altlogical, LOGICAL);
+    char class_name[] = "travel_altmmap_logical";
+    ALT_COMMOM_REGISTRATION(altmmap_logical_class, altlogical, LOGICAL);
 }
 //[[Rcpp::init]]
-void init_altptr_integer_class(DllInfo *dll)
+void init_altmmap_integer_class(DllInfo *dll)
 {
-    char class_name[] = "travel_altptr_integer";
-    ALT_COMMOM_REGISTRATION(altptr_integer_class, altinteger, INTEGER);
-}
-
-//[[Rcpp::init]]
-void ini_altptr_real_class(DllInfo *dll)
-{
-    char class_name[] = "travel_altptr_real";
-    ALT_COMMOM_REGISTRATION(altptr_real_class, altreal, REAL);
+    char class_name[] = "travel_altmmap_integer";
+    ALT_COMMOM_REGISTRATION(altmmap_integer_class, altinteger, INTEGER);
 }
 
 //[[Rcpp::init]]
-void init_altptr_raw_class(DllInfo *dll)
+void ini_altmmap_real_class(DllInfo *dll)
 {
-    char class_name[] = "travel_altptr_raw";
-    ALT_COMMOM_REGISTRATION(altptr_raw_class, altraw, RAW);
+    char class_name[] = "travel_altmmap_real";
+    ALT_COMMOM_REGISTRATION(altmmap_real_class, altreal, REAL);
+}
+
+//[[Rcpp::init]]
+void init_altmmap_raw_class(DllInfo *dll)
+{
+    char class_name[] = "travel_altmmap_raw";
+    ALT_COMMOM_REGISTRATION(altmmap_raw_class, altraw, RAW);
 }

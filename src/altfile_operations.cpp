@@ -1,10 +1,11 @@
-#include "altrep.h"
-#define UTILS_ENABLE_R
-#include "utils.h"
-#undef UTILS_ENABLE_R
+#include <Rcpp.h>
+#include <R_ext/Altrep.h>
+#include "altrep_macros.h"
 #include "memory_mapped_file.h"
 #include "package_settings.h"
 #include "Travel.h"
+#define UTILS_ENABLE_R
+#include "utils.h"
 
 
 R_altrep_class_t altfile_real_class;

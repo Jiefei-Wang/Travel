@@ -1,5 +1,5 @@
 #include <algorithm>
-#include "altrep.h"
+#include "altrep_macros.h"
 #include "class_Subset_index.h"
 #include "utils.h"
 

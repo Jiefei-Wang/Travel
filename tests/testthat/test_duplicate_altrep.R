@@ -10,7 +10,7 @@ if(get_OS()!="linux"){
     
     test_that("Duplicate an integer sequece using C API",{
         n <- 1024*1024*16/4
-        expect_error(x <- C_make_test_integer_altrep(n),NA)
+        expect_error(x <- C_make_arithmetic_sequence_altrep(n),NA)
         
         ## Make some changes to x
         ind <- sample(1:length(x),10)
@@ -48,7 +48,7 @@ if(get_OS()!="linux"){
     
     test_that("Duplicate an integer sequece using R operator",{
         n <- 1024*1024*16/4
-        expect_error(x <- C_make_test_integer_altrep(n),NA)
+        expect_error(x <- C_make_arithmetic_sequence_altrep(n),NA)
         y <- x
         ## Make some changes to x
         ind <- sample(1:length(x),10)

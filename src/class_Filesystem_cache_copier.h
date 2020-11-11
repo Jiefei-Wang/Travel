@@ -1,7 +1,8 @@
 #ifndef HEADER_FILESYSTEM_CACHE_COPIER
 #define HEADER_FILESYSTEM_CACHE_COPIER
-#include "class_Filesystem_file_data.h"
 #include <memory>
+#include "class_Filesystem_file_data.h"
+
 /*
 An utility class to move cached data between two files.
 It is possible that the files have different data types

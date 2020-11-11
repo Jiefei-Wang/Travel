@@ -4,16 +4,19 @@
 #ifndef R_INTERNALS_H_
 #include <Rcpp.h>
 #endif
+
 class Subset_index
 {
 public:
     Subset_index(size_t length=0, size_t start = 0, size_t step = 1, size_t block_length = 1);
+    //The total length of the subset
+    size_t length;
+    //Start of the subset
     size_t start;
+    //the offset between each block from the start to start
     size_t step;
     //The length of each block
     size_t block_length;
-    //The total length of the subset
-    size_t length;
     //Is the subset index consecutive?
     bool is_consecutive() const;
     /*

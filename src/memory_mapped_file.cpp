@@ -51,41 +51,35 @@ size_t C_get_file_handle_number()
 
 #ifndef _WIN32
 #include <cstring>
-std::string memory_map(file_map_handle *&handle, const Filesystem_file_info file_info, const size_t size, bool filesystem_handle)
+std::string memory_map(file_map_handle *&handle, std::string file_path, const size_t size, bool filesystem_file)
 {
-    const std::string &file_full_path = file_info.file_full_path;
     //Wait until the file exist or timeout(5s)
     Timer timer(FILESYSTEM_WAIT_TIME);
     int fd = -1;
     while (fd == -1)
     {
-        fd = open(file_full_path.c_str(), O_RDWR);
+        fd = open(file_path.c_str(), O_RDWR);
         if (timer.expired())
             break;
     }
     if (fd == -1)
     {
-        return "Fail to open the file " + file_info.file_name + ", error: " + strerror(errno) + "\n";
+        return "Fail to open the file " + file_path + ", error: " + strerror(errno) + "\n";
     }
     void *ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (ptr == (void *)-1)
     {
         close(fd);
-        return "Fail to map the file " + file_info.file_name + ", error: " + strerror(errno) + "\n";
+        return "Fail to map the file " + file_path + ", error: " + strerror(errno) + "\n";
     }
     close(fd);
-    handle = new file_map_handle(file_info, NULL, NULL, ptr, size);
-    if (filesystem_handle)
-        insert_mapped_file_handle(handle);
+    handle = new file_map_handle(file_path, NULL, NULL, ptr, size, filesystem_file);
+    insert_mapped_file_handle(handle);
     return "";
 }
-std::string memory_unmap(file_map_handle *handle, bool filesystem_handle)
+std::string memory_unmap(file_map_handle *handle)
 {
-    if (!has_mapped_file_handle(handle))
-    {
-        return "Fail to unmap the handle: The file handle has been released\n";
-    }
-    filesystem_print("releasing file handle:%s--%p\n", handle->file_info.file_name.c_str(), handle->ptr);
+    filesystem_print("releasing file handle:%s--%p\n", handle->file_path.c_str(), handle->ptr);
     if (!has_mapped_file_handle(handle))
     {
         return "The handle has been released";
@@ -93,11 +87,10 @@ std::string memory_unmap(file_map_handle *handle, bool filesystem_handle)
     int status = munmap(
         handle->ptr,
         handle->size);
-    if (filesystem_handle)
-        erase_mapped_file_handle(handle);
     delete handle;
+    erase_mapped_file_handle(handle);
     if (status == -1)
-        return "Fail to unmap the file" + handle->file_info.file_name + ", error: " + strerror(errno) + "\n";
+        return "Fail to unmap the file" + handle->file_path + ", error: " + strerror(errno) + "\n";
     else
         return "";
 }
@@ -116,17 +109,17 @@ std::string flush_handle(file_map_handle *handle)
     return "";
 }
 #else
-std::string memory_map(file_map_handle *&handle, const Filesystem_file_info file_info, const size_t size, bool filesystem_handle)
+std::string memory_map(file_map_handle *&handle, std::string file_path, const size_t size, bool filesystem_file)
 {
     Timer timer(FILESYSTEM_WAIT_TIME);
     HANDLE file_handle = INVALID_HANDLE_VALUE;
     while (file_handle == INVALID_HANDLE_VALUE)
     {
-        file_handle = CreateFileA(file_info.file_full_path.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+        file_handle = CreateFileA(file_path.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                                   OPEN_EXISTING, 0, NULL);
         if (timer.expired())
         {
-            return "Fail to open the file " + file_info.file_full_path +
+            return "Fail to open the file " + file_path +
                    ", error:" + std::to_string(GetLastError()) + "\n";
         }
     }
@@ -135,7 +128,7 @@ std::string memory_map(file_map_handle *&handle, const Filesystem_file_info file
     if (map_handle == NULL)
     {
         CloseHandle(file_handle);
-        return "Fail to map the file " + file_info.file_full_path +
+        return "Fail to map the file " + file_path +
                ", error:" + std::to_string(GetLastError()) + "\n";
     }
 
@@ -144,44 +137,43 @@ std::string memory_map(file_map_handle *&handle, const Filesystem_file_info file
     {
         CloseHandle(map_handle);
         CloseHandle(file_handle);
-        return "Fail to get a pointer from the file " + file_info.file_full_path +
+        return "Fail to get a pointer from the file " + file_path +
                ", error:" + std::to_string(GetLastError()) + "\n";
     }
-    handle = new file_map_handle(file_info, file_handle, map_handle, ptr, size);
-    filesystem_print("Creating file handle:%s--%p\n", handle->file_info.file_name.c_str(), handle->ptr);
-    if (filesystem_handle)
-        insert_mapped_file_handle(handle);
+
+    handle = new file_map_handle(file_path, file_handle, map_handle, ptr, size, filesystem_file);
+    filesystem_print("Creating file handle:%s--%p\n", file_path.c_str(), handle->ptr);
+    insert_mapped_file_handle(handle);
     return "";
 }
-std::string memory_unmap(file_map_handle *handle, bool filesystem_handle)
+std::string memory_unmap(file_map_handle *handle)
 {
+    filesystem_print("releasing file handle:%s--%p\n", handle->file_path.c_str(), handle->ptr);
     if (!has_mapped_file_handle(handle))
     {
         return "Fail to unmap the handle: The file handle has been released\n";
     }
-    filesystem_print("releasing file handle:%s--%p\n", handle->file_info.file_name.c_str(), handle->ptr);
     bool status;
     std::string msg;
     status = UnmapViewOfFile(handle->ptr);
     if (!status)
     {
         msg = "Fail to release the pointer from the file " +
-              handle->file_info.file_full_path + ", error:" + std::to_string(GetLastError()) + "\n";
+              handle->file_path + ", error:" + std::to_string(GetLastError()) + "\n";
     }
     status = CloseHandle(handle->map_handle);
     if (!status && msg == "")
     {
         msg = "Fail to close the map handle for the file " +
-              handle->file_info.file_full_path + ", error:" + std::to_string(GetLastError()) + "\n";
+              handle->file_path + ", error:" + std::to_string(GetLastError()) + "\n";
     }
     status = CloseHandle(handle->file_handle);
     if (!status && msg == "")
     {
         msg = "Fail to close the file handle for the file " +
-              handle->file_info.file_full_path + ", error:" + std::to_string(GetLastError()) + "\n";
+              handle->file_path + ", error:" + std::to_string(GetLastError()) + "\n";
     }
-    if (filesystem_handle)
-        erase_mapped_file_handle(handle);
+    erase_mapped_file_handle(handle);
     return "";
 }
 
@@ -195,13 +187,13 @@ std::string flush_handle(file_map_handle *handle)
     status = FlushViewOfFile(handle->ptr, 0);
     if (!status)
     {
-        return "Fail to flush the view of the file " + handle->file_info.file_full_path +
+        return "Fail to flush the view of the file " + handle->file_path +
                ", error:" + std::to_string(GetLastError()) + "\n";
     }
     status = FlushFileBuffers(handle->file_handle);
     if (!status)
     {
-        return "Fail to flush the file buffer " + handle->file_info.file_full_path +
+        return "Fail to flush the file buffer " + handle->file_path +
                ", error:" + std::to_string(GetLastError()) + "\n";
     }
     return "";
@@ -209,7 +201,7 @@ std::string flush_handle(file_map_handle *handle)
 
 #endif
 
-std::string unmap_all_files()
+std::string unmap_filesystem_files()
 {
     filesystem_print("handle size:%d\n", mapped_file_handle_list.size());
     std::set<void *> coped_set = mapped_file_handle_list;
@@ -218,10 +210,13 @@ std::string unmap_all_files()
     for (auto it = mapped_file_handle_list.begin(); it != mapped_file_handle_list.end();)
     {
         file_map_handle *handle = (file_map_handle *)*(it++);
-        std::string status = memory_unmap(handle);
-        if (status != "")
+        if (handle->filesystem_file)
         {
-            msg = status;
+            std::string status = memory_unmap(handle);
+            if (status != "")
+            {
+                msg = status;
+            }
         }
     }
     return msg;

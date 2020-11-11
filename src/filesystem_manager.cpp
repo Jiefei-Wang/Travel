@@ -14,12 +14,18 @@
 static inode_type file_inode_counter = 1;
 double_key_map<inode_type, std::string, Filesystem_file_data> file_list;
 
+
+
+Filesystem_file_info make_file_info(std::string& file_name, inode_type& inode){
+    std::string file_full_path = build_path(get_mountpoint(), file_name);
+    return {file_full_path, file_name, inode};
+}
+
 /*
 ==========================================================================
 Insert or delete files from the filesystem
 ==========================================================================
 */
-
 Filesystem_file_info add_filesystem_file(const int type,
                                          const Subset_index &index,
                                          const Travel_altrep_info &altrep_info,
@@ -33,27 +39,33 @@ Filesystem_file_info add_filesystem_file(const int type,
   {
     Rf_error("The function <get_region> is NULL!\n");
   }
-  file_inode_counter++;
+  inode_type file_inode = file_inode_counter++;
   std::string file_name;
   if (name == NULL)
-    file_name = "inode_" + std::to_string(file_inode_counter);
+    file_name = "inode_" + std::to_string(file_inode);
   else
     file_name = std::string(name);
   Filesystem_file_data file_data(type, index, altrep_info);
-  file_list.insert(file_inode_counter, file_name, file_data);
-  std::string file_full_path = build_path(get_mountpoint(), file_name);
-  return {file_full_path, file_name, file_inode_counter};
+  file_list.insert(file_inode, file_name, file_data);
+  Filesystem_file_info file_info = make_file_info(file_name, file_inode);
+  return file_info;
+}
+std::string get_filesystem_file_path(std::string file_name){
+      return build_path(get_mountpoint(), file_name);
+}
+std::string get_filesystem_file_path(inode_type inode){
+      return build_path(get_mountpoint(), get_filesystem_file_name(inode));
 }
 
 const std::string &get_filesystem_file_name(inode_type inode)
 {
   return file_list.get_key2(inode);
 }
-inode_type get_filesystem_file_inode(const std::string name)
+inode_type get_filesystem_file_inode(std::string name)
 {
   return file_list.get_key1(name);
 }
-Filesystem_file_data &get_filesystem_file_data(const std::string name)
+Filesystem_file_data &get_filesystem_file_data(std::string name)
 {
   return file_list.get_value_by_key2(name);
 }
@@ -62,7 +74,7 @@ Filesystem_file_data &get_filesystem_file_data(inode_type inode)
   return file_list.get_value_by_key1(inode);
 }
 
-bool has_filesystem_file(const std::string name)
+bool has_filesystem_file(std::string name)
 {
   return file_list.has_key2(name);
 }
@@ -70,7 +82,7 @@ bool has_filesystem_file(inode_type inode)
 {
   return file_list.has_key1(inode);
 }
-bool remove_filesystem_file(const std::string name)
+bool remove_filesystem_file(std::string name)
 {
   if (has_filesystem_file(name))
   {
@@ -202,7 +214,7 @@ void C_stop_filesystem_thread()
   if (filesystem_thread != nullptr)
   {
     // We must release the file handle before stopping the thread
-    std::string status = unmap_all_files();
+    std::string status = unmap_filesystem_files();
     if (status != "")
     {
       Rf_warning(status.c_str());

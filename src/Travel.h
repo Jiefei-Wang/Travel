@@ -22,9 +22,9 @@ Arguments:
         to manage the lifespan of your private data
         (see the function `Travel_shared_ptr`).
 */
-SEXP Travel_make_altptr(Travel_altrep_info altrep_info);
+SEXP Travel_make_altmmap(Travel_altrep_info altrep_info);
 /*
-Get file info from the ALTREP object returned by Travel_make_altptr
+Get file info from the ALTREP object returned by Travel_make_altmmap
 */
 SEXP get_file_name(SEXP x);
 SEXP get_file_path(SEXP x);

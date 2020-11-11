@@ -5,14 +5,14 @@
 
 using namespace Rcpp;
 
-// C_make_altptr_from_altrep
-SEXP C_make_altptr_from_altrep(SEXP x);
-RcppExport SEXP _Travel_C_make_altptr_from_altrep(SEXP xSEXP) {
+// C_make_altmmap_from_altrep
+SEXP C_make_altmmap_from_altrep(SEXP x);
+RcppExport SEXP _Travel_C_make_altmmap_from_altrep(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_make_altptr_from_altrep(x));
+    rcpp_result_gen = Rcpp::wrap(C_make_altmmap_from_altrep(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -91,14 +91,14 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// C_get_altptr_cache
-SEXP C_get_altptr_cache(SEXP x);
-RcppExport SEXP _Travel_C_get_altptr_cache(SEXP xSEXP) {
+// C_get_altmmap_cache
+SEXP C_get_altmmap_cache(SEXP x);
+RcppExport SEXP _Travel_C_get_altmmap_cache(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_get_altptr_cache(x));
+    rcpp_result_gen = Rcpp::wrap(C_get_altmmap_cache(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -219,17 +219,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// C_make_test_integer_altrep
-SEXP C_make_test_integer_altrep(double n);
-RcppExport SEXP _Travel_C_make_test_integer_altrep(SEXP nSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_make_test_integer_altrep(n));
-    return rcpp_result_gen;
-END_RCPP
-}
 // C_make_fake_file
 void C_make_fake_file(size_t size);
 RcppExport SEXP _Travel_C_make_fake_file(SEXP sizeSEXP) {
@@ -250,16 +239,16 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// C_make_altptr_from_file
-SEXP C_make_altptr_from_file(SEXP path, SEXP type, size_t length);
-RcppExport SEXP _Travel_C_make_altptr_from_file(SEXP pathSEXP, SEXP typeSEXP, SEXP lengthSEXP) {
+// C_make_altmmap_from_file
+SEXP C_make_altmmap_from_file(SEXP path, SEXP type, size_t length);
+RcppExport SEXP _Travel_C_make_altmmap_from_file(SEXP pathSEXP, SEXP typeSEXP, SEXP lengthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type path(pathSEXP);
     Rcpp::traits::input_parameter< SEXP >::type type(typeSEXP);
     Rcpp::traits::input_parameter< size_t >::type length(lengthSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_make_altptr_from_file(path, type, length));
+    rcpp_result_gen = Rcpp::wrap(C_make_altmmap_from_file(path, type, length));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -387,6 +376,17 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// C_make_arithmetic_sequence_altrep
+SEXP C_make_arithmetic_sequence_altrep(double n);
+RcppExport SEXP _Travel_C_make_arithmetic_sequence_altrep(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_make_arithmetic_sequence_altrep(n));
+    return rcpp_result_gen;
+END_RCPP
+}
 // C_set_debug_print
 void C_set_debug_print(bool x);
 RcppExport SEXP _Travel_C_set_debug_print(SEXP xSEXP) {
@@ -447,7 +447,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_Travel_C_make_altptr_from_altrep", (DL_FUNC) &_Travel_C_make_altptr_from_altrep, 1},
+    {"_Travel_C_make_altmmap_from_altrep", (DL_FUNC) &_Travel_C_make_altmmap_from_altrep, 1},
     {"_Travel_C_getAltData1", (DL_FUNC) &_Travel_C_getAltData1, 1},
     {"_Travel_C_getAltData2", (DL_FUNC) &_Travel_C_getAltData2, 1},
     {"_Travel_print_value", (DL_FUNC) &_Travel_print_value, 1},
@@ -455,7 +455,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_flush_altrep", (DL_FUNC) &_Travel_C_flush_altrep, 1},
     {"_Travel_C_get_file_name", (DL_FUNC) &_Travel_C_get_file_name, 1},
     {"_Travel_C_get_file_path", (DL_FUNC) &_Travel_C_get_file_path, 1},
-    {"_Travel_C_get_altptr_cache", (DL_FUNC) &_Travel_C_get_altptr_cache, 1},
+    {"_Travel_C_get_altmmap_cache", (DL_FUNC) &_Travel_C_get_altmmap_cache, 1},
     {"_Travel_C_print_cache", (DL_FUNC) &_Travel_C_print_cache, 2},
     {"_Travel_C_get_virtual_file_list", (DL_FUNC) &_Travel_C_get_virtual_file_list, 0},
     {"_Travel_run_filesystem_thread_func", (DL_FUNC) &_Travel_run_filesystem_thread_func, 0},
@@ -468,10 +468,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_get_print_location", (DL_FUNC) &_Travel_C_get_print_location, 0},
     {"_Travel_C_set_mountpoint", (DL_FUNC) &_Travel_C_set_mountpoint, 1},
     {"_Travel_C_get_mountpoint", (DL_FUNC) &_Travel_C_get_mountpoint, 0},
-    {"_Travel_C_make_test_integer_altrep", (DL_FUNC) &_Travel_C_make_test_integer_altrep, 1},
     {"_Travel_C_make_fake_file", (DL_FUNC) &_Travel_C_make_fake_file, 1},
     {"_Travel_C_make_fake_file2", (DL_FUNC) &_Travel_C_make_fake_file2, 1},
-    {"_Travel_C_make_altptr_from_file", (DL_FUNC) &_Travel_C_make_altptr_from_file, 3},
+    {"_Travel_C_make_altmmap_from_file", (DL_FUNC) &_Travel_C_make_altmmap_from_file, 3},
     {"_Travel_C_set_real_value", (DL_FUNC) &_Travel_C_set_real_value, 3},
     {"_Travel_C_set_int_value", (DL_FUNC) &_Travel_C_set_int_value, 3},
     {"_Travel_C_reset_int", (DL_FUNC) &_Travel_C_reset_int, 1},
@@ -482,6 +481,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_test_read_write_functions_native", (DL_FUNC) &_Travel_C_test_read_write_functions_native, 5},
     {"_Travel_C_test_read_write_functions_with_coercion", (DL_FUNC) &_Travel_C_test_read_write_functions_with_coercion, 5},
     {"_Travel_C_test_read_write_functions_with_coercion_and_subset", (DL_FUNC) &_Travel_C_test_read_write_functions_with_coercion_and_subset, 8},
+    {"_Travel_C_make_arithmetic_sequence_altrep", (DL_FUNC) &_Travel_C_make_arithmetic_sequence_altrep, 1},
     {"_Travel_C_set_debug_print", (DL_FUNC) &_Travel_C_set_debug_print, 1},
     {"_Travel_C_set_altrep_print", (DL_FUNC) &_Travel_C_set_altrep_print, 1},
     {"_Travel_C_set_filesystem_print", (DL_FUNC) &_Travel_C_set_filesystem_print, 1},
@@ -495,10 +495,10 @@ void init_altfile_logical_class(DllInfo *dll);
 void init_altfile_integer_class(DllInfo *dll);
 void ini_altfile_real_class(DllInfo *dll);
 void init_altfile_raw_class(DllInfo *dll);
-void init_altptr_logical_class(DllInfo *dll);
-void init_altptr_integer_class(DllInfo *dll);
-void ini_altptr_real_class(DllInfo *dll);
-void init_altptr_raw_class(DllInfo *dll);
+void init_altmmap_logical_class(DllInfo *dll);
+void init_altmmap_integer_class(DllInfo *dll);
+void ini_altmmap_real_class(DllInfo *dll);
+void init_altmmap_raw_class(DllInfo *dll);
 RcppExport void R_init_Travel(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
@@ -506,8 +506,8 @@ RcppExport void R_init_Travel(DllInfo *dll) {
     init_altfile_integer_class(dll);
     ini_altfile_real_class(dll);
     init_altfile_raw_class(dll);
-    init_altptr_logical_class(dll);
-    init_altptr_integer_class(dll);
-    ini_altptr_real_class(dll);
-    init_altptr_raw_class(dll);
+    init_altmmap_logical_class(dll);
+    init_altmmap_integer_class(dll);
+    ini_altmmap_real_class(dll);
+    init_altmmap_raw_class(dll);
 }

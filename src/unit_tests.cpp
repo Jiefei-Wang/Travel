@@ -2,6 +2,7 @@
 #include "Travel.h"
 //#include "utils.h"
 #include "filesystem_manager.h"
+#include "altrep_manager.h"
 /*
 Create an integer vector for testing the altrep functions
 */
@@ -12,16 +13,6 @@ size_t fake_integer_read(const Travel_altrep_info *altrep_info, void *buffer, si
         ((int *)buffer)[i] = (offset + i) % (1024 * 1024) + 1;
     }
     return length;
-}
-// [[Rcpp::export]]
-SEXP C_make_test_integer_altrep(double n)
-{
-    Travel_altrep_info altrep_info = {};
-    altrep_info.length = n;
-    altrep_info.type = INTSXP;
-    altrep_info.operations.get_region = fake_integer_read;
-
-    return Travel_make_altptr(altrep_info);
 }
 
 /*
@@ -59,9 +50,8 @@ void C_make_fake_file2(size_t size)
     add_filesystem_file(RAWSXP, index, altrep_info);
 }
 
-SEXP make_altptr_from_file(std::string path, int type, size_t length);
 //[[Rcpp::export]]
-SEXP C_make_altptr_from_file(SEXP path, SEXP type, size_t length)
+SEXP C_make_altmmap_from_file(SEXP path, SEXP type, size_t length)
 {
     std::string path_str = Rcpp::as<std::string>(path);
     std::string type_str = Rcpp::as<std::string>(type);
@@ -82,7 +72,7 @@ SEXP C_make_altptr_from_file(SEXP path, SEXP type, size_t length)
     {
         Rf_error("Unknown type <%s>\n", type_str.c_str());
     }
-    return make_altptr_from_file(path_str, type_num, length);
+    return make_altmmap_from_file(path_str, type_num, length);
 }
 
 // [[Rcpp::export]]
@@ -146,7 +136,7 @@ SEXP C_allzero(size_t n)
     altrep_info.length = n;
     altrep_info.type = REALSXP;
     altrep_info.operations.get_region = fake_allzero_read;
-    return Travel_make_altptr(altrep_info);
+    return Travel_make_altmmap(altrep_info);
 }
 
 struct RLE
@@ -191,7 +181,7 @@ SEXP C_RLE(std::vector<double> length, std::vector<double> value)
     altrep_info.operations.get_region = fake_rle_read;
     altrep_info.private_data = rle;
     altrep_info.protected_data = PROTECT(Travel_shared_ptr<RLE>(rle));
-    SEXP x = Travel_make_altptr(altrep_info);
+    SEXP x = Travel_make_altmmap(altrep_info);
     Rf_unprotect(1);
     return x;
 }
@@ -351,4 +341,20 @@ void C_test_read_write_functions_with_coercion_and_subset(
         REALSXP, length, index,
         write_starts, write_length,
         read_starts, read_length);
+}
+
+/*
+=========================================================================================
+                     make an arithmetic sequence altrep
+=========================================================================================
+*/
+// [[Rcpp::export]]
+SEXP C_make_arithmetic_sequence_altrep(double n)
+{
+    Travel_altrep_info altrep_info = {};
+    altrep_info.length = n;
+    altrep_info.type = INTSXP;
+    altrep_info.operations.get_region = read_int_arithmetic_sequence;
+    SEXP x = Travel_make_altmmap(altrep_info);
+    return x;
 }
