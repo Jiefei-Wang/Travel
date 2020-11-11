@@ -3,7 +3,7 @@ title: "vignette"
 author: 
 - name: Jiefei Wang
   affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
-date: "2020-10-08"
+date: "2020-11-11"
 output:
     BiocStyle::html_document:
         toc: true
@@ -109,8 +109,8 @@ x[1:10]
 #>  [1]  1  2  3  4  5  6  7  8  9 10
 
 y[1] <- 10
-#> Warning in y[1] <- 10: Fail to get a pointer from the file C:/Users/wangj/AppData/Local/Temp/RtmpyuNTel/
-#> Travel_filesystem_23748/inode_7, error:1455
+#> Warning in y[1] <- 10: Fail to get a pointer from the file C:/Users/wangj/AppData/Local/Temp/Rtmp2nDGf9/
+#> Travel_filesystem_24768/inode_3, error:1455
 y[1:10]
 #> NULL
 ```
@@ -128,7 +128,7 @@ code <-
     }
   return ScalarReal(total);
 '
-my_sum <- cxxfunction(signature(x="SEXP"),
+my_sum <- inline::cxxfunction(signature(x="SEXP"),
                     body=code)
 
 ## An error will be given for x
@@ -184,42 +184,42 @@ SystemRequirements: GNU make
 You can find short explanations of the Travel C++ APIs in `Travel/Travel.h`.
 
 ## Use Travel
-The main function of the Travel package is `Travel_make_altptr`, its function declaration is as follows
+The main function of the Travel package is `Travel_make_altmmap`, its function declaration is as follows
 ```
-SEXP SEXP Travel_make_altptr(Travel_altrep_info altrep_info);
+SEXP Travel_make_altmmap(Travel_altrep_info altrep_info);
 ```
 where `Travel_altrep_info` is a struct containing the information of the ALTREP object. The definition of `Travel_altrep_info` is
 ```
 struct Travel_altrep_info
 {
-  struct Travel_altrep_operations operations;
-  int type;
-  uint64_t length;
-  void *private_data;
-  SEXP protected_data;
+  Travel_altrep_operations operations;
+  int type = 0;
+  uint64_t length = 0;
+  void *private_data = nullptr;
+  SEXP protected_data = R_NilValue;
 };
 ```
-`type` specifies the vector type(e.g. `LGLSXP`, `INTSXP` or `REALSXP`), `length` is the lenght of the vector. `private_data` is a pointer for developers to store any data that is opaque to the Travel package. `protect` is used to make sure the source of the ALTREP(if any) will not be released before the ALTREP object is released. `operations` is a struct which defines the `ALTREP` operations, its design is similar to the ALTREP's API. The stuct definition is
+`type` specifies the vector type(e.g. `LGLSXP`, `INTSXP` or `REALSXP`), `length` is the length of the vector. `private_data` is a pointer for developers to store any data that is opaque to the Travel package. `protect` is used to make sure the source of the ALTREP(if any) will not be released before the ALTREP object is released. `operations` is a struct which defines the `ALTREP` operations, its design is similar to the ALTREP's API. The stuct definition is
 ```
-typedef struct Travel_altrep_operations
+struct Travel_altrep_operations
 {
-  Travel_get_region get_region;
-  Travel_set_region set_region;
-  Travel_get_private_size get_private_size;
-  Travel_extract_subset extract_subset;
-  Travel_duplicate duplicate;
-  Travel_coerce coerce;
-  Travel_serialize serialize;
-  Travel_unserialize unserialize;
-  Travel_inspect_private inspect_private;
-} Travel_altrep_operations;
+  Travel_get_region get_region = NULL;
+  Travel_set_region set_region = NULL;
+  Travel_get_private_size get_private_size = NULL;
+  Travel_extract_subset extract_subset = NULL;
+  Travel_duplicate duplicate = NULL;
+  Travel_coerce coerce = NULL;
+  Travel_serialize serialize = R_NilValue;
+  Travel_unserialize unserialize = R_NilValue;
+  Travel_inspect_private inspect_private = NULL;
+};
 ```
-Even though the definition looks complicated, only the function `get_region` is required to make the ALTREP works. We will only introduce `Travel_get_region` in this document. For the other functions, please refer to the header file `Travel_package_types.h`. The function `get_region` is the core function for an ALTREP object because Travel package uses it to obtain data from the ALTREP. Its prototype is 
+Even though the definition looks complicated, only the function `get_region` is required to make the ALTREP works. Therefore, we will only introduce `Travel_get_region` in this document. For the other functions, please refer to the header file `Travel_package_types.h`. The function `get_region` is the core function for an ALTREP object because Travel package uses it to obtain data from the ALTREP. Its prototype is 
 ```
-typedef size_t (*Travel_get_region)(const Travel_altrep_info *altrep_info, void *buffer, 
-size_t offset, size_t length);
+typedef size_t (*Travel_get_region)(const Travel_altrep_info *altrep_info, void *buffer,
+                                    size_t offset, size_t length);
 ```
-where `altrep_info` is a struct we mentioned previously. `buffer` is the memory buffer that will hold the requested data. `offset` is the 0-based index of the vector element that is requested. `length` is the number of the vector elements that is requested starting from `offset`. Each call to `Travel_get_region` will read a consecutive data in the vector. The final read result should be written back to `buffer` and the length of the read should be sent as the return value of the function. 
+where `altrep_info` is the struct we mentioned previously. `buffer` is the buffer that will hold the requested data. `offset` is the 0-based offset of the vector element that the read should start. `length` is the number of the vector elements that is requested starting from `offset`. Each call to `Travel_get_region` will read a consecutive data in the vector. The final read result should be written back to `buffer` and the length of the read should be sent as the return value of the function. 
 
 Besides the ALTREP creation function, the package also provides a smart pointer to ease the development of the ALTREP. The prototypes of the smart pointer are
 ```
@@ -228,12 +228,12 @@ SEXP Travel_shared_ptr(T ptr, SEXP tag = R_NilValue, SEXP prot = R_NilValue);
 template <typename T>
 SEXP Travel_shared_ptr(T *ptr, SEXP tag = R_NilValue, SEXP prot = R_NilValue);
 ```
-The return value of `Travel_shared_ptr` is R's external pointer object and its lifespan is controlled by R's Garbage collector. Once the external pointer is released, it will free up the space that is occupied by the pointer `ptr`. Here is two examples of using the smart pointer
+The return value of `Travel_shared_ptr` is R's external pointer object and its lifespan is controlled by R's Garbage collector. Once the external pointer is released, it will free up the space that is pointed by the pointer `ptr`. Here are two examples of using the smart pointer
 ```
 SEXP extPtr = Travel_shared_ptr<int>(new int);
 SEXP extPtrArray = Travel_shared_ptr<int[]>(new int[10]);
 ```
-The smart pointer can be used to release your `private_data` when the ALTREP object is not in used and prevent it from memory leaking. Combining all these functions together, we can make a simple arithmetic sequence with any step value in R. Here are the code snippet for the example. The full example can be found at [TravelExample](https://github.com/Jiefei-Wang/TravelExample) 
+The smart pointer can be used to release your `private_data` when the ALTREP object is releasing. Combining all these functions together, we can make a simple arithmetic sequence with any step value in R. Here are the code snippet for the example. The full example can be found at [TravelExample](https://github.com/Jiefei-Wang/TravelExample) 
 ```
 #include <Rcpp.h>
 #include "Travel/Travel.h"
@@ -263,7 +263,7 @@ size_t read_sequence(const Travel_altrep_info* altrep_info, void *buffer, size_t
 SEXP make_sequence_altrep(size_t n, size_t start, size_t step)
 {
   Seq_info* info = new Seq_info{start, step};
-  Travel_altrep_info altrep_info = {};
+  Travel_altrep_info altrep_info;
   altrep_info.length = n;
   altrep_info.type = REALSXP;
   altrep_info.operations.get_region = read_sequence;
@@ -274,7 +274,7 @@ SEXP make_sequence_altrep(size_t n, size_t start, size_t step)
   return x;
 }
 ```
-Here is the usage of the example package
+Here is the output from the example package
 ```
 > x <- make_sequence_altrep(n = 1024*1024*1024*64, start = 1, step = 2)
 > length(x)
@@ -300,7 +300,7 @@ Now you get a vector `x` with a crazy size, all operations of the ALTREP can be 
 sessionInfo()
 #> R Under development (unstable) (2020-09-03 r79126)
 #> Platform: x86_64-w64-mingw32/x64 (64-bit)
-#> Running under: Windows 10 x64 (build 18362)
+#> Running under: Windows 10 x64 (build 19041)
 #> 
 #> Matrix products: default
 #> 
@@ -316,15 +316,14 @@ sessionInfo()
 #> [1] inline_0.3.16 Travel_0.99.0
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] Rcpp_1.0.5          BiocManager_1.30.10 compiler_4.1.0      prettyunits_1.1.1   remotes_2.2.0      
-#>  [6] tools_4.1.0         testthat_2.3.2      digest_0.6.25       pkgbuild_1.1.0      pkgload_1.1.0      
-#> [11] evaluate_0.14       memoise_1.1.0       rlang_0.4.7         cli_2.0.2           rstudioapi_0.11    
-#> [16] yaml_2.2.1          xfun_0.16           withr_2.2.0         stringr_1.4.0       knitr_1.29         
-#> [21] desc_1.2.0          fs_1.5.0            devtools_2.3.1      rprojroot_1.3-2     glue_1.4.2         
-#> [26] R6_2.4.1            processx_3.4.4      fansi_0.4.1         rmarkdown_2.3       sessioninfo_1.1.1  
-#> [31] callr_3.4.3         magrittr_1.5        backports_1.1.9     ps_1.3.4            ellipsis_0.3.1     
-#> [36] htmltools_0.5.0     usethis_1.6.1       assertthat_0.2.1    BiocStyle_2.17.0    stringi_1.4.6      
-#> [41] crayon_1.3.4
+#>  [1] Rcpp_1.0.5        rstudioapi_0.11   magrittr_1.5      knitr_1.29        usethis_1.6.1    
+#>  [6] devtools_2.3.1    pkgload_1.1.0     R6_2.4.1          rlang_0.4.7       fansi_0.4.1      
+#> [11] stringr_1.4.0     tools_4.1.0       pkgbuild_1.1.0    xfun_0.16         sessioninfo_1.1.1
+#> [16] cli_2.0.2         withr_2.2.0       remotes_2.2.0     htmltools_0.5.0   ellipsis_0.3.1   
+#> [21] yaml_2.2.1        assertthat_0.2.1  digest_0.6.25     rprojroot_1.3-2   crayon_1.3.4     
+#> [26] processx_3.4.4    callr_3.4.3       fs_1.5.0          ps_1.3.4          testthat_2.3.2   
+#> [31] memoise_1.1.0     glue_1.4.2        evaluate_0.14     rmarkdown_2.3     stringi_1.4.6    
+#> [36] compiler_4.1.0    desc_1.2.0        backports_1.1.9   prettyunits_1.1.1
 ```
 
 

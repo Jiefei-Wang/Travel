@@ -27,8 +27,8 @@ Args:
   offset: A 0-based starting offset(index) of the vector.
   length: The length of the data.
 */
-typedef size_t (*Travel_get_region)(const Travel_altrep_info *altrep_info, void *buffer, 
-size_t offset, size_t length);
+typedef size_t (*Travel_get_region)(const Travel_altrep_info *altrep_info, void *buffer,
+                                    size_t offset, size_t length);
 /*
 Function that set the data for an ALTREP vector(optional function)
 
@@ -46,8 +46,8 @@ Args:
 Notes:
   You must have the function `Travel_duplicate` defined to make this function works.
 */
-typedef bool (*Travel_set_region)(const Travel_altrep_info *altrep_info, void *buffer, 
-size_t offset, size_t length);
+typedef bool (*Travel_set_region)(const Travel_altrep_info *altrep_info, void *buffer,
+                                  size_t offset, size_t length);
 
 //Get the size of the private data of an ALTREP(optional function)
 typedef size_t (*Travel_get_private_size)(const Travel_altrep_info *altrep_info);
@@ -122,8 +122,6 @@ Return:
 */
 typedef SEXP Travel_unserialize;
 
-
-
 /*
 A collection of functions to do the vector operations
 
@@ -151,7 +149,6 @@ struct Travel_altrep_operations
   Travel_inspect_private inspect_private = NULL;
 };
 
-
 /*
 The basic information of an altrep object
 
@@ -178,11 +175,10 @@ members:
 struct Travel_altrep_info
 {
   Travel_altrep_operations operations;
-  int type;
-  uint64_t length;
+  int type = 0;
+  uint64_t length = 0;
   void *private_data = nullptr;
   SEXP protected_data = R_NilValue;
 };
-
 
 #endif
