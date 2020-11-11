@@ -291,7 +291,7 @@ SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
         new_altrep_info = old_altrep_info.operations.extract_subset(&old_file_data.altrep_info, idx);
     }
 
-    Subset_index index(XLENGTH(idx));
+    Subset_index new_index(XLENGTH(idx));
     //If no subset method defined for the idx or
     //The method return an invalid altrep_info
     if (old_altrep_info.operations.extract_subset == NULL ||
@@ -299,17 +299,17 @@ SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
     {
         altrep_print("Using the default subset method\n");
         //Check if the index is an arithmetic sequence
-        bool arithmetic = Subset_index::to_subset_index(idx, index, old_file_data.index);
+        bool arithmetic = Subset_index::to_subset_index(idx, new_index, old_file_data.index);
         //If index is not an arithmetic sequence or the length of the subsetted vector
         //is less than cutoff, we return a regular vector
-        if (!arithmetic || index.length < default_subset_length_cutoff)
+        if (!arithmetic || new_index.length < default_subset_length_cutoff)
         {
             SEXP x_new = PROTECT(Rf_allocVector(TYPEOF(x), XLENGTH(idx)));
             char *ptr_old = (char *)DATAPTR(x);
             char *ptr_new = (char *)DATAPTR(x_new);
             uint8_t &unit_size = old_file_data.unit_size;
             DO_BY_TYPE(idx_cast, idx, {
-                for (size_t i = 0; i < index.length; i++)
+                for (size_t i = 0; i < new_index.length; i++)
                 {
                     memcpy(ptr_new + i * unit_size, ptr_old + ((size_t)idx_cast[i]-1) * unit_size, unit_size);
                 }
@@ -326,7 +326,7 @@ SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
 
     //Create a new virtual file
     Filesystem_file_info new_file_info = add_filesystem_file(old_file_data.coerced_type,
-                                                             index,
+                                                             new_index,
                                                              new_altrep_info);
     std::string new_file_name = new_file_info.file_name;
     Filesystem_file_data &new_file_data = get_filesystem_file_data(new_file_name);
@@ -347,16 +347,11 @@ SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
             {
                 //get the element index in the source file for the current cached element
                 size_t source_elt_offset = old_file_data.index.get_source_index(cache_start_elt + j);
-                //if the element may be in the subsetted vector
-                if (source_elt_offset > index.start)
+                //if the element is in the subsetted vector
+                if (new_index.contains_index(source_elt_offset))
                 {
-                    //Check if the element in the subsetted vector
-                    size_t dest_within_block_elt_offset = (source_elt_offset - index.start) % index.step;
-                    if (dest_within_block_elt_offset < index.block_length)
-                    {
-                        size_t dest_elt_offset = new_file_data.index.get_subset_index(source_elt_offset);
+                        size_t dest_elt_offset = new_index.get_subset_index(source_elt_offset);
                         copier.copy(dest_elt_offset, source_elt_offset);
-                    }
                 }
             }
         }

@@ -31,7 +31,7 @@ Filesystem_file_info add_filesystem_file(const int type,
                                          const Travel_altrep_info &altrep_info,
                                          const char *name)
 {
-  inode_type file_inode = file_inode_counter++;
+  inode_type file_inode = ++file_inode_counter;
   std::string file_name;
   if (name == NULL)
     file_name = "inode_" + std::to_string(file_inode);

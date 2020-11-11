@@ -104,7 +104,7 @@ std::string flush_handle(file_map_handle *handle)
     int status = msync(handle->ptr, handle->size, MS_SYNC);
     if (status != 0)
     {
-        return "Fail to flush the changes to the memory mapped file" + handle->file_info.file_name + ", error: " + strerror(errno) + "\n";
+        return "Fail to flush the changes to the memory mapped file" + handle->file_path + ", error: " + strerror(errno) + "\n";
     }
     return "";
 }

@@ -29,6 +29,8 @@ public:
     from the index of the element in the source
     */
     size_t get_subset_index(size_t source_index) const;
+    //Check if the source index is contained in the subset index
+    bool contains_index(size_t source_index) const;
     //turn the idx into a subset index object
     //The idx is the 1-based index of the old_index
     //If successful, the subset_index object will be returned by new_index

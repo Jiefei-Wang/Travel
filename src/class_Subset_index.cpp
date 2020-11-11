@@ -33,6 +33,19 @@ size_t Subset_index::get_subset_index(size_t source_index) const
   return subset_index;
 }
 
+bool Subset_index::contains_index(size_t source_index) const{
+    if(source_index<start){
+      return false;
+    }
+    size_t block_id = (source_index - start) / step;
+    size_t within_block_offset = (source_index - start) % step;
+    if(within_block_offset>=block_length){
+      return false;
+    }
+    size_t subset_index = block_id * block_length + within_block_offset;
+    return subset_index<length;
+}
+
 //Check if the index is an arithmetic sequence,
 //return the index from the parameter index
 bool Subset_index::to_subset_index(SEXP idx, Subset_index &new_index, Subset_index &old_index)
