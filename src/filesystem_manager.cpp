@@ -31,14 +31,6 @@ Filesystem_file_info add_filesystem_file(const int type,
                                          const Travel_altrep_info &altrep_info,
                                          const char *name)
 {
-  if (altrep_info.type == 0)
-  {
-    Rf_error("Unspecified vector type!\n");
-  }
-  if (altrep_info.operations.get_region == NULL)
-  {
-    Rf_error("The function <get_region> is NULL!\n");
-  }
   inode_type file_inode = file_inode_counter++;
   std::string file_name;
   if (name == NULL)

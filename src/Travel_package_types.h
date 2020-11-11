@@ -134,13 +134,9 @@ members:
   duplicate: Optional, duplicate an altrep info
   extract_subset: Optional, extract subset from ALTREP
   coerce: Optional, coerce ALTREP to the other type
-  serialize: Optional, serialize the ALTREP object(Not implemented yet!)
-  unserialize: Optional, unserialize the ALTREP object(Not implemented yet!)
+  serialize: Optional, serialize the ALTREP object
+  unserialize: Optional, unserialize the ALTREP object
   inspect_private: Optional, inspect private data when the R vector is inspected
-
-Dependencies:
-  set_region depends on duplicate
-  serialize and unserialize depend on each other
 */
 struct Travel_altrep_operations
 {
@@ -176,7 +172,7 @@ members:
   type: R's vector type(e.g. RAWSXP, LGLSXP, INTSXP, REALSXP)
   length: Length of the vector
   private_data: A pointer that can be used to store the private data of the ALTREP
-  protected_data: An SEXP that will be protected when the ALTREP object is still in used.
+  protected_data: An SEXP that will be protected when the ALTREP object is in used.
   It will be automatically unprotected when the ALTREP object is released.
 */
 struct Travel_altrep_info
@@ -184,8 +180,8 @@ struct Travel_altrep_info
   Travel_altrep_operations operations;
   int type;
   uint64_t length;
-  void *private_data;
-  SEXP protected_data;
+  void *private_data = nullptr;
+  SEXP protected_data = R_NilValue;
 };
 
 

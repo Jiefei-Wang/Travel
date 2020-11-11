@@ -11,7 +11,7 @@ if(get_OS()!="linux"){
     test_that("write to an integer sequece",{
         n <- 1024*1024*16/4
         expect_error(x <- C_make_arithmetic_sequence_altrep(n),NA)
-        y <- 1:n
+        y <- 0:(n-1)
         expect_equal(x,y)
         
         ## Check if the cache number is 0

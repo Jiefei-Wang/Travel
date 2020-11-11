@@ -8,7 +8,7 @@ deploy_filesystem()
 n <- 1024*1024*16/4
 block_size <- 1024
 block_num <- n/block_size
-y <- 1:n
+y <- 0:(n-1)
 
 test_that("Create an integer sequece",{
     expect_error(x <- C_make_arithmetic_sequence_altrep(n),NA)
