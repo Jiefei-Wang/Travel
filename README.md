@@ -71,9 +71,9 @@ head(x1)
 #> [1] 10  2  3  4  5  6
 
 ## long sequence 
-x2 <- 1:(1024*1024*1024*1024)
+x2 <- 1:(64*1024*1024*1024)
 x2[1] <- 10
-#> Error: cannot allocate vector of size 8192.0 Gb
+#> Error: cannot allocate vector of size 512.0 Gb
 ```
 As of R4.1, every attempt to change the values of an R vector will require to access the pointer of the vector. For a short sequence this can be easily solved via the memory allocation. However, for a large sequence, since there would not be enough space for a 8192Gb vector, doing so will end up with an error message. 
 Requiring the pointer from an ALTREP object has been a very serious limitation that prevents it from being used in practice to represent a large data. That is the problem that the Travel package is intended to solve.
@@ -92,7 +92,7 @@ The pointer is "virtual" in the sense that the data does not exist in the memory
 As we see from the flowchart, the data of the pointer `ptr` is made on-demand. The pointer would not exhaust the memory even if it points to an extremely large object. By doing that we solve the main limitation of the ALTREP. The pointer of the ALTREP object can be accessed in a usual way, and the memory consumption is minimum. Take the super large sequence as an example again, the package provides a wrapper function to turn an old ALTREP object into a new ALTREP object with a virtual pointer. 
 
 ```r
-x <- 1:(1024*1024*1024*1024)
+x <- 1:(64*1024*1024*1024)
 y <- wrap_altrep(x)
 
 x[1:10]
@@ -104,15 +104,13 @@ While `x` and `y` looks the same, the pointer of `y` can be accessed as usual
 
 ```r
 x[1] <- 10
-#> Error: cannot allocate vector of size 8192.0 Gb
+#> Error: cannot allocate vector of size 512.0 Gb
 x[1:10]
 #>  [1]  1  2  3  4  5  6  7  8  9 10
 
 y[1] <- 10
-#> Warning in y[1] <- 10: Fail to get a pointer from the file C:/Users/wangj/AppData/Local/Temp/Rtmp2nDGf9/
-#> Travel_filesystem_24768/inode_5, error:1455
 y[1:10]
-#> NULL
+#>  [1] 10  2  3  4  5  6  7  8  9 10
 ```
 Furthermore, loop over the sequence `y` works as expected.
 
@@ -133,10 +131,10 @@ my_sum <- inline::cxxfunction(signature(x="SEXP"),
 
 ## An error will be given for x
 my_sum(x)
-#> Error: cannot allocate vector of size 8192.0 Gb
+#> Error: cannot allocate vector of size 512.0 Gb
 ## No error will be given and the sum can be computed
 my_sum(y)
-#> [1] 10
+#> [1] 64
 ```
 Please note that the wrapper function `wrap_altrep` should be used with caution for it will call R's function in a multithreaded environment. As R is known to be a single-thread program, it is not recommended to use this function in practice. `wrap_altrep` should be called for demonstration purpose only. In the next section, we will show you how to formally build your own ALTREP object using Travel package.
 
@@ -316,14 +314,9 @@ sessionInfo()
 #> [1] inline_0.3.16 Travel_0.99.0
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] Rcpp_1.0.5        rstudioapi_0.11   magrittr_1.5      knitr_1.29        usethis_1.6.1    
-#>  [6] devtools_2.3.1    pkgload_1.1.0     R6_2.4.1          rlang_0.4.7       fansi_0.4.1      
-#> [11] stringr_1.4.0     tools_4.1.0       pkgbuild_1.1.0    xfun_0.16         sessioninfo_1.1.1
-#> [16] cli_2.0.2         withr_2.2.0       remotes_2.2.0     htmltools_0.5.0   ellipsis_0.3.1   
-#> [21] yaml_2.2.1        assertthat_0.2.1  digest_0.6.25     rprojroot_1.3-2   crayon_1.3.4     
-#> [26] processx_3.4.4    callr_3.4.3       fs_1.5.0          ps_1.3.4          testthat_2.3.2   
-#> [31] memoise_1.1.0     glue_1.4.2        evaluate_0.14     rmarkdown_2.3     stringi_1.4.6    
-#> [36] compiler_4.1.0    desc_1.2.0        backports_1.1.9   prettyunits_1.1.1
+#>  [1] Rcpp_1.0.5       fansi_0.4.1      crayon_1.3.4     assertthat_0.2.1 magrittr_1.5     evaluate_0.14   
+#>  [7] rlang_0.4.7      stringi_1.4.6    cli_2.0.2        rstudioapi_0.11  tools_4.1.0      stringr_1.4.0   
+#> [13] glue_1.4.2       xfun_0.16        compiler_4.1.0   knitr_1.29
 ```
 
 

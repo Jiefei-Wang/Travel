@@ -76,7 +76,7 @@ x1[1] <- 10
 head(x1)
 
 ## long sequence 
-x2 <- 1:(1024*1024*1024*1024)
+x2 <- 1:(64*1024*1024*1024)
 x2[1] <- 10
 ```
 As of R4.1, every attempt to change the values of an R vector will require to access the pointer of the vector. For a short sequence this can be easily solved via the memory allocation. However, for a large sequence, since there would not be enough space for a 8192Gb vector, doing so will end up with an error message. 
@@ -103,7 +103,7 @@ The pointer is "virtual" in the sense that the data does not exist in the memory
 
 As we see from the flowchart, the data of the pointer `ptr` is made on-demand. The pointer would not exhaust the memory even if it points to an extremely large object. By doing that we solve the main limitation of the ALTREP. The pointer of the ALTREP object can be accessed in a usual way, and the memory consumption is minimum. Take the super large sequence as an example again, the package provides a wrapper function to turn an old ALTREP object into a new ALTREP object with a virtual pointer. 
 ```{r}
-x <- 1:(1024*1024*1024*1024)
+x <- 1:(64*1024*1024*1024)
 y <- wrap_altrep(x)
 
 x[1:10]
