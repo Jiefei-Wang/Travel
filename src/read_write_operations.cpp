@@ -4,6 +4,11 @@
 //#include "Travel.h"
 #include "utils.h"
 
+/*
+=========================================================================================
+                     read function utilities
+=========================================================================================
+*/
 static size_t read_local_source(Travel_altrep_info *altrep_info, char *buffer, size_t offset, size_t length)
 {
     size_t true_read_length = altrep_info->operations.get_region(altrep_info, buffer, offset, length);
@@ -82,7 +87,6 @@ static size_t read_source_with_coercion(Filesystem_file_data &file_data, char *b
     coercion_buffer.release();
     return true_read_length;
 }
-
 /*
     Read the data with the alignment
     the downstream function would not need to align the offset with
@@ -99,6 +103,7 @@ static size_t read_with_alignment(Filesystem_file_data &file_data, char *buffer,
         (misalign_begin == 0 && misalign_end == 0))
     {
         size_t read_length = read_source_with_coercion(file_data, buffer, offset / unit_size, size / unit_size);
+        claim(read_length <= size / unit_size);
         return read_length * unit_size;
     }
     //Otherwise, we must convert the request to fit the unit size requirement
@@ -110,6 +115,7 @@ static size_t read_with_alignment(Filesystem_file_data &file_data, char *buffer,
     {
         ptr.reset(new char[unit_size]);
         size_t read_length = read_source_with_coercion(file_data, ptr.get(), offset_begin, 1);
+        claim(read_length <= 1);
         if (read_length != 1)
         {
             return buffer_read_size;
@@ -133,8 +139,9 @@ static size_t read_with_alignment(Filesystem_file_data &file_data, char *buffer,
         claim(buffer_read_size + (length + 1) * unit_size > size);
 
         size_t read_length = read_source_with_coercion(file_data,
-                                                       buffer + buffer_read_size,
-                                                       offset_begin, length);
+                                  buffer + buffer_read_size,
+                                  offset_begin, length);
+        claim(read_length <= length);
         buffer_read_size = buffer_read_size + read_length * unit_size;
         if (read_length < length)
             return buffer_read_size;
@@ -144,7 +151,8 @@ static size_t read_with_alignment(Filesystem_file_data &file_data, char *buffer,
     {
         if (ptr == nullptr)
             ptr.reset(new char[unit_size]);
-        size_t read_length = read_source_with_subset(file_data, ptr.get(), offset_end, 1);
+        size_t read_length = read_source_with_coercion(file_data, ptr.get(), offset_end, 1);
+        claim(read_length <= 1);
         if (read_length != 1)
         {
             return buffer_read_size;
@@ -186,7 +194,9 @@ static size_t read_data_with_cache(Filesystem_file_data &file_data, char *buffer
             if (read_size != expect_read_size)
             {
                 return buffer_read_size;
-            }else{
+            }
+            else
+            {
                 break;
             }
         }
@@ -221,25 +231,93 @@ static size_t read_data_with_cache(Filesystem_file_data &file_data, char *buffer
     claim(buffer_read_size == size);
     return buffer_read_size;
 }
-
 /*
-Read order:
-cache layer: read_data_with_cache
-source alignment layer: read_with_alignment
-coercion layer: read_source_with_coercion
-source offset layer: read_source_with_subset
-source layer: read_source
+=========================================================================================
+                     write function utilities
+=========================================================================================
 */
-size_t general_read_func(Filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
-{
-    size = std::min(zero_bounded_minus(file_data.file_size, offset), size);
-    claim(offset + size <= file_data.file_size);
-    return read_data_with_cache(file_data, (char *)buffer, offset, size);
+static size_t write_to_source(Filesystem_file_data &file_data, const char *buffer, size_t offset, size_t size){
+    Travel_set_region& set_region = file_data.altrep_info.operations.set_region;
+    uint8_t &unit_size = file_data.unit_size;
+    size_t misalign_begin = offset % unit_size;
+    size_t misalign_end = (offset + size) % unit_size;
+    // If the unit size is 1 or there is no misalignment,
+    // we just pass the request to the downstream function
+    if (unit_size == 1 ||
+        (misalign_begin == 0 && misalign_end == 0))
+    {
+        size_t write_length = set_region(&file_data.altrep_info, buffer, offset / unit_size, size / unit_size);
+        return write_length * unit_size;
+    }
+    //Otherwise, we must convert the request to fit the unit size requirement
+    size_t buffer_write_size = 0;
+    std::unique_ptr<char[]> ptr;
+    //Fill the begin of the data if needed
+    size_t elt_offset_begin = offset / unit_size;
+    if (misalign_begin != 0)
+    {
+        ptr.reset(new char[unit_size]);
+        size_t read_size =  general_read_func(file_data, ptr.get(), elt_offset_begin*unit_size, unit_size);
+        if (read_size != unit_size)
+        {
+            return buffer_write_size;
+        }
+        size_t copy_size = std::min(size, unit_size - misalign_begin);
+        memcpy(ptr.get() + misalign_begin, buffer + misalign_begin, copy_size);
+        size_t write_length = set_region(&file_data.altrep_info, ptr.get(), elt_offset_begin, 1);
+        if (write_length != 1)
+        {
+            return buffer_write_size;
+        }
+        buffer_write_size = buffer_write_size + copy_size;
+        elt_offset_begin++;
+    }
+    if (buffer_write_size == size)
+    {
+        return buffer_write_size;
+    }
+    //If we still need to read the data after reading the first element
+    size_t elt_offset_end = (offset + size) / unit_size;
+    //Fill the middle of the data
+    size_t length = elt_offset_end - elt_offset_begin;
+    if (length > 0)
+    {
+        claim(buffer_write_size + length * unit_size <= size);
+        claim(buffer_write_size + (length + 1) * unit_size > size);
+
+        size_t write_length = set_region(&file_data.altrep_info,
+                                  buffer + buffer_write_size,
+                                  elt_offset_begin, length);
+        claim(write_length <= length);
+        buffer_write_size = buffer_write_size + write_length * unit_size;
+        if (write_length < length)
+            return buffer_write_size;
+    }
+    //Fill the end of the data
+    if (misalign_end != 0)
+    {
+        if (ptr == nullptr)
+            ptr.reset(new char[unit_size]);
+
+        size_t read_size =  general_read_func(file_data, ptr.get(), elt_offset_end*unit_size, misalign_end);
+        if (read_size != misalign_end)
+        {
+            return buffer_write_size;
+        }
+        memcpy(ptr.get(), buffer + buffer_write_size, misalign_end);
+        size_t write_length = set_region(&file_data.altrep_info, ptr.get(), elt_offset_end, 1);
+        if (write_length != 1)
+        {
+            return buffer_write_size;
+        }
+        buffer_write_size = buffer_write_size + misalign_end;
+    }
+    claim(buffer_write_size == size);
+    return buffer_write_size;
 }
 
-size_t general_write_func(Filesystem_file_data &file_data, const void *buffer, size_t offset, size_t size)
+static size_t write_to_cache(Filesystem_file_data &file_data, const char * buffer, size_t offset, size_t size)
 {
-    size = std::min(zero_bounded_minus(file_data.file_size, offset), size);
     claim(offset + size <= file_data.file_size);
     if (size == 0)
         return 0;
@@ -269,13 +347,37 @@ size_t general_write_func(Filesystem_file_data &file_data, const void *buffer, s
         }
         char *cache_ptr = file_data.get_cache_block(cache_id).get();
         claim(write_offset + cache_write_size <= size);
-        memcpy(cache_ptr + within_cache_offset, (char *)buffer + write_offset, cache_write_size);
+        memcpy(cache_ptr + within_cache_offset, buffer + write_offset, cache_write_size);
         write_offset = write_offset + cache_write_size;
     }
     claim(write_offset <= size);
     return write_offset;
 }
 
+/*
+=========================================================================================
+                     exported functions
+=========================================================================================
+*/
+//An utility to get the true read size that will not read out-of-bound
+size_t get_file_read_size(size_t file_size, size_t offset, size_t size)
+{
+	if (offset + size > file_size)
+	{
+		if (offset >= file_size)
+		{
+			return 0;
+		}
+		else
+		{
+			return file_size - offset;
+		}
+	}
+	else
+	{
+		return size;
+	}
+}
 void *load_cache(Filesystem_file_data &file_data, size_t cache_id)
 {
     if (file_data.has_cache_id(cache_id))
@@ -290,4 +392,31 @@ void *load_cache(Filesystem_file_data &file_data, size_t cache_id)
                       cache_offset_in_file, expect_read_size);
     file_data.write_cache.insert(std::pair<size_t, Cache_block>(cache_id, cache));
     return ptr;
+}
+
+/*
+Read order:
+cache layer: read_data_with_cache
+source alignment layer: read_with_alignment
+coercion layer: read_source_with_coercion
+source offset layer: read_source_with_subset
+source layer: read_source
+*/
+size_t general_read_func(Filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
+{
+    size = std::min(zero_bounded_minus(file_data.file_size, offset), size);
+    claim(offset + size <= file_data.file_size);
+    return read_data_with_cache(file_data, (char *)buffer, offset, size);
+}
+
+
+size_t general_write_func(Filesystem_file_data &file_data, const void *buffer, size_t offset, size_t size)
+{
+    size = std::min(zero_bounded_minus(file_data.file_size, offset), size);
+    if (file_data.altrep_info.operations.set_region == NULL|| file_data.coerced_type!=file_data.altrep_info.type)
+    {
+        return write_to_cache(file_data, (const char *)buffer, offset, size);
+    }else{
+        return write_to_source(file_data, (const char *)buffer, offset, size);
+    }
 }

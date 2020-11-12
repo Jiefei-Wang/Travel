@@ -46,7 +46,7 @@ Args:
 Notes:
   You must have the function `Travel_duplicate` defined to make this function works.
 */
-typedef bool (*Travel_set_region)(const Travel_altrep_info *altrep_info, void *buffer,
+typedef bool (*Travel_set_region)(const Travel_altrep_info *altrep_info, const void *buffer,
                                   size_t offset, size_t length);
 
 //Get the size of the private data of an ALTREP(optional function)
@@ -108,7 +108,7 @@ The external pointer points to the Travel_altrep_info struct that
 is used to construct the ALTREP object.
 
 Return:
-  Any R object
+  Any R object that is serializable
 */
 typedef SEXP Travel_serialize;
 /*
@@ -118,7 +118,7 @@ An R function that takes the serialized data as the input,
 it returns the unserialized object.
 
 Return:
-  altrep info 
+  The unserialized object
 */
 typedef SEXP Travel_unserialize;
 
@@ -127,7 +127,7 @@ A collection of functions to do the vector operations
 
 members:
   get_region: Mandatory, function to get a region data of the R vector
-  set_region: Optional, function to set a region data of the R vector(Not implemented yet!)
+  set_region: Optional, function to set a region data of the R vector
   get_private_size: Optional, count the size of the private data
   duplicate: Optional, duplicate an altrep info
   extract_subset: Optional, extract subset from ALTREP
@@ -157,12 +157,6 @@ That is, if `get_region` is called multiple times with the same
 `Travel_altrep_info` and region parameter, the read results should always
 be the same.
 
-Cautions:
-  The same altrep's information might be shared by multiple
-  R vector, if you have defined `set_region` function, you need
-  to make sure the changes in one vector would not affect the values
-  in the other vector. Note that `duplicate` function will be called 
-  prior to `set_region` when altrep's information is shared.
 
 members:
   operations: A collection of functions to do the vector operations

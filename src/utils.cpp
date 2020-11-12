@@ -272,27 +272,7 @@ void copy_memory(int dest_type, int src_type, void *dest, const void *src, size_
 	}
 }
 
-/*
-An utility to get the true read size that will not read out-of-bound
-*/
-size_t get_file_read_size(size_t file_size, size_t offset, size_t size)
-{
-	if (offset + size > file_size)
-	{
-		if (offset >= file_size)
-		{
-			return 0;
-		}
-		else
-		{
-			return file_size - offset;
-		}
-	}
-	else
-	{
-		return size;
-	}
-}
+
 
 
 
