@@ -9,16 +9,13 @@ package_lib= Travel.dll
 
 .PHONY: all copy-header
 
-#all: ${package_lib}
+all: ${package_lib}
 all: remove-file copy-header ${package_lib}
 
 
 remove-file:
-	 rm -f "../inst/include/SharedObject/Travel.h" &&\
-	 rm -f "../inst/include/SharedObject/Travel_package_types.h" &&\
 	 ${MKDIR_P} ../inst/include&&\
 	 ${MKDIR_P} ../inst/include/Travel
-
 
 copy-header:
 	 cp "Travel.h" "../inst/include/Travel/" &&\

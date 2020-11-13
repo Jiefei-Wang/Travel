@@ -10,6 +10,7 @@
 #' @examples
 #' Travel:::pkgconfig("PKG_LIBS")
 #' Travel:::pkgconfig("PKG_CPPFLAGS")
+#' @export
 pkgconfig <- function(x = c("PKG_LIBS", "PKG_CPPFLAGS")){
     x <- match.arg(x)
     pkg_name <- "Travel"
