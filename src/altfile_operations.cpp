@@ -7,7 +7,6 @@
 #define UTILS_ENABLE_R
 #include "utils.h"
 
-
 R_altrep_class_t altfile_real_class;
 R_altrep_class_t altfile_integer_class;
 R_altrep_class_t altfile_logical_class;
@@ -38,7 +37,7 @@ ALTREP operations
 */
 
 Rboolean altfile_Inspect(SEXP x, int pre, int deep, int pvec,
-                        void (*inspect_subtree)(SEXP, int, int, int))
+                         void (*inspect_subtree)(SEXP, int, int, int))
 {
     Rprintf("altrep file object(len=%llu, type=%d)\n", Rf_xlength(x), TYPEOF(x));
     return TRUE;
@@ -69,8 +68,6 @@ const void *altfile_dataptr_or_null(SEXP x)
     return altfile_dataptr(x, Rboolean::TRUE);
 }
 
-
-
 /*
 Register ALTREP class
 */
@@ -78,15 +75,13 @@ Register ALTREP class
 #define ALT_COMMOM_REGISTRATION(ALT_CLASS, ALT_TYPE, FUNC_PREFIX)         \
     ALT_CLASS = R_make_##ALT_TYPE##_class(class_name, PACKAGE_NAME, dll); \
     /* common ALTREP methods */                                           \
-    R_set_altrep_Inspect_method(ALT_CLASS, altfile_Inspect);               \
-    R_set_altrep_Length_method(ALT_CLASS, altfile_length);                 \
+    R_set_altrep_Inspect_method(ALT_CLASS, altfile_Inspect);              \
+    R_set_altrep_Length_method(ALT_CLASS, altfile_length);                \
     /* ALTVEC methods */                                                  \
-    R_set_altvec_Dataptr_method(ALT_CLASS, altfile_dataptr);               \
+    R_set_altvec_Dataptr_method(ALT_CLASS, altfile_dataptr);              \
     R_set_altvec_Dataptr_or_null_method(ALT_CLASS, altfile_dataptr_or_null);
-	
-    
-//R_set_altvec_Extract_subset_method(ALT_CLASS, numeric_subset<R_TYPE, C_TYPE>);
 
+//R_set_altvec_Extract_subset_method(ALT_CLASS, numeric_subset<R_TYPE, C_TYPE>);
 
 //[[Rcpp::init]]
 void init_altfile_logical_class(DllInfo *dll)
@@ -114,6 +109,4 @@ void init_altfile_raw_class(DllInfo *dll)
     char class_name[] = "travel_altfile_raw";
     ALT_COMMOM_REGISTRATION(altfile_raw_class, altraw, RAW);
 }
-
-
 

@@ -33,7 +33,7 @@ SEXP C_make_altmmap_from_altrep(SEXP x)
     altrep_info.protected_data= x;
     altrep_info.type = TYPEOF(x);
     altrep_info.operations.get_region = read_altrep_region;
-    SEXP altmmap_object = Travel_make_altmmap(altrep_info);
+    SEXP altmmap_object = Travel_make_altrep(altrep_info);
     return altmmap_object;
 }
 

@@ -72,11 +72,11 @@ Rboolean altmmap_Inspect(SEXP x, int pre, int deep, int pvec,
 {
     std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
     Filesystem_file_data &file_data = get_filesystem_file_data(file_name);
-    Rprintf("File type: %s, size: %llu, cache num: %llu\n",
+    Rprintf("File type: %s, size: %llu, length:%llu, cache num: %llu\n",
             get_type_name(file_data.coerced_type).c_str(),
             (uint64_t)file_data.file_size,
+            (uint64_t)file_data.file_length,
             (uint64_t)file_data.write_cache.size());
-
     Rprintf("[Source info]\n");
     Rprintf("   Type: %s, length: %llu, private: %p",
             (uint64_t)get_type_name(file_data.altrep_info.type).c_str(),
@@ -85,9 +85,21 @@ Rboolean altmmap_Inspect(SEXP x, int pre, int deep, int pvec,
     if (file_data.altrep_info.operations.get_private_size != NULL)
     {
         size_t private_size = file_data.altrep_info.operations.get_private_size(&file_data.altrep_info);
-        Rprintf(", private size:%llu\n", (uint64_t)private_size);
+        Rprintf(", private size:%llu", (uint64_t)private_size);
     }
-    Rprintf(", protect: %p\n", file_data.altrep_info.protected_data);
+    if(file_data.altrep_info.protected_data!=R_NilValue){
+        Rprintf(", protect: %p", file_data.altrep_info.protected_data);
+    }else{
+        Rprintf(", protect: %p", nullptr);
+    }
+    Rprintf("\n");
+    
+    Rprintf("[Index info]\n");
+    Rprintf("   Length: %llu, start: %llu, block length: %llu, step:%llu\n",
+    (uint64_t)file_data.index.length,
+    (uint64_t)file_data.index.start,
+    (uint64_t)file_data.index.block_length,
+    (uint64_t)file_data.index.step);
 
     Rprintf("[Defined operations]\n");
     if (file_data.altrep_info.operations.get_region != 0)
@@ -104,9 +116,9 @@ Rboolean altmmap_Inspect(SEXP x, int pre, int deep, int pvec,
         Rprintf("   get_private_size\n");
     if (file_data.altrep_info.operations.inspect_private != 0)
         Rprintf("   inspect_private\n");
-    if (file_data.altrep_info.operations.serialize != 0)
+    if (file_data.altrep_info.operations.serialize != R_NilValue)
         Rprintf("   serialize\n");
-    if (file_data.altrep_info.operations.unserialize != 0)
+    if (file_data.altrep_info.operations.unserialize != R_NilValue)
         Rprintf("   unserialize\n");
 
     if (file_data.altrep_info.private_data != NULL &&

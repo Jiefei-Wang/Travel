@@ -34,10 +34,11 @@ static void altmmap_handle_finalizer(SEXP handle_extptr)
 The internal function allows to create an altrep object with specific type
 that is not consistent with the type in the altrep_info
 */
-SEXP Travel_make_altmmap(Filesystem_file_info& file_info)
+SEXP Travel_make_altmmap(Filesystem_file_info &file_info)
 {
     Filesystem_file_data &file_data = get_filesystem_file_data(file_info.file_name);
-    if(file_data.altrep_info.protected_data==NULL){
+    if (file_data.altrep_info.protected_data == NULL)
+    {
         file_data.altrep_info.protected_data = R_NilValue;
     }
     if (!is_filesystem_running())
@@ -49,7 +50,7 @@ SEXP Travel_make_altmmap(Filesystem_file_info& file_info)
     SEXP altmmap_options = guard.protect(Rf_allocVector(VECSXP, SLOT_NUM));
     SET_PROPS_LENGTH(altmmap_options, Rcpp::wrap(file_data.file_length));
     SEXP result = guard.protect(R_new_altrep(alt_class, file_data.altrep_info.protected_data, altmmap_options));
-    
+
     SET_PROPS_NAME(altmmap_options, Rcpp::wrap(file_info.file_name));
     SET_PROPS_SIZE(altmmap_options, Rcpp::wrap(file_data.file_size));
     file_map_handle *handle;
@@ -69,16 +70,17 @@ SEXP Travel_make_altmmap(Filesystem_file_info& file_info)
     return result;
 }
 
-
-
-SEXP Travel_make_altmmap(Travel_altrep_info altrep_info){
+SEXP Travel_make_altmmap(Travel_altrep_info &altrep_info)
+{
     Subset_index index(altrep_info.length);
     //Create a virtual file
-    Filesystem_file_info file_info = add_filesystem_file(altrep_info.type,index, altrep_info);
+    Filesystem_file_info file_info = add_filesystem_file(altrep_info.type, index, altrep_info);
     return Travel_make_altmmap(file_info);
 }
-
-
+SEXP Travel_make_altrep(Travel_altrep_info altrep_info)
+{
+    return Travel_make_altmmap(altrep_info);
+}
 
 static void altfile_handle_finalizer(SEXP handle_extptr)
 {
@@ -98,7 +100,6 @@ static void altfile_handle_finalizer(SEXP handle_extptr)
         }
     }
 }
-
 
 R_altrep_class_t get_altfile_class(int type);
 SEXP make_altmmap_from_file(std::string path, int type, size_t length)

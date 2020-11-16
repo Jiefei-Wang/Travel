@@ -10,21 +10,14 @@
 Create an ALTREP object given the data reading function. There
 will be a pointer associated with the ALTREP object. 
 Calling R's DATAPTR on the return value is possible without 
-allocating the entire data in the memory.
-Arguments:
-    type: An R's SEXP type(e.g. LGLSXP, INTSXP, REALSXP)
-    length:  Length of the ALTREP object
-    read_func: The data reading function.
-    private_data: The private data for the data reading function, you can
-        put anything here
-    protect: The R object that you want to prevent from GC when the 
-        ALTREP object is in used. You can use smart external pointer
-        to manage the lifespan of your private data
-        (see the function `Travel_shared_ptr`).
+allocating the entire data in the memory. 
+
+`altrep_info` is a struct defining the behavior of an altrep object,
+its document can be found at the header "Travel_package_types.h".
 */
-SEXP Travel_make_altmmap(Travel_altrep_info altrep_info);
+SEXP Travel_make_altrep(Travel_altrep_info altrep_info);
 /*
-Get file info from the ALTREP object returned by Travel_make_altmmap
+Get file info from the ALTREP object returned by Travel_make_altrep
 */
 SEXP get_file_name(SEXP x);
 SEXP get_file_path(SEXP x);

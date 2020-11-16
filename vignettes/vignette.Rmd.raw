@@ -184,9 +184,9 @@ SystemRequirements: GNU make
 You can find short explanations of the Travel C++ APIs in `Travel/Travel.h`.
 
 ## Use Travel
-The main function of the Travel package is `Travel_make_altmmap`, its function declaration is as follows
+The main function of the Travel package is `Travel_make_altrep`, its function declaration is as follows
 ```
-SEXP Travel_make_altmmap(Travel_altrep_info altrep_info);
+SEXP Travel_make_altrep(Travel_altrep_info altrep_info);
 ```
 where `Travel_altrep_info` is a struct containing the information of the ALTREP object. The definition of `Travel_altrep_info` is
 ```

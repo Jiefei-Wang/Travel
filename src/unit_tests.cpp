@@ -136,7 +136,7 @@ SEXP C_allzero(size_t n)
     altrep_info.length = n;
     altrep_info.type = REALSXP;
     altrep_info.operations.get_region = fake_allzero_read;
-    return Travel_make_altmmap(altrep_info);
+    return Travel_make_altrep(altrep_info);
 }
 
 struct RLE
@@ -181,7 +181,7 @@ SEXP C_RLE(std::vector<double> length, std::vector<double> value)
     altrep_info.operations.get_region = fake_rle_read;
     altrep_info.private_data = rle;
     altrep_info.protected_data = PROTECT(Travel_shared_ptr<RLE>(rle));
-    SEXP x = Travel_make_altmmap(altrep_info);
+    SEXP x = Travel_make_altrep(altrep_info);
     Rf_unprotect(1);
     return x;
 }
@@ -351,10 +351,10 @@ void C_test_read_write_functions_with_coercion_and_subset(
 // [[Rcpp::export]]
 SEXP C_make_arithmetic_sequence_altrep(double n)
 {
-    Travel_altrep_info altrep_info = {};
+    Travel_altrep_info altrep_info;
     altrep_info.length = n;
     altrep_info.type = INTSXP;
     altrep_info.operations.get_region = read_int_arithmetic_sequence;
-    SEXP x = Travel_make_altmmap(altrep_info);
+    SEXP x = Travel_make_altrep(altrep_info);
     return x;
 }

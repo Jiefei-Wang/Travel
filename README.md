@@ -3,7 +3,7 @@ title: "vignette"
 author: 
 - name: Jiefei Wang
   affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
-date: "2020-11-11"
+date: "2020-11-16"
 output:
     BiocStyle::html_document:
         toc: true
@@ -182,9 +182,9 @@ SystemRequirements: GNU make
 You can find short explanations of the Travel C++ APIs in `Travel/Travel.h`.
 
 ## Use Travel
-The main function of the Travel package is `Travel_make_altmmap`, its function declaration is as follows
+The main function of the Travel package is `Travel_make_altrep`, its function declaration is as follows
 ```
-SEXP Travel_make_altmmap(Travel_altrep_info altrep_info);
+SEXP Travel_make_altrep(Travel_altrep_info altrep_info);
 ```
 where `Travel_altrep_info` is a struct containing the information of the ALTREP object. The definition of `Travel_altrep_info` is
 ```
@@ -314,9 +314,8 @@ sessionInfo()
 #> [1] inline_0.3.16 Travel_0.99.0
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] Rcpp_1.0.5       fansi_0.4.1      crayon_1.3.4     assertthat_0.2.1 magrittr_1.5     evaluate_0.14   
-#>  [7] rlang_0.4.7      stringi_1.4.6    cli_2.0.2        rstudioapi_0.11  tools_4.1.0      stringr_1.4.0   
-#> [13] glue_1.4.2       xfun_0.16        compiler_4.1.0   knitr_1.29
+#> [1] compiler_4.1.0 magrittr_1.5   tools_4.1.0    Rcpp_1.0.5     stringi_1.5.3  knitr_1.30    
+#> [7] stringr_1.4.0  xfun_0.19      evaluate_0.14
 ```
 
 
