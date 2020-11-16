@@ -63,7 +63,7 @@ bool Subset_index::to_subset_index(SEXP idx, Subset_index &new_index, Subset_ind
         new_index.start = old_index.get_source_index(cast_idx[0] - 1);
         bool step_found = false;
         size_t current_source_id = new_index.start;
-        for (size_t i = 2; i < new_index.length; i++)
+        for (size_t i = 1; i < new_index.length; i++)
         {
             size_t previous_source_id = current_source_id;
             current_source_id = old_index.get_source_index(cast_idx[i] - 1);
