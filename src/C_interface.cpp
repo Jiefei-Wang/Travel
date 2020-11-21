@@ -1,7 +1,6 @@
-#include "utils.h"
 #include "filesystem_manager.h"
 #include "Travel.h"
-
+#include "utils.h"
 
 size_t read_altrep_region(const Travel_altrep_info* altrep_info, void *buffer, size_t offset, size_t length)
 {
@@ -33,7 +32,9 @@ SEXP C_make_altmmap_from_altrep(SEXP x)
     altrep_info.protected_data= x;
     altrep_info.type = TYPEOF(x);
     altrep_info.operations.get_region = read_altrep_region;
-    SEXP altmmap_object = Travel_make_altrep(altrep_info);
+    PROTECT_GUARD guard;
+    SEXP altmmap_object = guard.protect(Travel_make_altrep(altrep_info));
+    SHALLOW_DUPLICATE_ATTRIB(altmmap_object,x);
     return altmmap_object;
 }
 

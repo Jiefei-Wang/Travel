@@ -18,6 +18,13 @@
 #undef ERROR
 #endif
 
+#ifdef Rcpp_hpp
+#ifndef UTILS_ENABLE_R
+#define UTILS_ENABLE_R
+#endif
+#endif
+
+
 #ifdef UTILS_ENABLE_R
 #ifndef R_INTERNALS_H_
 #include "Rcpp.h"
