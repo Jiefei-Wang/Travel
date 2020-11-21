@@ -34,7 +34,7 @@ static void altmmap_handle_finalizer(SEXP handle_extptr)
 The internal function allows to create an altrep object with specific type
 that is not consistent with the type in the altrep_info
 */
-SEXP Travel_make_altmmap(Filesystem_file_info &file_info)
+SEXP Travel_make_altmmap(Filesystem_file_identifier &file_info)
 {
     Filesystem_file_data &file_data = get_filesystem_file_data(file_info.file_name);
     if (file_data.altrep_info.protected_data == NULL)
@@ -74,7 +74,7 @@ SEXP Travel_make_altmmap(Travel_altrep_info &altrep_info)
 {
     Subset_index index(altrep_info.length);
     //Create a virtual file
-    Filesystem_file_info file_info = add_filesystem_file(altrep_info.type, index, altrep_info);
+    Filesystem_file_identifier file_info = add_filesystem_file(altrep_info.type, index, altrep_info);
     return Travel_make_altmmap(file_info);
 }
 SEXP Travel_make_altrep(Travel_altrep_info altrep_info)
@@ -115,7 +115,7 @@ SEXP make_altmmap_from_file(std::string path, int type, size_t length)
     SET_PROPS_SIZE(altfile_options, Rcpp::wrap(size));
     std::string file_name = get_file_name_in_path(path);
     SET_PROPS_NAME(altfile_options, Rcpp::wrap(file_name));
-    Filesystem_file_info file_info;
+    Filesystem_file_identifier file_info;
     file_info.file_name = file_name;
     file_info.file_full_path = path;
     file_map_handle *handle;

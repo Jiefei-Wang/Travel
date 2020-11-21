@@ -41,6 +41,10 @@ C_print_cache <- function(x, i) {
     invisible(.Call(`_Travel_C_print_cache`, x, i))
 }
 
+C_coerce <- function(x, type) {
+    .Call(`_Travel_C_coerce`, x, type)
+}
+
 C_get_virtual_file_list <- function() {
     .Call(`_Travel_C_get_virtual_file_list`)
 }

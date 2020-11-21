@@ -207,7 +207,7 @@ SEXP altmmap_duplicate(SEXP x, Rboolean deep)
         new_altrep_info = old_altrep_info;
     }
 
-    Filesystem_file_info new_file_info = add_filesystem_file(old_file_data.coerced_type,
+    Filesystem_file_identifier new_file_info = add_filesystem_file(old_file_data.coerced_type,
                                                              old_file_data.index,
                                                              new_altrep_info);
     std::string &new_file_name = new_file_info.file_name;
@@ -218,7 +218,9 @@ SEXP altmmap_duplicate(SEXP x, Rboolean deep)
     new_file_data.write_cache = old_file_data.write_cache;
 
     //Duplicate the object
-    SEXP res = Travel_make_altmmap(new_file_info);
+    PROTECT_GUARD guard;
+    SEXP res = guard.protect(Travel_make_altmmap(new_file_info));
+    SHALLOW_DUPLICATE_ATTRIB(res, x);
     return res;
 }
 
@@ -251,7 +253,7 @@ SEXP altmmap_coerce(SEXP x, int type)
     }
 
     //Create a new virtual file
-    Filesystem_file_info new_file_info = add_filesystem_file(type,
+    Filesystem_file_identifier new_file_info = add_filesystem_file(type,
                                                              old_file_data.index,
                                                              new_altrep_info);
     std::string new_file_name = new_file_info.file_name;
@@ -260,19 +262,20 @@ SEXP altmmap_coerce(SEXP x, int type)
     //Convert the write_cach
     {
         Filesystem_cache_copier copier(new_file_data, old_file_data);
-        size_t old_cache_element_num = old_file_data.cache_size / old_file_data.unit_size;
-        for (const auto &i : old_file_data.write_cache)
+        std::vector<Region_info> region_offset = old_file_data.get_cache_region_offset();
+        for (const auto &i : region_offset)
         {
-            size_t cache_offset = old_file_data.get_cache_offset(i.first);
-            size_t cache_elt_offset = cache_offset / old_file_data.unit_size;
-            for (size_t j = 0; j < old_cache_element_num; j++)
+            size_t cache_elt_offset = i.start_offset / old_file_data.unit_size;
+            for (size_t j = 0; j < i.size/old_file_data.unit_size; j++)
             {
                 copier.copy(cache_elt_offset + j, cache_elt_offset + j);
             }
         }
     }
     //Make the new altrep
-    SEXP res = Travel_make_altmmap(new_file_info);
+    PROTECT_GUARD guard;
+    SEXP res = guard.protect(Travel_make_altmmap(new_file_info));
+    SHALLOW_DUPLICATE_ATTRIB(res, x);
     return res;
 }
 
@@ -337,7 +340,7 @@ SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
     }
 
     //Create a new virtual file
-    Filesystem_file_info new_file_info = add_filesystem_file(old_file_data.coerced_type,
+    Filesystem_file_identifier new_file_info = add_filesystem_file(old_file_data.coerced_type,
                                                              new_index,
                                                              new_altrep_info);
     std::string new_file_name = new_file_info.file_name;
@@ -346,13 +349,12 @@ SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
     //Copy cache
     {
         Filesystem_cache_copier copier(new_file_data, old_file_data);
-        for (const auto &i : old_file_data.write_cache)
+        std::vector<Region_info> region_offset = old_file_data.get_cache_region_offset();
+        for (const auto &i : region_offset)
         {
-            size_t cache_start_offset = old_file_data.get_cache_offset(i.first);
+            size_t cache_start_offset = i.start_offset;
             size_t cache_start_elt = cache_start_offset / old_file_data.unit_size;
-            size_t cache_size = get_file_read_size(old_file_data.file_size,
-                                                   cache_start_offset,
-                                                   old_file_data.cache_size);
+            size_t cache_size = i.size;
             size_t cache_length = cache_size / old_file_data.unit_size;
             //This mighe be slow, but it should work
             for (size_t j = 0; j <= cache_length; j++)

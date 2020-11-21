@@ -113,6 +113,18 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// C_coerce
+SEXP C_coerce(SEXP x, int type);
+RcppExport SEXP _Travel_C_coerce(SEXP xSEXP, SEXP typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_coerce(x, type));
+    return rcpp_result_gen;
+END_RCPP
+}
 // C_get_virtual_file_list
 Rcpp::DataFrame C_get_virtual_file_list();
 RcppExport SEXP _Travel_C_get_virtual_file_list() {
@@ -457,6 +469,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_get_file_path", (DL_FUNC) &_Travel_C_get_file_path, 1},
     {"_Travel_C_get_altmmap_cache", (DL_FUNC) &_Travel_C_get_altmmap_cache, 1},
     {"_Travel_C_print_cache", (DL_FUNC) &_Travel_C_print_cache, 2},
+    {"_Travel_C_coerce", (DL_FUNC) &_Travel_C_coerce, 2},
     {"_Travel_C_get_virtual_file_list", (DL_FUNC) &_Travel_C_get_virtual_file_list, 0},
     {"_Travel_run_filesystem_thread_func", (DL_FUNC) &_Travel_run_filesystem_thread_func, 0},
     {"_Travel_C_run_filesystem_thread", (DL_FUNC) &_Travel_C_run_filesystem_thread, 0},

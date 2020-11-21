@@ -52,6 +52,23 @@ Cache_block &Filesystem_file_data::get_cache_block(size_t cache_id)
 {
     return write_cache.at(cache_id);
 }
+
+std::vector<Region_info> Filesystem_file_data::get_cache_region_offset()
+{
+    std::vector<Region_info> region_offset;
+    region_offset.reserve(write_cache.size());
+    for (const auto &i : write_cache)
+    {
+        Region_info info;
+        info.start_offset = get_cache_offset(i.first);
+        info.size = get_file_read_size(file_size,
+                                       info.start_offset,
+                                       i.second.get_size());
+        info.end_offset = info.start_offset + info.size;
+        region_offset.push_back(info);
+    }
+    return region_offset;
+}
 Exported_file_data Filesystem_file_data::serialize()
 {
     Exported_file_data data;

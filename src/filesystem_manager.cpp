@@ -16,7 +16,7 @@ double_key_map<inode_type, std::string, Filesystem_file_data> file_list;
 
 
 
-Filesystem_file_info make_file_info(std::string& file_name, inode_type& inode){
+Filesystem_file_identifier make_file_info(std::string& file_name, inode_type& inode){
     std::string file_full_path = build_path(get_mountpoint(), file_name);
     return {file_full_path, file_name, inode};
 }
@@ -26,7 +26,7 @@ Filesystem_file_info make_file_info(std::string& file_name, inode_type& inode){
 Insert or delete files from the filesystem
 ==========================================================================
 */
-Filesystem_file_info add_filesystem_file(const int type,
+Filesystem_file_identifier add_filesystem_file(const int type,
                                          const Subset_index &index,
                                          const Travel_altrep_info &altrep_info,
                                          const char *name)
@@ -39,7 +39,7 @@ Filesystem_file_info add_filesystem_file(const int type,
     file_name = std::string(name);
   Filesystem_file_data file_data(type, index, altrep_info);
   file_list.insert(file_inode, file_name, file_data);
-  Filesystem_file_info file_info = make_file_info(file_name, file_inode);
+  Filesystem_file_identifier file_info = make_file_info(file_name, file_inode);
   return file_info;
 }
 std::string get_filesystem_file_path(std::string file_name){

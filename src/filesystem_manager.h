@@ -7,7 +7,7 @@
 /*
 A struct that holds File name, full path and inode number
 */
-struct Filesystem_file_info
+struct Filesystem_file_identifier
 {
     std::string file_full_path;
     std::string file_name;
@@ -17,7 +17,7 @@ struct Filesystem_file_info
 /*
 Manage virtual files
 */
-Filesystem_file_info add_filesystem_file(const int type,
+Filesystem_file_identifier add_filesystem_file(const int type,
                                          const Subset_index &index,
                                          const Travel_altrep_info &altrep_info,
                                          const char *name = NULL);

@@ -1,6 +1,7 @@
 #ifndef HEADER_FILESYSTEM_FILE_DATA
 #define HEADER_FILESYSTEM_FILE_DATA
 #include <map>
+#include <vector>
 #include "class_Cache_block.h"
 #include "class_Subset_index.h"
 #include "Travel_package_types.h"
@@ -13,6 +14,12 @@ struct Exported_file_data{
     size_t cache_size;
     int coerced_type;
     Subset_index index;
+};
+
+struct Region_info{
+    size_t start_offset;
+    size_t end_offset;
+    size_t size;
 };
 
 
@@ -39,6 +46,8 @@ public:
     size_t get_cache_size(size_t cache_id);
     bool has_cache_id(size_t cache_id);
     Cache_block& get_cache_block(size_t cache_id);
+    //the start offset and length
+    std::vector<Region_info> get_cache_region_offset();
     Exported_file_data serialize();
 public:
     Travel_altrep_info altrep_info;

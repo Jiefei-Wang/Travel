@@ -142,3 +142,8 @@ void C_print_cache(SEXP x, size_t i){
         }
     }
 }
+
+// [[Rcpp::export]]
+SEXP C_coerce(SEXP x, int type){
+    return Rf_coerceVector(x,type);
+}

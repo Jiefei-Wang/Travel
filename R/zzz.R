@@ -3,7 +3,8 @@
 NULL
 
 .onLoad<- function(libname, pkgname){
-    if(Sys.getenv("DEBUG_TRAVEL_PACKAGE")==""){
+    if(Sys.getenv("DEBUG_TRAVEL_PACKAGE")!="T"){
+        set_verbose(FALSE)
         deploy_filesystem()
     }else{
         C_set_debug_print(TRUE)

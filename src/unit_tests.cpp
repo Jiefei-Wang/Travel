@@ -213,7 +213,7 @@ void test_read_write_functions_internal(
     altrep_info.type = INTSXP;
     altrep_info.length = length;
     altrep_info.operations.get_region = read_int_arithmetic_sequence;
-    Filesystem_file_info file_info = add_filesystem_file(type, index, altrep_info);
+    Filesystem_file_identifier file_info = add_filesystem_file(type, index, altrep_info);
     Filesystem_file_data &file_data = get_filesystem_file_data(file_info.file_inode);
     uint8_t &type_size = file_data.unit_size;
 
