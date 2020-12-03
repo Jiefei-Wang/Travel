@@ -12,9 +12,10 @@ Filesystem_file_data::Filesystem_file_data(int coerced_type,
     {
         Rf_error("Unspecified vector type!\n");
     }
-    if (altrep_info.operations.get_region == NULL)
+    if (altrep_info.operations.get_region == NULL &&
+        altrep_info.operations.read_blocks == NULL)
     {
-        Rf_error("The function <get_region> is NULL!\n");
+        Rf_error("The function <get_region> and <read_blocks> are NULL!\n");
     }
     if (altrep_info.operations.serialize != R_NilValue &&
         altrep_info.operations.unserialize == R_NilValue)

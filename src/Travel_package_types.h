@@ -14,10 +14,10 @@
 
 struct Travel_altrep_info;
 /*
-Function that reads the data from an ALTREP vector(mandatory function)
+Function that reads the data from an ALTREP vector
 
 this function do not need to do the out-of-bound check.
-It will read a chunk of the data from the vector at each call.
+It reads a chunk of the data from the vector at each call.
 Note that the offset is the element offset of the vector, not 
 the byte offset. The same rule applies to length.
 
@@ -25,10 +25,30 @@ Args:
   altrep_info: The altrep info
   buffer: The buffer where the data will be written to
   offset: A 0-based starting offset(index) of the vector.
-  length: The length of the data.
+  length: The length of the read.
 */
 typedef size_t (*Travel_get_region)(const Travel_altrep_info *altrep_info, void *buffer,
                                     size_t offset, size_t length);
+
+/*
+Function that reads the data from an ALTREP vector
+
+this function do not need to do the out-of-bound check.
+It reads multiple blocks of the data from the vector.
+Note that the offset is the element offset of the vector, not 
+the byte offset. The same rule applies to length, read_stride and block_length.
+
+Args: 
+  altrep_info: The altrep info
+  buffer: The buffer where the data will be written to
+  offset: A 0-based starting offset(index) of the vector
+  length: The total length of the read
+  stride: The number of elements between the starting offsets of two adjacent blocks
+  block_length: the read length for each block
+*/
+typedef size_t (*Travel_read_blocks)(const Travel_altrep_info *altrep_info, void *buffer,
+                                    size_t offset, size_t length, size_t stride, size_t block_length);
+
 /*
 Function that set the data for an ALTREP vector(optional function)
 
@@ -48,6 +68,7 @@ Notes:
 */
 typedef bool (*Travel_set_region)(const Travel_altrep_info *altrep_info, const void *buffer,
                                   size_t offset, size_t length);
+
 
 //Get the size of the private data of an ALTREP(optional function)
 typedef size_t (*Travel_get_private_size)(const Travel_altrep_info *altrep_info);
@@ -126,8 +147,12 @@ typedef SEXP Travel_unserialize;
 A collection of functions to do the vector operations
 
 members:
-  get_region: Mandatory, function to get a region data of the R vector
-  set_region: Optional, function to set a region data of the R vector
+  get_region: Function to get a region data in the R vector. 
+  Mandatory if `read_blocks` is undefined. 
+  read_blocks: Function to read multiple blocks of the data in the R vector. 
+  Mandatory if `get_region` is undefined. 
+  set_region: Optional, function to set a region data of the R vector,
+  you must provide the duplicate function to make the setter works.
   get_private_size: Optional, count the size of the private data
   duplicate: Optional, duplicate an altrep info
   extract_subset: Optional, extract subset from ALTREP
@@ -139,6 +164,7 @@ members:
 struct Travel_altrep_operations
 {
   Travel_get_region get_region = NULL;
+  Travel_read_blocks read_blocks = NULL;
   Travel_set_region set_region = NULL;
   Travel_get_private_size get_private_size = NULL;
   Travel_extract_subset extract_subset = NULL;

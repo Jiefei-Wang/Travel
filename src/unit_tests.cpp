@@ -329,13 +329,13 @@ void C_test_read_write_functions_with_coercion(
 
 // [[Rcpp::export]]
 void C_test_read_write_functions_with_coercion_and_subset(
-    size_t length, size_t start, size_t step, size_t block_length,
+    size_t length, size_t start, size_t stride, size_t block_length,
     Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
     Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
 {
-    Subset_index index(Subset_index::infer_subset_length(length,start,step, block_length));
+    Subset_index index(Subset_index::infer_subset_length(length,start,stride, block_length));
     index.start = start;
-    index.step = step;
+    index.stride = stride;
     index.block_length = block_length;
     test_read_write_functions_internal(
         REALSXP, length, index,

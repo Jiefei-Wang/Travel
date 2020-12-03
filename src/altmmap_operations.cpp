@@ -95,11 +95,11 @@ Rboolean altmmap_Inspect(SEXP x, int pre, int deep, int pvec,
     Rprintf("\n");
     
     Rprintf("[Index info]\n");
-    Rprintf("   Length: %llu, start: %llu, block length: %llu, step:%llu\n",
+    Rprintf("   Length: %llu, start: %llu, block length: %llu, stride:%llu\n",
     (uint64_t)file_data.index.length,
     (uint64_t)file_data.index.start,
     (uint64_t)file_data.index.block_length,
-    (uint64_t)file_data.index.step);
+    (uint64_t)file_data.index.stride);
 
     Rprintf("[Defined operations]\n");
     if (file_data.altrep_info.operations.get_region != 0)
@@ -220,7 +220,7 @@ SEXP altmmap_duplicate(SEXP x, Rboolean deep)
     //Duplicate the object
     PROTECT_GUARD guard;
     SEXP res = guard.protect(Travel_make_altmmap(new_file_info));
-    SHALLOW_DUPLICATE_ATTRIB(res, x);
+    //SHALLOW_DUPLICATE_ATTRIB(res, x);
     return res;
 }
 
@@ -275,7 +275,7 @@ SEXP altmmap_coerce(SEXP x, int type)
     //Make the new altrep
     PROTECT_GUARD guard;
     SEXP res = guard.protect(Travel_make_altmmap(new_file_info));
-    SHALLOW_DUPLICATE_ATTRIB(res, x);
+    //SHALLOW_DUPLICATE_ATTRIB(res, x);
     return res;
 }
 
@@ -299,9 +299,9 @@ SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
     {
         altrep_print("Using the customized subset method\n");
         //If the old object has the subset function defined,
-        //its offset and step should be 0 and 1 respectively
+        //its offset and stride should be 0 and 1 respectively
         claim(old_file_data.index.start == 0);
-        claim(old_file_data.index.step == 1);
+        claim(old_file_data.index.stride == 1);
         claim(old_file_data.index.block_length == 1);
         new_altrep_info = old_altrep_info.operations.extract_subset(&old_file_data.altrep_info, idx);
     }

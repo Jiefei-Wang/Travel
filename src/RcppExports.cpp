@@ -372,19 +372,19 @@ BEGIN_RCPP
 END_RCPP
 }
 // C_test_read_write_functions_with_coercion_and_subset
-void C_test_read_write_functions_with_coercion_and_subset(size_t length, size_t start, size_t step, size_t block_length, Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length, Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length);
-RcppExport SEXP _Travel_C_test_read_write_functions_with_coercion_and_subset(SEXP lengthSEXP, SEXP startSEXP, SEXP stepSEXP, SEXP block_lengthSEXP, SEXP write_startsSEXP, SEXP write_lengthSEXP, SEXP read_startsSEXP, SEXP read_lengthSEXP) {
+void C_test_read_write_functions_with_coercion_and_subset(size_t length, size_t start, size_t stride, size_t block_length, Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length, Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length);
+RcppExport SEXP _Travel_C_test_read_write_functions_with_coercion_and_subset(SEXP lengthSEXP, SEXP startSEXP, SEXP strideSEXP, SEXP block_lengthSEXP, SEXP write_startsSEXP, SEXP write_lengthSEXP, SEXP read_startsSEXP, SEXP read_lengthSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< size_t >::type length(lengthSEXP);
     Rcpp::traits::input_parameter< size_t >::type start(startSEXP);
-    Rcpp::traits::input_parameter< size_t >::type step(stepSEXP);
+    Rcpp::traits::input_parameter< size_t >::type stride(strideSEXP);
     Rcpp::traits::input_parameter< size_t >::type block_length(block_lengthSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type write_starts(write_startsSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type write_length(write_lengthSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type read_starts(read_startsSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type read_length(read_lengthSEXP);
-    C_test_read_write_functions_with_coercion_and_subset(length, start, step, block_length, write_starts, write_length, read_starts, read_length);
+    C_test_read_write_functions_with_coercion_and_subset(length, start, stride, block_length, write_starts, write_length, read_starts, read_length);
     return R_NilValue;
 END_RCPP
 }

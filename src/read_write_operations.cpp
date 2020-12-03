@@ -9,9 +9,18 @@
                      read function utilities
 =========================================================================================
 */
-static size_t read_local_source(Travel_altrep_info *altrep_info, char *buffer, size_t offset, size_t length)
+
+static size_t read_contiguous_data(Travel_altrep_info *altrep_info, char *buffer, size_t offset, size_t length)
 {
-    size_t true_read_length = altrep_info->operations.get_region(altrep_info, buffer, offset, length);
+    size_t true_read_length;
+    if (altrep_info->operations.get_region != NULL)
+    {
+        true_read_length = altrep_info->operations.get_region(altrep_info, buffer, offset, length);
+    }
+    else
+    {
+        true_read_length = altrep_info->operations.read_blocks(altrep_info, buffer, offset, length, 1, 1);
+    }
     if (length != true_read_length)
     {
         filesystem_log("Warning in read_local_source: read length mismatch, "
@@ -20,10 +29,46 @@ static size_t read_local_source(Travel_altrep_info *altrep_info, char *buffer, s
     }
     return true_read_length;
 }
-static size_t read_source(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t length)
+static size_t read_data_by_block(Travel_altrep_info *altrep_info, char *buffer, size_t offset, size_t length,
+                                 size_t stride, size_t block_length)
 {
-    return read_local_source(&file_data.altrep_info, buffer, offset, length);
+    size_t buffer_read_length;
+    if (altrep_info->operations.read_blocks != NULL)
+    {
+        buffer_read_length = altrep_info->operations.read_blocks(altrep_info, buffer, offset, length,
+                                                                 stride, block_length);
+        if (length != buffer_read_length)
+        {
+            filesystem_log("Warning in read_data_by_block: read length mismatch, "
+                           "offset: %llu, expected: %llu, actual: %llu\n",
+                           (uint64_t)offset, (uint64_t)length, (uint64_t)buffer_read_length);
+        }
+    }
+    else
+    {
+        //We use <get_region> function to simulate the read-by-block function
+        size_t read_block = 0;
+        buffer_read_length = 0;
+        size_t type_size = get_type_size(altrep_info->type);
+        do
+        {
+            size_t expect_read_length = std::min(block_length, length - buffer_read_length);
+            size_t true_read_length = altrep_info->operations.get_region(altrep_info,
+                                                                         buffer + read_block * block_length * type_size,
+                                                                         offset + read_block * stride,
+                                                                         expect_read_length);
+            buffer_read_length = buffer_read_length + true_read_length;
+            if (true_read_length != expect_read_length)
+            {
+                break;
+            }
+            read_block++;
+        } while (buffer_read_length < length);
+    }
+
+    return buffer_read_length;
 }
+
 /*
 map from the index of the vector to the index of the source vector. 
 the unit of offset and length are the element of the vector
@@ -36,28 +81,38 @@ static size_t read_source_with_subset(Filesystem_file_data &file_data, char *buf
     //find out the start index of the offset in the source file
     if (subset_index.is_consecutive())
     {
-        buffer_read_length = read_source(file_data, buffer, subset_index.get_source_index(offset), length);
+        buffer_read_length = read_contiguous_data(&file_data.altrep_info, buffer, subset_index.get_source_index(offset), length);
     }
     else
     {
-        //If subset_index is not consecutive, we read it block by block
-        size_t &block_length = file_data.index.block_length;
-        size_t type_size = get_type_size(file_data.altrep_info.type);
-        do
+        Subset_index &index = file_data.index;
+        size_t within_block_offset = offset % index.block_length;
+        size_t expect_read_length;
+        if (within_block_offset != 0)
         {
-            size_t current_read_offset = offset + buffer_read_length;
-            size_t within_block_offset = current_read_offset % block_length;
-            size_t expect_read_length = std::min(block_length - within_block_offset, length - buffer_read_length);
-            size_t true_read_length = read_source(file_data,
-                                                  buffer + buffer_read_length * type_size,
-                                                  subset_index.get_source_index(current_read_offset),
-                                                  expect_read_length);
-            if (true_read_length != expect_read_length)
-            {
-                break;
-            }
+            expect_read_length = std::min(index.block_length - within_block_offset, length - buffer_read_length);
+            size_t true_read_length =
+                read_contiguous_data(&file_data.altrep_info, buffer, subset_index.get_source_index(offset), expect_read_length);
             buffer_read_length = buffer_read_length + true_read_length;
-        } while (buffer_read_length < length);
+            if (expect_read_length != true_read_length)
+            {
+                return buffer_read_length;
+            }
+            if (buffer_read_length == length)
+            {
+                return buffer_read_length;
+            }
+        }
+        else
+        {
+            expect_read_length = 0;
+        }
+        size_t source_offset = subset_index.get_source_index(offset + expect_read_length);
+        size_t length_left = length - expect_read_length;
+        buffer = buffer + expect_read_length * get_type_size(file_data.altrep_info.type);
+        size_t true_read_length = read_data_by_block(&file_data.altrep_info, buffer,
+                                                     source_offset, length_left, index.stride, index.block_length);
+        buffer_read_length = buffer_read_length + true_read_length;
     }
     return buffer_read_length;
 }
@@ -139,8 +194,8 @@ static size_t read_with_alignment(Filesystem_file_data &file_data, char *buffer,
         claim(buffer_read_size + (length + 1) * unit_size > size);
 
         size_t read_length = read_source_with_coercion(file_data,
-                                  buffer + buffer_read_size,
-                                  offset_begin, length);
+                                                       buffer + buffer_read_size,
+                                                       offset_begin, length);
         claim(read_length <= length);
         buffer_read_size = buffer_read_size + read_length * unit_size;
         if (read_length < length)
@@ -236,8 +291,9 @@ static size_t read_data_with_cache(Filesystem_file_data &file_data, char *buffer
                      write function utilities
 =========================================================================================
 */
-static size_t write_to_source(Filesystem_file_data &file_data, const char *buffer, size_t offset, size_t size){
-    Travel_set_region& set_region = file_data.altrep_info.operations.set_region;
+static size_t write_to_source(Filesystem_file_data &file_data, const char *buffer, size_t offset, size_t size)
+{
+    Travel_set_region &set_region = file_data.altrep_info.operations.set_region;
     uint8_t &unit_size = file_data.unit_size;
     size_t misalign_begin = offset % unit_size;
     size_t misalign_end = (offset + size) % unit_size;
@@ -257,7 +313,7 @@ static size_t write_to_source(Filesystem_file_data &file_data, const char *buffe
     if (misalign_begin != 0)
     {
         ptr.reset(new char[unit_size]);
-        size_t read_size =  general_read_func(file_data, ptr.get(), elt_offset_begin*unit_size, unit_size);
+        size_t read_size = general_read_func(file_data, ptr.get(), elt_offset_begin * unit_size, unit_size);
         if (read_size != unit_size)
         {
             return buffer_write_size;
@@ -286,8 +342,8 @@ static size_t write_to_source(Filesystem_file_data &file_data, const char *buffe
         claim(buffer_write_size + (length + 1) * unit_size > size);
 
         size_t write_length = set_region(&file_data.altrep_info,
-                                  buffer + buffer_write_size,
-                                  elt_offset_begin, length);
+                                         buffer + buffer_write_size,
+                                         elt_offset_begin, length);
         claim(write_length <= length);
         buffer_write_size = buffer_write_size + write_length * unit_size;
         if (write_length < length)
@@ -299,7 +355,7 @@ static size_t write_to_source(Filesystem_file_data &file_data, const char *buffe
         if (ptr == nullptr)
             ptr.reset(new char[unit_size]);
 
-        size_t read_size =  general_read_func(file_data, ptr.get(), elt_offset_end*unit_size, misalign_end);
+        size_t read_size = general_read_func(file_data, ptr.get(), elt_offset_end * unit_size, misalign_end);
         if (read_size != misalign_end)
         {
             return buffer_write_size;
@@ -316,7 +372,7 @@ static size_t write_to_source(Filesystem_file_data &file_data, const char *buffe
     return buffer_write_size;
 }
 
-static size_t write_to_cache(Filesystem_file_data &file_data, const char * buffer, size_t offset, size_t size)
+static size_t write_to_cache(Filesystem_file_data &file_data, const char *buffer, size_t offset, size_t size)
 {
     claim(offset + size <= file_data.file_size);
     if (size == 0)
@@ -362,21 +418,21 @@ static size_t write_to_cache(Filesystem_file_data &file_data, const char * buffe
 //An utility to get the true read size that will not read out-of-bound
 size_t get_file_read_size(size_t file_size, size_t offset, size_t size)
 {
-	if (offset + size > file_size)
-	{
-		if (offset >= file_size)
-		{
-			return 0;
-		}
-		else
-		{
-			return file_size - offset;
-		}
-	}
-	else
-	{
-		return size;
-	}
+    if (offset + size > file_size)
+    {
+        if (offset >= file_size)
+        {
+            return 0;
+        }
+        else
+        {
+            return file_size - offset;
+        }
+    }
+    else
+    {
+        return size;
+    }
 }
 void *load_cache(Filesystem_file_data &file_data, size_t cache_id)
 {
@@ -409,14 +465,15 @@ size_t general_read_func(Filesystem_file_data &file_data, void *buffer, size_t o
     return read_data_with_cache(file_data, (char *)buffer, offset, size);
 }
 
-
 size_t general_write_func(Filesystem_file_data &file_data, const void *buffer, size_t offset, size_t size)
 {
     size = std::min(zero_bounded_minus(file_data.file_size, offset), size);
-    if (file_data.altrep_info.operations.set_region == NULL|| file_data.coerced_type!=file_data.altrep_info.type)
+    if (file_data.altrep_info.operations.set_region == NULL || file_data.coerced_type != file_data.altrep_info.type)
     {
         return write_to_cache(file_data, (const char *)buffer, offset, size);
-    }else{
+    }
+    else
+    {
         return write_to_source(file_data, (const char *)buffer, offset, size);
     }
 }

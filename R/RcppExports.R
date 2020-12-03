@@ -137,8 +137,8 @@ C_test_read_write_functions_with_coercion <- function(length, write_starts, writ
     invisible(.Call(`_Travel_C_test_read_write_functions_with_coercion`, length, write_starts, write_length, read_starts, read_length))
 }
 
-C_test_read_write_functions_with_coercion_and_subset <- function(length, start, step, block_length, write_starts, write_length, read_starts, read_length) {
-    invisible(.Call(`_Travel_C_test_read_write_functions_with_coercion_and_subset`, length, start, step, block_length, write_starts, write_length, read_starts, read_length))
+C_test_read_write_functions_with_coercion_and_subset <- function(length, start, stride, block_length, write_starts, write_length, read_starts, read_length) {
+    invisible(.Call(`_Travel_C_test_read_write_functions_with_coercion_and_subset`, length, start, stride, block_length, write_starts, write_length, read_starts, read_length))
 }
 
 C_make_arithmetic_sequence_altrep <- function(n) {

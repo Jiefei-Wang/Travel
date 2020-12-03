@@ -12,11 +12,9 @@ Cache_block::Cache_block(size_t size) : size(size)
   ptr = new char[size];
   counter = new size_t;
   *counter = 1;
-  //Rprintf("Initializer, %llu\n", *counter);
 }
 Cache_block::~Cache_block()
 {
-  //Rprintf("destructor, %llu\n", *counter);
   if (!is_shared())
   {
     delete[] ptr;

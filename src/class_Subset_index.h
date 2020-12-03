@@ -8,13 +8,13 @@
 class Subset_index
 {
 public:
-    Subset_index(size_t length=0, size_t start = 0, size_t step = 1, size_t block_length = 1);
+    Subset_index(size_t length=0, size_t start = 0, size_t stride = 1, size_t block_length = 1);
     //The total length of the subset
     size_t length;
     //Start of the subset
     size_t start;
     //the offset between each block from the start to start
-    size_t step;
+    size_t stride;
     //The length of each block
     size_t block_length;
     //Is the subset index consecutive?
@@ -36,8 +36,8 @@ public:
     //If successful, the subset_index object will be returned by new_index
     static bool to_subset_index(SEXP idx, Subset_index &new_index, Subset_index &old_index);
 
-    //Infer the subset length given the source length and start, step, block length information
-    static size_t infer_subset_length(size_t source_length, size_t start, size_t step, size_t block_length);
+    //Infer the subset length given the source length and start, stride, block length information
+    static size_t infer_subset_length(size_t source_length, size_t start, size_t stride, size_t block_length);
 };
 
 #endif
