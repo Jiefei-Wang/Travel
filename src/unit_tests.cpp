@@ -87,7 +87,7 @@ void C_test_Subset_index_conversion(){
     Rcpp::NumericVector idx1=Rcpp::NumericVector::create(1,2,3,4,6,7,8,9,11,13,15,17,18);
     Subset_index ref_index1(0,100);
     Subset_index index1 = Subset_index::to_subset_index(idx1,ref_index1);
-    throw_if_not(index1.total_length !=(size_t)idx1.length());
+    throw_if_not(index1.total_length ==(size_t)idx1.length());
     throw_if_not(index1.starts[0]==0);
     throw_if_not(index1.starts[1]==5);
     throw_if_not(index1.starts[2]==10);
@@ -112,7 +112,7 @@ void C_test_Subset_index_conversion(){
     Rcpp::NumericVector idx2=Rcpp::NumericVector::create(6,7,8,9,1,2,3,4);
     Subset_index ref_index2(0,100);
     Subset_index index2 = Subset_index::to_subset_index(idx2,ref_index2);
-    throw_if_not(index2.total_length !=(size_t)idx2.length());
+    throw_if_not(index2.total_length ==(size_t)idx2.length());
     throw_if_not(index2.starts[0]==5);
     throw_if_not(index2.starts[1]==0);
     throw_if_not(index2.lengths[0]==4);
@@ -128,7 +128,7 @@ void C_test_Subset_index_conversion(){
     //c(7,8,1,3,4)
     Rcpp::NumericVector idx3=Rcpp::NumericVector::create(2,3,5,7,8);
     Subset_index index3 = Subset_index::to_subset_index(idx2,ref_index1);
-    throw_if_not(index3.total_length !=(size_t)idx3.length());
+    throw_if_not(index3.total_length ==(size_t)idx3.length());
     throw_if_not(index3.starts[0]==6);
     throw_if_not(index3.starts[1]==0);
     throw_if_not(index3.starts[2]==3);
