@@ -97,6 +97,7 @@ bool Subset_index::contains_index(size_t source_index) const
 }
 
 #define GET_INDEX(x, i) (TYPEOF(x) == INTSXP ? INTEGER_ELT(x, i) : (size_t)REAL_ELT(x, i) - 1)
+#define GET_SRC_INDEX(idx, idx_idx, i) idx.get_source_index(GET_INDEX(idx_idx, i))
 //Turn idx to the Subset_index object
 Subset_index Subset_index::to_subset_index(SEXP idx, Subset_index &old_index)
 {
@@ -105,14 +106,14 @@ Subset_index Subset_index::to_subset_index(SEXP idx, Subset_index &old_index)
     size_t i = 0;
     while (i < index_length)
     {
-        size_t start = GET_INDEX(idx, i);
+        size_t start = GET_SRC_INDEX(old_index, idx, i);
         //If the start is the last element
         if (i + 1 == index_length)
         {
             index.push_back(start, 1, 1);
             break;
         }
-        size_t next_index = GET_INDEX(idx, i + 1);
+        size_t next_index = GET_SRC_INDEX(old_index, idx, i + 1);
         if (next_index < start)
         {
             index.push_back(start, 1, 1);
@@ -124,8 +125,10 @@ Subset_index Subset_index::to_subset_index(SEXP idx, Subset_index &old_index)
         size_t next_i = i + 2;
         while (next_i < index_length)
         {
-            if (GET_INDEX(idx, next_i) < GET_INDEX(idx, next_i - 1) ||
-                GET_INDEX(idx, next_i) - GET_INDEX(idx, next_i - 1) != stride)
+            size_t cur_src_idx = GET_SRC_INDEX(old_index, idx, next_i);
+            size_t pre_src_idx = GET_SRC_INDEX(old_index, idx, next_i - 1);
+            if (cur_src_idx < pre_src_idx ||
+                cur_src_idx - pre_src_idx != stride)
             {
                 break;
             }

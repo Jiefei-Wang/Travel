@@ -104,7 +104,7 @@ size_t Filesystem_cache_index_iterator::get_index()
 }
 size_t Filesystem_cache_index_iterator::get_index_in_source()
 {
-    file_data.index.get_source_index(get_index());
+    return file_data.index.get_source_index(get_index());
 }
 bool Filesystem_cache_index_iterator::is_final()
 {

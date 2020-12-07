@@ -35,17 +35,28 @@ void C_test_Subset_index_basic(){
     throw_if_not(index.total_length==total_length);
     throw_if_not(index.is_consecutive());
     throw_if_not(index.partial_lengths.size()==1);
+    throw_if_not(index.starts[0]==1);
+    throw_if_not(index.lengths[0]==20);
+    throw_if_not(index.strides[0]==1);
     throw_if_not(index.partial_lengths[0]==0);
 
     //Merge an index with overlap
     start = 7;
     length = 6;
     stride = 1;
+    total_length += length;
     index.push_back(start, length,stride);
     throw_if_not(index.total_length==total_length);
-    throw_if_not(index.is_consecutive());
-    throw_if_not(index.partial_lengths.size()==1);
+    throw_if_not(!index.is_consecutive());
+    throw_if_not(index.partial_lengths.size()==2);
+    throw_if_not(index.starts[0]==1);
+    throw_if_not(index.lengths[0]==20);
+    throw_if_not(index.strides[0]==1);
     throw_if_not(index.partial_lengths[0]==0);
+    throw_if_not(index.starts[1]==7);
+    throw_if_not(index.lengths[1]==6);
+    throw_if_not(index.strides[1]==1);
+    throw_if_not(index.partial_lengths[1]==20);
 
     //add a non-consecutive index
     start = 31;
@@ -55,15 +66,19 @@ void C_test_Subset_index_basic(){
     index.push_back(start, length,stride);
     throw_if_not(index.total_length==total_length);
     throw_if_not(!index.is_consecutive());
-    throw_if_not(index.partial_lengths.size()==2);
+    throw_if_not(index.partial_lengths.size()==3);
     throw_if_not(index.starts[0]==1);
-    throw_if_not(index.starts[1]==31);
     throw_if_not(index.lengths[0]==20);
-    throw_if_not(index.lengths[1]==10);
     throw_if_not(index.strides[0]==1);
-    throw_if_not(index.strides[1]==2);
     throw_if_not(index.partial_lengths[0]==0);
+    throw_if_not(index.starts[1]==7);
+    throw_if_not(index.lengths[1]==6);
+    throw_if_not(index.strides[1]==1);
     throw_if_not(index.partial_lengths[1]==20);
+    throw_if_not(index.starts[2]==31);
+    throw_if_not(index.lengths[2]==10);
+    throw_if_not(index.strides[2]==2);
+    throw_if_not(index.partial_lengths[2]==26);
 }
 
 
