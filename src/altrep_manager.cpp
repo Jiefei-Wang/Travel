@@ -72,7 +72,7 @@ SEXP Travel_make_altmmap(Filesystem_file_identifier &file_info)
 
 SEXP Travel_make_altmmap(Travel_altrep_info &altrep_info)
 {
-    Subset_index index(altrep_info.length);
+    Subset_index index(0,altrep_info.length);
     //Create a virtual file
     Filesystem_file_identifier file_info = add_filesystem_file(altrep_info.type, index, altrep_info);
     return Travel_make_altmmap(file_info);

@@ -24,7 +24,7 @@ Filesystem_file_data::Filesystem_file_data(int coerced_type,
         this->altrep_info.operations.serialize = R_NilValue;
     }
     unit_size = get_type_size(coerced_type);
-    file_length = index.length;
+    file_length = index.total_length;
     file_size = file_length * unit_size;
     cache_size = CACHE_SIZE;
     claim(cache_size % unit_size == 0);
@@ -54,22 +54,6 @@ Cache_block &Filesystem_file_data::get_cache_block(size_t cache_id)
     return write_cache.at(cache_id);
 }
 
-std::vector<Region_info> Filesystem_file_data::get_cache_region_offset()
-{
-    std::vector<Region_info> region_offset;
-    region_offset.reserve(write_cache.size());
-    for (const auto &i : write_cache)
-    {
-        Region_info info;
-        info.start_offset = get_cache_offset(i.first);
-        info.size = get_file_read_size(file_size,
-                                       info.start_offset,
-                                       i.second.get_size());
-        info.end_offset = info.start_offset + info.size;
-        region_offset.push_back(info);
-    }
-    return region_offset;
-}
 Exported_file_data Filesystem_file_data::serialize()
 {
     Exported_file_data data;
@@ -81,4 +65,55 @@ Exported_file_data Filesystem_file_data::serialize()
     data.coerced_type = coerced_type;
     data.index = index;
     return data;
+}
+Filesystem_cache_index_iterator Filesystem_file_data::get_cache_iterator(){
+    return Filesystem_cache_index_iterator(*this);
+}
+/*
+==========================================================================
+Filesystem_cache_index_iterator
+==========================================================================
+*/
+
+Filesystem_cache_index_iterator::Filesystem_cache_index_iterator(Filesystem_file_data &file_data) : file_data(file_data)
+{
+    block_iter = file_data.write_cache.begin();
+    within_block_id = 0;
+    type_size = get_type_size(file_data.coerced_type);
+    compute_block_info();
+}
+Filesystem_cache_index_iterator &Filesystem_cache_index_iterator::operator++()
+{
+    throw_if_not(!is_final());
+    ++within_block_id;
+    if (within_block_id == block_length)
+    {
+        ++block_iter;
+        if (block_iter != file_data.write_cache.end())
+        {
+            within_block_id = 0;
+            compute_block_info();
+        }
+    }
+    return *this;
+}
+size_t Filesystem_cache_index_iterator::get_index()
+{
+    throw_if_not(!is_final());
+    return block_start_elt + within_block_id;
+}
+size_t Filesystem_cache_index_iterator::get_index_in_source()
+{
+    file_data.index.get_source_index(get_index());
+}
+bool Filesystem_cache_index_iterator::is_final()
+{
+    return block_iter == file_data.write_cache.end();
+}
+
+void Filesystem_cache_index_iterator::compute_block_info()
+{
+    throw_if_not(!is_final());
+    block_length = block_iter->second.get_size() / type_size;
+    block_start_elt = file_data.get_cache_offset(block_iter->first) / type_size;
 }

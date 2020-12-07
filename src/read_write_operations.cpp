@@ -10,16 +10,16 @@
 =========================================================================================
 */
 
-static size_t read_contiguous_data(Travel_altrep_info *altrep_info, char *buffer, size_t offset, size_t length)
+static size_t read_contiguous_data(Travel_altrep_info &altrep_info, char *buffer, size_t offset, size_t length)
 {
     size_t true_read_length;
-    if (altrep_info->operations.get_region != NULL)
+    if (altrep_info.operations.get_region != NULL)
     {
-        true_read_length = altrep_info->operations.get_region(altrep_info, buffer, offset, length);
+        true_read_length = altrep_info.operations.get_region(&altrep_info, buffer, offset, length);
     }
     else
     {
-        true_read_length = altrep_info->operations.read_blocks(altrep_info, buffer, offset, length, 1, 1);
+        true_read_length = altrep_info.operations.read_blocks(&altrep_info, buffer, offset, length, 1);
     }
     if (length != true_read_length)
     {
@@ -29,41 +29,39 @@ static size_t read_contiguous_data(Travel_altrep_info *altrep_info, char *buffer
     }
     return true_read_length;
 }
-static size_t read_data_by_block(Travel_altrep_info *altrep_info, char *buffer, size_t offset, size_t length,
-                                 size_t stride, size_t block_length)
+
+static size_t read_data_by_block(Travel_altrep_info &altrep_info, char *buffer,
+                                 size_t offset, size_t length, size_t stride)
 {
-    size_t buffer_read_length;
-    if (altrep_info->operations.read_blocks != NULL)
+    size_t buffer_read_length = 0;
+    if (altrep_info.operations.read_blocks != NULL)
     {
-        buffer_read_length = altrep_info->operations.read_blocks(altrep_info, buffer, offset, length,
-                                                                 stride, block_length);
+        buffer_read_length = altrep_info.operations.read_blocks(&altrep_info, buffer,
+                                                                offset, length, stride);
         if (length != buffer_read_length)
         {
             filesystem_log("Warning in read_data_by_block: read length mismatch, "
-                           "offset: %llu, expected: %llu, actual: %llu\n",
-                           (uint64_t)offset, (uint64_t)length, (uint64_t)buffer_read_length);
+                           "expected: %llu, actual: %llu\n",
+                           (uint64_t)length, (uint64_t)buffer_read_length);
         }
     }
     else
     {
-        //We use <get_region> function to simulate the read-by-block function
-        size_t read_block = 0;
-        buffer_read_length = 0;
-        size_t type_size = get_type_size(altrep_info->type);
-        do
+        //We use <read_contiguous_data> function to mimic the <read_data_by_block> function
+        size_t type_size = get_type_size(altrep_info.type);
+        size_t buffer_read_length = 0;
+        for (size_t i = 0; i < length; i++)
         {
-            size_t expect_read_length = std::min(block_length, length - buffer_read_length);
-            size_t true_read_length = altrep_info->operations.get_region(altrep_info,
-                                                                         buffer + read_block * block_length * type_size,
-                                                                         offset + read_block * stride,
-                                                                         expect_read_length);
-            buffer_read_length = buffer_read_length + true_read_length;
-            if (true_read_length != expect_read_length)
+            size_t read_length = read_contiguous_data(altrep_info, buffer + i * type_size, offset + i * stride, 1);
+            if (read_length != 1)
             {
                 break;
             }
-            read_block++;
-        } while (buffer_read_length < length);
+            else
+            {
+                ++buffer_read_length;
+            }
+        }
     }
 
     return buffer_read_length;
@@ -81,38 +79,37 @@ static size_t read_source_with_subset(Filesystem_file_data &file_data, char *buf
     //find out the start index of the offset in the source file
     if (subset_index.is_consecutive())
     {
-        buffer_read_length = read_contiguous_data(&file_data.altrep_info, buffer, subset_index.get_source_index(offset), length);
+        buffer_read_length = read_contiguous_data(file_data.altrep_info, buffer, subset_index.get_source_index(offset), length);
     }
     else
     {
         Subset_index &index = file_data.index;
-        size_t within_block_offset = offset % index.block_length;
-        size_t expect_read_length;
-        if (within_block_offset != 0)
+        auto start_iter = std::lower_bound(index.partial_lengths.begin(), index.partial_lengths.end(), offset);
+        if (*start_iter != offset)
         {
-            expect_read_length = std::min(index.block_length - within_block_offset, length - buffer_read_length);
-            size_t true_read_length =
-                read_contiguous_data(&file_data.altrep_info, buffer, subset_index.get_source_index(offset), expect_read_length);
-            buffer_read_length = buffer_read_length + true_read_length;
-            if (expect_read_length != true_read_length)
-            {
-                return buffer_read_length;
-            }
-            if (buffer_read_length == length)
-            {
-                return buffer_read_length;
-            }
+            --start_iter;
         }
-        else
+        auto end_iter = std::lower_bound(index.partial_lengths.begin(), index.partial_lengths.end(), offset + length);
+        size_t start_subset_block_id = start_iter - index.partial_lengths.begin();
+        size_t n_offsets = end_iter - start_iter;
+        size_t cur_offset = offset;
+        size_t length_left = length;
+        for (size_t i = 0; i < n_offsets; i++)
         {
-            expect_read_length = 0;
+            size_t cur_subset_block_id = start_subset_block_id + i;
+            size_t cur_source_offset = subset_index.get_source_index(cur_offset);
+            size_t cur_stride = subset_index.strides[cur_subset_block_id];
+            size_t subset_block_length_left = subset_index.lengths[cur_subset_block_id] -
+                                              (cur_offset-subset_index.partial_lengths[cur_subset_block_id]);
+            size_t cur_length = std::min(subset_block_length_left, length_left);
+            size_t read_length = read_data_by_block(file_data.altrep_info, buffer, 
+                                                cur_source_offset, cur_length, cur_stride);
+            if(read_length!=cur_length){
+                break;
+            }
+            length_left = length_left - cur_length;
+            cur_offset = cur_offset + cur_length;
         }
-        size_t source_offset = subset_index.get_source_index(offset + expect_read_length);
-        size_t length_left = length - expect_read_length;
-        buffer = buffer + expect_read_length * get_type_size(file_data.altrep_info.type);
-        size_t true_read_length = read_data_by_block(&file_data.altrep_info, buffer,
-                                                     source_offset, length_left, index.stride, index.block_length);
-        buffer_read_length = buffer_read_length + true_read_length;
     }
     return buffer_read_length;
 }
@@ -137,7 +134,7 @@ static size_t read_source_with_coercion(Filesystem_file_data &file_data, char *b
     size_t required_buffer_size = length * std::max(file_unit_size, source_unit_size);
     coercion_buffer.reserve(required_buffer_size);
     size_t true_read_length = read_source_with_subset(file_data, coercion_buffer.get(), offset, length);
-    copy_memory(file_data.coerced_type, file_data.altrep_info.type,
+    covert_data(file_data.coerced_type, file_data.altrep_info.type,
                 buffer, coercion_buffer.get(), true_read_length);
     coercion_buffer.release();
     return true_read_length;
@@ -456,7 +453,7 @@ cache layer: read_data_with_cache
 source alignment layer: read_with_alignment
 coercion layer: read_source_with_coercion
 source offset layer: read_source_with_subset
-source layer: read_source
+source layer: read_contiguous_data/read_data_by_block
 */
 size_t general_read_func(Filesystem_file_data &file_data, void *buffer, size_t offset, size_t size)
 {

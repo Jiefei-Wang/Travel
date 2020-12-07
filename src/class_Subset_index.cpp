@@ -1,103 +1,223 @@
 #include <algorithm>
-#include "altrep_macros.h"
+#include <Rcpp.h>
 #include "class_Subset_index.h"
 #include "utils.h"
 
-Subset_index::Subset_index(size_t length, size_t start, size_t stride, size_t block_length) : length(length), start(start), stride(stride), block_length(block_length)
+Subset_index::Subset_index(size_t start, size_t length, size_t stride)
 {
+    push_back(start, length, stride);
 }
 
+void Subset_index::push_back(size_t start, size_t length, size_t stride)
+{
+    if (length == 0)
+        return;
+
+    if (starts.size() != 0 &&
+        strides.back() == stride &&
+        starts.back() + lengths.back() * strides.back() == start)
+    {
+        lengths.back() += length;
+    }
+    else
+    {
+        starts.push_back(start);
+        lengths.push_back(length);
+        strides.push_back(stride);
+        partial_lengths.push_back(total_length);
+    }
+    total_length += length;
+}
 bool Subset_index::is_consecutive() const
 {
-    return stride == block_length;
+    if (starts.size() == 0)
+        return true;
+    if (starts.size() > 1)
+        return false;
+
+    return strides[0] == 1;
 }
+size_t Subset_index::get_subset_block_offset(size_t subset_index) const
+{
+    throw_if_not(subset_index < total_length);
+    auto it = std::lower_bound(partial_lengths.begin(), partial_lengths.end(), subset_index);
+    if (it == partial_lengths.end() ||
+        subset_index < *it)
+    {
+        --it;
+    }
+    return it - partial_lengths.begin();
+}
+
 size_t Subset_index::get_source_index(size_t subset_index) const
 {
-    claim(subset_index < length);
-    size_t block_id = subset_index / block_length;
-    size_t within_block_offset = subset_index % block_length;
-    //the start offset of the block in the source
-    size_t source_block_offset = block_id * stride + start;
-    size_t source_index = source_block_offset + within_block_offset;
+    throw_if_not(subset_index < total_length);
+    size_t block_offset = get_subset_block_offset(subset_index);
+    size_t source_index = starts[block_offset] + strides[block_offset] * (subset_index - partial_lengths[block_offset]);
     return source_index;
 }
 
 size_t Subset_index::get_subset_index(size_t source_index) const
 {
-    size_t block_id = (source_index - start) / stride;
-    size_t within_block_offset = (source_index - start) % stride;
-    claim(within_block_offset < block_length);
-    size_t subset_index = block_id * block_length + within_block_offset;
-    claim(subset_index < length);
+    throw_if(starts.size() == 0);
+    auto it = std::upper_bound(starts.begin(), starts.end(), source_index);
+    throw_if(it == starts.begin());
+    --it;
+    size_t vec_idx = it - starts.begin();
+    size_t subset_index = (source_index - starts[vec_idx]) / strides[vec_idx] + partial_lengths[vec_idx];
     return subset_index;
 }
 
 bool Subset_index::contains_index(size_t source_index) const
 {
-    if (source_index < start)
+    if (starts.size() == 0)
     {
         return false;
     }
-    size_t block_id = (source_index - start) / stride;
-    size_t within_block_offset = (source_index - start) % stride;
-    if (within_block_offset >= block_length)
+    auto it = std::upper_bound(starts.begin(), starts.end(), source_index);
+    if (it != starts.begin())
+    {
+        --it;
+    }
+    else
     {
         return false;
     }
-    size_t subset_index = block_id * block_length + within_block_offset;
-    return subset_index < length;
-}
-
-//Check if the index is an arithmetic sequence,
-//return the index from the parameter index
-bool Subset_index::to_subset_index(SEXP idx, Subset_index &new_index, Subset_index &old_index)
-{
-    new_index.stride = 1;
-    new_index.block_length = 1;
-    new_index.length = XLENGTH(idx);
-    if (XLENGTH(idx) <= 1)
+    size_t vec_idx = it - starts.begin();
+    if ((source_index - starts[vec_idx]) % strides[vec_idx] != 0)
     {
         return false;
     }
-    DO_BY_TYPE(cast_idx, idx, {
-        new_index.start = old_index.get_source_index(cast_idx[0] - 1);
-        bool step_found = false;
-        size_t current_source_id = new_index.start;
-        for (size_t i = 1; i < new_index.length; i++)
-        {
-            size_t previous_source_id = current_source_id;
-            current_source_id = old_index.get_source_index(cast_idx[i] - 1);
-            if (!step_found)
-            {
-                size_t index_gap = current_source_id -
-                                   previous_source_id;
-                if (index_gap != 1)
-                {
-                    step_found = true;
-                    new_index.stride = current_source_id -
-                                     new_index.start;
-                    new_index.block_length = previous_source_id -
-                                             new_index.start + 1;
-                }
-            }
-            else
-            {
-                if (new_index.get_source_index(i) != current_source_id)
-                {
-                    return false;
-                }
-            }
-        }
-    })
+    size_t within_block_idx = (source_index - starts[vec_idx]) / strides[vec_idx];
+    if (within_block_idx >= lengths[vec_idx])
+    {
+        return false;
+    }
     return true;
 }
 
-size_t Subset_index::infer_subset_length(size_t source_length, size_t start, size_t stride, size_t block_length)
+#define GET_INDEX(x, i) (TYPEOF(x) == INTSXP ? INTEGER_ELT(x, i) : (size_t)REAL_ELT(x, i) - 1)
+//Turn idx to the Subset_index object
+Subset_index Subset_index::to_subset_index(SEXP idx, Subset_index &old_index)
 {
-    size_t source_length_from_start = zero_bounded_minus(source_length, start);
-    size_t block_num = source_length_from_start / stride;
-    size_t within_last_block_offset = source_length_from_start % stride;
-    size_t subset_length = block_num * block_length + std::min(within_last_block_offset, block_length);
-    return subset_length;
+    size_t index_length = XLENGTH(idx);
+    Subset_index index;
+    size_t i = 0;
+    while (i < index_length)
+    {
+        size_t start = GET_INDEX(idx, i);
+        //If the start is the last element
+        if (i + 1 == index_length)
+        {
+            index.push_back(start, 1, 1);
+            break;
+        }
+        size_t next_index = GET_INDEX(idx, i + 1);
+        if (next_index < start)
+        {
+            index.push_back(start, 1, 1);
+            ++i;
+            continue;
+        }
+        //Otherwise, we compute stride and length
+        size_t stride = next_index - start;
+        size_t next_i = i + 2;
+        while (next_i < index_length)
+        {
+            if (GET_INDEX(idx, next_i) < GET_INDEX(idx, next_i - 1) ||
+                GET_INDEX(idx, next_i) - GET_INDEX(idx, next_i - 1) != stride)
+            {
+                break;
+            }
+            ++next_i;
+        }
+        index.push_back(start, next_i - i, stride);
+        i = next_i;
+    }
+    return index;
 }
 
+size_t Subset_index::get_index_size(SEXP idx, Subset_index &index)
+{
+    const static size_t compression_ratio = 4;
+    size_t index_length = XLENGTH(idx);
+
+    if (XLENGTH(idx) == 0)
+    {
+        return 0;
+    }
+    if (XLENGTH(idx) == 2)
+    {
+        return compression_ratio;
+    }
+    size_t elt_num = 0;
+    size_t i = 0;
+    while (i < index_length)
+    {
+        size_t start = GET_INDEX(idx, i);
+        //If the start is the last element
+        if (i + 1 == index_length)
+        {
+            index.push_back(start, 1, 1);
+            break;
+        }
+        //Otherwise, we compute stride and length
+        size_t stride = GET_INDEX(idx, i + 1) - start;
+        size_t length = 2;
+        size_t next_i = i + length;
+        while (next_i < index_length)
+        {
+            if (GET_INDEX(idx, next_i) - GET_INDEX(idx, next_i - 1) != stride)
+            {
+                break;
+            }
+            else
+            {
+                length++;
+            }
+            next_i = i + length;
+        }
+        elt_num++;
+        i = next_i;
+    }
+    return elt_num * compression_ratio;
+}
+
+std::string Subset_index::summarize(size_t n_print)
+{
+
+    std::string summary;
+    summary = "Total length: " + std::to_string(total_length) + ", ";
+    summary += "Starts: " + vector_to_string(starts, n_print) + ", ";
+    summary += "Lengths: " + vector_to_string(starts, n_print) + ", ";
+    summary += "Strides: " + vector_to_string(starts, n_print);
+    return summary;
+}
+
+/*
+============================================
+Private functions
+============================================
+*/
+
+std::string Subset_index::vector_to_string(std::vector<size_t> &vec, size_t n_print)
+{
+    if (vec.size() == 0)
+    {
+        return "[]";
+    }
+    if (n_print == 0)
+    {
+        return "[...]";
+    }
+
+    std::string result;
+    result = "[";
+    size_t i;
+    for (i = 0; i < vec.size() - 1 && i < n_print - 1; i++)
+    {
+        result += std::to_string(vec[i]) + ",";
+    }
+    result += std::to_string(vec[i]) + "]";
+    return result;
+}

@@ -89,12 +89,12 @@ C_get_mountpoint <- function() {
     .Call(`_Travel_C_get_mountpoint`)
 }
 
-C_make_fake_file <- function(size) {
-    invisible(.Call(`_Travel_C_make_fake_file`, size))
+C_test_Subset_index_basic <- function() {
+    invisible(.Call(`_Travel_C_test_Subset_index_basic`))
 }
 
-C_make_fake_file2 <- function(size) {
-    invisible(.Call(`_Travel_C_make_fake_file2`, size))
+C_test_Subset_index_conversion <- function() {
+    invisible(.Call(`_Travel_C_test_Subset_index_conversion`))
 }
 
 C_make_altmmap_from_file <- function(path, type, length) {
@@ -135,10 +135,6 @@ C_test_read_write_functions_native <- function(length, write_starts, write_lengt
 
 C_test_read_write_functions_with_coercion <- function(length, write_starts, write_length, read_starts, read_length) {
     invisible(.Call(`_Travel_C_test_read_write_functions_with_coercion`, length, write_starts, write_length, read_starts, read_length))
-}
-
-C_test_read_write_functions_with_coercion_and_subset <- function(length, start, stride, block_length, write_starts, write_length, read_starts, read_length) {
-    invisible(.Call(`_Travel_C_test_read_write_functions_with_coercion_and_subset`, length, start, stride, block_length, write_starts, write_length, read_starts, read_length))
 }
 
 C_make_arithmetic_sequence_altrep <- function(n) {

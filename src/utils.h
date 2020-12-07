@@ -10,6 +10,15 @@
 #define claim(x)
 #endif
 
+#define STRINGIZING(x) #x
+#define XSTR(x) STRINGIZING(x)
+
+#include <stdexcept>
+#define throw_msg(x) throw std::runtime_error("The condition <" XSTR(x) "> Does not meet at line number "\
+ XSTR(__LINE__)" in file <" __FILE__">")
+#define throw_if_not(x) if(!(x))throw_msg(x)
+#define throw_if(x) if(x)throw_msg(x)
+
 //math macro
 #define round_up_division(x, y) (x / y + (x % y != 0))
 #define zero_bounded_minus(x, y) (x > y ? x - y : 0)
@@ -124,7 +133,7 @@ build_path("bucket/", "/test") = "bucket/test"
 std::string build_path(std::string path1, std::string path2);
 std::string get_file_name_in_path(std::string path);
 /*Copy data between two pointer with different types*/
-void copy_memory(int dest_type, int src_type, void *dest, const void *src, size_t length, bool reverse = false);
+void covert_data(int dest_type, int src_type, void *dest, const void *src, size_t length, bool reverse = false);
 
 #ifdef _WIN32
 std::wstring stringToWstring(const char *utf8Bytes);

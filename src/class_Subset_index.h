@@ -1,6 +1,8 @@
 #ifndef HEADER_SUBSET_INDEX
 #define HEADER_SUBSET_INDEX
 
+#include<map>
+#include<vector>
 #ifndef R_INTERNALS_H_
 #include <Rcpp.h>
 #endif
@@ -8,17 +10,18 @@
 class Subset_index
 {
 public:
-    Subset_index(size_t length=0, size_t start = 0, size_t stride = 1, size_t block_length = 1);
-    //The total length of the subset
-    size_t length;
-    //Start of the subset
-    size_t start;
-    //the offset between each block from the start to start
-    size_t stride;
-    //The length of each block
-    size_t block_length;
+    size_t total_length = 0;
+    std::vector<size_t> starts;
+    std::vector<size_t> lengths;
+    std::vector<size_t> partial_lengths;
+    std::vector<size_t> strides;
+public:
+Subset_index(){}
+Subset_index(size_t start, size_t length, size_t stride =1);
+    void push_back(size_t start, size_t length, size_t stride);
     //Is the subset index consecutive?
     bool is_consecutive() const;
+    size_t get_subset_block_offset(size_t subset_index) const;
     /*
     Get the index of the element in the source 
     from the index of the element in the subset
@@ -33,11 +36,13 @@ public:
     bool contains_index(size_t source_index) const;
     //turn the idx into a subset index object
     //The idx is the 1-based index of the old_index
-    //If successful, the subset_index object will be returned by new_index
-    static bool to_subset_index(SEXP idx, Subset_index &new_index, Subset_index &old_index);
-
-    //Infer the subset length given the source length and start, stride, block length information
-    static size_t infer_subset_length(size_t source_length, size_t start, size_t stride, size_t block_length);
+    //The new subset_index object will be returned
+    static Subset_index to_subset_index(SEXP idx, Subset_index &old_index);
+    //Compute the size of the subset index based on the raw indices
+    static size_t get_index_size(SEXP idx, Subset_index &index);
+    std::string summarize(size_t n_print);
+private:
+    std::string vector_to_string(std::vector<size_t>& vec, size_t n_print);
 };
 
 #endif

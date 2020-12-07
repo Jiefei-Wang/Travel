@@ -22,4 +22,7 @@ public:
     char *get();
     const char *get_const() const;
 };
+
+
+
 #endif

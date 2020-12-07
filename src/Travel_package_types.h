@@ -47,7 +47,7 @@ Args:
   block_length: the read length for each block
 */
 typedef size_t (*Travel_read_blocks)(const Travel_altrep_info *altrep_info, void *buffer,
-                                    size_t offset, size_t length, size_t stride, size_t block_length);
+                                    size_t offset, size_t length, size_t stride);
 
 /*
 Function that set the data for an ALTREP vector(optional function)

@@ -231,23 +231,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// C_make_fake_file
-void C_make_fake_file(size_t size);
-RcppExport SEXP _Travel_C_make_fake_file(SEXP sizeSEXP) {
+// C_test_Subset_index_basic
+void C_test_Subset_index_basic();
+RcppExport SEXP _Travel_C_test_Subset_index_basic() {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< size_t >::type size(sizeSEXP);
-    C_make_fake_file(size);
+    C_test_Subset_index_basic();
     return R_NilValue;
 END_RCPP
 }
-// C_make_fake_file2
-void C_make_fake_file2(size_t size);
-RcppExport SEXP _Travel_C_make_fake_file2(SEXP sizeSEXP) {
+// C_test_Subset_index_conversion
+void C_test_Subset_index_conversion();
+RcppExport SEXP _Travel_C_test_Subset_index_conversion() {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< size_t >::type size(sizeSEXP);
-    C_make_fake_file2(size);
+    C_test_Subset_index_conversion();
     return R_NilValue;
 END_RCPP
 }
@@ -371,23 +369,6 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// C_test_read_write_functions_with_coercion_and_subset
-void C_test_read_write_functions_with_coercion_and_subset(size_t length, size_t start, size_t stride, size_t block_length, Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length, Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length);
-RcppExport SEXP _Travel_C_test_read_write_functions_with_coercion_and_subset(SEXP lengthSEXP, SEXP startSEXP, SEXP strideSEXP, SEXP block_lengthSEXP, SEXP write_startsSEXP, SEXP write_lengthSEXP, SEXP read_startsSEXP, SEXP read_lengthSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< size_t >::type length(lengthSEXP);
-    Rcpp::traits::input_parameter< size_t >::type start(startSEXP);
-    Rcpp::traits::input_parameter< size_t >::type stride(strideSEXP);
-    Rcpp::traits::input_parameter< size_t >::type block_length(block_lengthSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type write_starts(write_startsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type write_length(write_lengthSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type read_starts(read_startsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type read_length(read_lengthSEXP);
-    C_test_read_write_functions_with_coercion_and_subset(length, start, stride, block_length, write_starts, write_length, read_starts, read_length);
-    return R_NilValue;
-END_RCPP
-}
 // C_make_arithmetic_sequence_altrep
 SEXP C_make_arithmetic_sequence_altrep(double n);
 RcppExport SEXP _Travel_C_make_arithmetic_sequence_altrep(SEXP nSEXP) {
@@ -481,8 +462,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_get_print_location", (DL_FUNC) &_Travel_C_get_print_location, 0},
     {"_Travel_C_set_mountpoint", (DL_FUNC) &_Travel_C_set_mountpoint, 1},
     {"_Travel_C_get_mountpoint", (DL_FUNC) &_Travel_C_get_mountpoint, 0},
-    {"_Travel_C_make_fake_file", (DL_FUNC) &_Travel_C_make_fake_file, 1},
-    {"_Travel_C_make_fake_file2", (DL_FUNC) &_Travel_C_make_fake_file2, 1},
+    {"_Travel_C_test_Subset_index_basic", (DL_FUNC) &_Travel_C_test_Subset_index_basic, 0},
+    {"_Travel_C_test_Subset_index_conversion", (DL_FUNC) &_Travel_C_test_Subset_index_conversion, 0},
     {"_Travel_C_make_altmmap_from_file", (DL_FUNC) &_Travel_C_make_altmmap_from_file, 3},
     {"_Travel_C_set_real_value", (DL_FUNC) &_Travel_C_set_real_value, 3},
     {"_Travel_C_set_int_value", (DL_FUNC) &_Travel_C_set_int_value, 3},
@@ -493,7 +474,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_RLE", (DL_FUNC) &_Travel_C_RLE, 2},
     {"_Travel_C_test_read_write_functions_native", (DL_FUNC) &_Travel_C_test_read_write_functions_native, 5},
     {"_Travel_C_test_read_write_functions_with_coercion", (DL_FUNC) &_Travel_C_test_read_write_functions_with_coercion, 5},
-    {"_Travel_C_test_read_write_functions_with_coercion_and_subset", (DL_FUNC) &_Travel_C_test_read_write_functions_with_coercion_and_subset, 8},
     {"_Travel_C_make_arithmetic_sequence_altrep", (DL_FUNC) &_Travel_C_make_arithmetic_sequence_altrep, 1},
     {"_Travel_C_set_debug_print", (DL_FUNC) &_Travel_C_set_debug_print, 1},
     {"_Travel_C_set_altrep_print", (DL_FUNC) &_Travel_C_set_altrep_print, 1},

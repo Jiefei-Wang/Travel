@@ -3,52 +3,138 @@
 //#include "utils.h"
 #include "filesystem_manager.h"
 #include "altrep_manager.h"
-/*
-Create an integer vector for testing the altrep functions
-*/
-size_t fake_integer_read(const Travel_altrep_info *altrep_info, void *buffer, size_t offset, size_t length)
-{
-    for (size_t i = 0; i < length; i++)
-    {
-        ((int *)buffer)[i] = (offset + i) % (1024) + 1;
-    }
-    return length;
-}
+#include "utils.h"
 
 /*
-Create a fake file in the mounted filesystem
+=========================================================================================
+                          Subset_index
+=========================================================================================
 */
-size_t fake_read(const Travel_altrep_info *altrep_info, void *buffer, size_t offset, size_t length)
-{
-    std::string data = "fake read data\n";
-    for (size_t i = 0; i < length; i++)
-    {
-        ((char *)buffer)[i] = data.c_str()[(i + offset) % (data.length())];
+//[[Rcpp::export]]
+void C_test_Subset_index_basic(){
+    Subset_index index;
+    throw_if_not(index.total_length==0);
+    throw_if_not(index.is_consecutive());
+
+    size_t total_length =0;
+    //Add an index
+    size_t start = 1;
+    size_t length = 10;
+    size_t stride = 1;
+    total_length += length;
+    index.push_back(start, length,stride);
+    throw_if_not(index.total_length==total_length);
+    throw_if_not(index.is_consecutive());
+
+    //Merge an index
+    start = 11;
+    length = 10;
+    stride = 1;
+    total_length += length;
+    index.push_back(start, length,stride);
+    throw_if_not(index.total_length==total_length);
+    throw_if_not(index.is_consecutive());
+    throw_if_not(index.partial_lengths.size()==1);
+    throw_if_not(index.partial_lengths[0]==0);
+
+    //Merge an index with overlap
+    start = 7;
+    length = 6;
+    stride = 1;
+    index.push_back(start, length,stride);
+    throw_if_not(index.total_length==total_length);
+    throw_if_not(index.is_consecutive());
+    throw_if_not(index.partial_lengths.size()==1);
+    throw_if_not(index.partial_lengths[0]==0);
+
+    //add a non-consecutive index
+    start = 31;
+    length = 10;
+    stride = 2;
+    total_length += length;
+    index.push_back(start, length,stride);
+    throw_if_not(index.total_length==total_length);
+    throw_if_not(!index.is_consecutive());
+    throw_if_not(index.partial_lengths.size()==2);
+    throw_if_not(index.starts[0]==1);
+    throw_if_not(index.starts[1]==31);
+    throw_if_not(index.lengths[0]==20);
+    throw_if_not(index.lengths[1]==10);
+    throw_if_not(index.strides[0]==1);
+    throw_if_not(index.strides[1]==2);
+    throw_if_not(index.partial_lengths[0]==0);
+    throw_if_not(index.partial_lengths[1]==20);
+}
+
+
+//[[Rcpp::export]]
+void C_test_Subset_index_conversion(){
+    Rcpp::NumericVector idx1=Rcpp::NumericVector::create(1,2,3,4,6,7,8,9,11,13,15,17,18);
+    Subset_index ref_index1(0,100);
+    Subset_index index1 = Subset_index::to_subset_index(idx1,ref_index1);
+    throw_if_not(index1.total_length !=(size_t)idx1.length());
+    throw_if_not(index1.starts[0]==0);
+    throw_if_not(index1.starts[1]==5);
+    throw_if_not(index1.starts[2]==10);
+    throw_if_not(index1.starts[3]==17);
+    throw_if_not(index1.lengths[0]==4);
+    throw_if_not(index1.lengths[1]==4);
+    throw_if_not(index1.lengths[2]==4);
+    throw_if_not(index1.lengths[3]==1);
+    throw_if_not(index1.strides[0]==1);
+    throw_if_not(index1.strides[1]==1);
+    throw_if_not(index1.strides[2]==2);
+    throw_if_not(index1.strides[3]==1);
+    throw_if_not(index1.partial_lengths[0]==0);
+    throw_if_not(index1.partial_lengths[1]==4);
+    throw_if_not(index1.partial_lengths[2]==8);
+    throw_if_not(index1.partial_lengths[3]==12);
+    for(size_t i=0;i<index1.total_length;i++){
+        throw_if_not(index1.get_source_index(i)==idx1[i]-1);
     }
-    return length;
+
+    //Unordered subset
+    Rcpp::NumericVector idx2=Rcpp::NumericVector::create(6,7,8,9,1,2,3,4);
+    Subset_index ref_index2(0,100);
+    Subset_index index2 = Subset_index::to_subset_index(idx2,ref_index2);
+    throw_if_not(index2.total_length !=(size_t)idx2.length());
+    throw_if_not(index2.starts[0]==5);
+    throw_if_not(index2.starts[1]==0);
+    throw_if_not(index2.lengths[0]==4);
+    throw_if_not(index2.lengths[1]==4);
+    throw_if_not(index2.strides[0]==1);
+    throw_if_not(index2.strides[1]==1);
+    throw_if_not(index2.partial_lengths[0]==0);
+    throw_if_not(index2.partial_lengths[1]==4);
+    for(size_t i=0;i<index2.total_length;i++){
+        throw_if_not(index2.get_source_index(i)==idx2[i]-1);
+    }
+    //subset with reference
+    //c(7,8,1,3,4)
+    Rcpp::NumericVector idx3=Rcpp::NumericVector::create(2,3,5,7,8);
+    Subset_index index3 = Subset_index::to_subset_index(idx2,ref_index1);
+    throw_if_not(index3.total_length !=(size_t)idx3.length());
+    throw_if_not(index3.starts[0]==6);
+    throw_if_not(index3.starts[1]==0);
+    throw_if_not(index3.starts[2]==3);
+    throw_if_not(index3.lengths[0]==2);
+    throw_if_not(index3.lengths[1]==2);
+    throw_if_not(index3.lengths[2]==1);
+    throw_if_not(index3.strides[0]==1);
+    throw_if_not(index3.strides[1]==2);
+    throw_if_not(index3.strides[2]==1);
+    throw_if_not(index3.partial_lengths[0]==0);
+    throw_if_not(index3.partial_lengths[1]==2);
+    throw_if_not(index3.partial_lengths[2]==3);
+    for(size_t i=0;i<index3.total_length;i++){
+        throw_if_not(index3.get_source_index(i)==idx2[idx3[i]-1]-1);
+    }
 }
 
-//[[Rcpp::export]]
-void C_make_fake_file(size_t size)
-{
-    Travel_altrep_info altrep_info = {};
-    altrep_info.type = RAWSXP;
-    altrep_info.length = size;
-    altrep_info.operations.get_region = fake_read;
-    Subset_index index(altrep_info.length);
-    add_filesystem_file(RAWSXP, index, altrep_info);
-}
 
-//[[Rcpp::export]]
-void C_make_fake_file2(size_t size)
-{
-    Travel_altrep_info altrep_info = {};
-    altrep_info.operations.get_region = fake_integer_read;
-    altrep_info.type = RAWSXP;
-    altrep_info.length = size;
-    Subset_index index(altrep_info.length);
-    add_filesystem_file(RAWSXP, index, altrep_info);
-}
+
+
+
 
 //[[Rcpp::export]]
 SEXP C_make_altmmap_from_file(SEXP path, SEXP type, size_t length)
@@ -218,7 +304,7 @@ void test_read_write_functions_internal(
     uint8_t &type_size = file_data.unit_size;
 
     //Create the test data
-    size_t data_length = index.length;
+    size_t data_length = index.total_length;
     std::unique_ptr<char[]> data(new char[type_size *data_length]);
     char *data_ptr = data.get();
     for (size_t i = 0; i < data_length; i++)
@@ -305,7 +391,7 @@ void C_test_read_write_functions_native(
     Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
     Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
 {
-    Subset_index index(length);
+    Subset_index index(0, length);
     test_read_write_functions_internal(
         INTSXP, length, index,
         write_starts, write_length,
@@ -318,7 +404,7 @@ void C_test_read_write_functions_with_coercion(
     Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
     Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
 {
-    Subset_index index(length);
+    Subset_index index(0, length);
     test_read_write_functions_internal(
         REALSXP, length, index,
         write_starts, write_length,
@@ -327,21 +413,6 @@ void C_test_read_write_functions_with_coercion(
 
 
 
-// [[Rcpp::export]]
-void C_test_read_write_functions_with_coercion_and_subset(
-    size_t length, size_t start, size_t stride, size_t block_length,
-    Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
-    Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
-{
-    Subset_index index(Subset_index::infer_subset_length(length,start,stride, block_length));
-    index.start = start;
-    index.stride = stride;
-    index.block_length = block_length;
-    test_read_write_functions_internal(
-        REALSXP, length, index,
-        write_starts, write_length,
-        read_starts, read_length);
-}
 
 /*
 =========================================================================================

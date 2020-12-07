@@ -219,7 +219,7 @@ std::string get_file_name_in_path(std::string path)
 		claim(!"Unknown type");              \
 	}
 
-void copy_memory(int dest_type, int src_type, void *dest, const void *src, size_t length, bool reverse)
+void covert_data(int dest_type, int src_type, void *dest, const void *src, size_t length, bool reverse)
 {
 	if (dest_type == src_type)
 	{

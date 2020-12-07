@@ -28,7 +28,7 @@ void Filesystem_cache_copier::copy(size_t dest_index, size_t source_index)
     size_t dest_within_cache_offset = dest_data_offset - dest_cache_offset;
     claim(source_within_cache_offset + source_file_data.unit_size<=source_file_data.cache_size);
     claim(dest_within_cache_offset + dest_file_data.unit_size<=dest_file_data.cache_size);
-    copy_memory(dest_file_data.coerced_type, source_file_data.coerced_type,
+    covert_data(dest_file_data.coerced_type, source_file_data.coerced_type,
                 dest_cache_ptr + dest_within_cache_offset,
                 source_cache_ptr + source_within_cache_offset, 1, false);
 }

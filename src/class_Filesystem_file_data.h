@@ -6,7 +6,10 @@
 #include "class_Subset_index.h"
 #include "Travel_package_types.h"
 
-struct Exported_file_data{
+class Filesystem_cache_index_iterator;
+
+struct Exported_file_data
+{
     uint8_t unit_size;
     size_t file_length;
     size_t source_length;
@@ -16,12 +19,12 @@ struct Exported_file_data{
     Subset_index index;
 };
 
-struct Region_info{
+struct Region_info
+{
     size_t start_offset;
     size_t end_offset;
     size_t size;
 };
-
 
 /*
 The object that holds all data of a file
@@ -45,10 +48,9 @@ public:
     size_t get_cache_offset(size_t cache_id);
     size_t get_cache_size(size_t cache_id);
     bool has_cache_id(size_t cache_id);
-    Cache_block& get_cache_block(size_t cache_id);
-    //the start offset and length
-    std::vector<Region_info> get_cache_region_offset();
+    Cache_block &get_cache_block(size_t cache_id);
     Exported_file_data serialize();
+    Filesystem_cache_index_iterator get_cache_iterator();
 public:
     Travel_altrep_info altrep_info;
     uint8_t unit_size;
@@ -59,4 +61,31 @@ public:
     Subset_index index;
     std::map<size_t, Cache_block> write_cache;
 };
+
+//A simple class to iterate over the index of the cached element
+class Filesystem_cache_index_iterator
+{
+    Filesystem_file_data &file_data;
+    std::map<size_t, Cache_block>::iterator block_iter;
+    size_t block_start_elt;
+    size_t within_block_id;
+    size_t block_length;
+    size_t type_size;
+
+public:
+    Filesystem_cache_index_iterator(Filesystem_file_data &file_data);
+    Filesystem_cache_index_iterator &operator++();
+    //get index of the element in the data
+    size_t get_index();
+    //get index of the element in the source data(Altrep_info)
+    size_t get_index_in_source();
+    bool is_final();
+
+private:
+    void compute_block_info();
+};
+
+
+
+
 #endif
