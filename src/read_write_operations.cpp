@@ -30,7 +30,7 @@ static size_t read_contiguous_data(Travel_altrep_info &altrep_info, char *buffer
     return true_read_length;
 }
 
-static size_t read_data_by_block(Travel_altrep_info &altrep_info, char *buffer,
+static size_t read_data_by_block(Travel_altrep_info &altrep_info, char *buffer, size_t type_size,
                                  size_t offset, size_t length, size_t stride)
 {
     size_t buffer_read_length = 0;
@@ -48,7 +48,6 @@ static size_t read_data_by_block(Travel_altrep_info &altrep_info, char *buffer,
     else
     {
         //We use <read_contiguous_data> function to mimic the <read_data_by_block> function
-        size_t type_size = get_type_size(altrep_info.type);
         for (size_t i = 0; i < length; i++)
         {
             size_t read_length = read_contiguous_data(altrep_info, buffer + i * type_size, offset + i * stride, 1);
@@ -82,6 +81,7 @@ static size_t read_source_with_subset(Filesystem_file_data &file_data, char *buf
     }
     else
     {
+        size_t type_size = get_type_size(file_data.altrep_info.type);
         Subset_index &index = file_data.index;
         auto start_iter = std::lower_bound(index.partial_lengths.begin(), index.partial_lengths.end(), offset);
         if (*start_iter != offset)
@@ -99,17 +99,18 @@ static size_t read_source_with_subset(Filesystem_file_data &file_data, char *buf
             size_t cur_source_offset = subset_index.get_source_index(cur_offset);
             size_t cur_stride = subset_index.strides[cur_subset_block_id];
             size_t subset_block_length_left = subset_index.lengths[cur_subset_block_id] -
-                                              (cur_offset-subset_index.partial_lengths[cur_subset_block_id]);
+                                              (cur_offset - subset_index.partial_lengths[cur_subset_block_id]);
             size_t cur_length = std::min(subset_block_length_left, length_left);
-            size_t read_length = read_data_by_block(file_data.altrep_info, buffer, 
-                                                cur_source_offset, cur_length, cur_stride);
-            if(read_length!=cur_length){
+            size_t read_length = read_data_by_block(file_data.altrep_info, buffer + buffer_read_length * type_size,
+                                                    type_size, cur_source_offset, cur_length, cur_stride);
+            if (read_length != cur_length)
+            {
                 break;
             }
             length_left = length_left - cur_length;
             cur_offset = cur_offset + cur_length;
+            buffer_read_length = length - length_left;
         }
-        buffer_read_length = length - length_left;
     }
     return buffer_read_length;
 }
