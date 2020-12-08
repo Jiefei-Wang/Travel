@@ -279,7 +279,6 @@ SEXP altmmap_coerce(SEXP x, int type)
 SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
 {
     altrep_print("subsetting object\n");
-    int test_ptr[97];
     if (!is_filesystem_running())
     {
         Rf_error("The filesystem is not running!\n");

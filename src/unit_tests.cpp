@@ -344,7 +344,7 @@ void C_test_read_write_functions_with_coercion_subset(
 {
     size_t total_length=0;
     Subset_index index;
-    for(size_t i=0;i<lengths.size();i++){
+    for(size_t i=0;i<(size_t)lengths.size();i++){
         size_t start = lengths[i];
         size_t stride = i+2;
         index.push_back(0,lengths[i],i+2);

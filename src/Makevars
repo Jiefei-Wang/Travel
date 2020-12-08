@@ -7,13 +7,13 @@ MKDIR_P = mkdir -p
 package_lib= Travel.so
 
 
-.PHONY: all copy-header
+.PHONY: all create-folder copy-header
 
-all: ${package_lib}
-#all: remove-file copy-header ${package_lib}
+#all: ${package_lib}
+all: create-folder copy-header ${package_lib}
 
 
-remove-file:
+create-folder:
 	 ${MKDIR_P} ../inst/include&&\
 	 ${MKDIR_P} ../inst/include/Travel
 
