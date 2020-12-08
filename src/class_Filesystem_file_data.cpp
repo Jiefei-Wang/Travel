@@ -80,11 +80,12 @@ Filesystem_cache_index_iterator::Filesystem_cache_index_iterator(Filesystem_file
     block_iter = file_data.write_cache.begin();
     within_block_id = 0;
     type_size = get_type_size(file_data.coerced_type);
-    compute_block_info();
+    if(!is_final())
+        compute_block_info();
 }
 Filesystem_cache_index_iterator &Filesystem_cache_index_iterator::operator++()
 {
-    throw_if_not(!is_final());
+    throw_if(is_final());
     ++within_block_id;
     if (within_block_id == block_length)
     {
@@ -99,7 +100,7 @@ Filesystem_cache_index_iterator &Filesystem_cache_index_iterator::operator++()
 }
 size_t Filesystem_cache_index_iterator::get_index()
 {
-    throw_if_not(!is_final());
+    throw_if(is_final());
     return block_start_elt + within_block_id;
 }
 size_t Filesystem_cache_index_iterator::get_index_in_source()
@@ -113,7 +114,7 @@ bool Filesystem_cache_index_iterator::is_final()
 
 void Filesystem_cache_index_iterator::compute_block_info()
 {
-    throw_if_not(!is_final());
+    throw_if(is_final());
     block_length = block_iter->second.get_size() / type_size;
     block_start_elt = file_data.get_cache_offset(block_iter->first) / type_size;
 }

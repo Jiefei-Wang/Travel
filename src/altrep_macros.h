@@ -35,25 +35,5 @@
 #define GET_ALT_LENGTH(x) (GET_PROPS_LENGTH(GET_PROPS(x)))
 
 
+#define GET_INDEX(x, i) ((TYPEOF(x) == INTSXP ? INTEGER_ELT(x, i) : (size_t)REAL_ELT(x, i)) - 1)
 
-
-
-
-#define DO_BY_TYPE(x_cast, x, OPERATION)                 \
-    switch (TYPEOF(x))                                   \
-    {                                                    \
-    case INTSXP:                                         \
-    {                                                    \
-        Rcpp::IntegerVector x_cast = x;                  \
-        OPERATION;                                       \
-        break;                                           \
-    }                                                    \
-    case REALSXP:                                        \
-    {                                                    \
-        Rcpp::NumericVector x_cast = x;                  \
-        OPERATION;                                       \
-        break;                                           \
-    }                                                    \
-    default:                                             \
-        Rf_error("Unexpected index type %d", TYPEOF(x)); \
-    }

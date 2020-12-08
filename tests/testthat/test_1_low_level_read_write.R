@@ -29,6 +29,7 @@ test_that("Testing read and write with coercion",{
 
 
 test_that("Testing read and write with coercion and subset",{
+    set.seed(1)
     lengths <- c(2*1024,4*1024,4*1024)
     data_length <- 10*1024
     write_offset <- sample(0:(data_length - 1024), 5)

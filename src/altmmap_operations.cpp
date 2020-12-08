@@ -276,7 +276,6 @@ SEXP altmmap_coerce(SEXP x, int type)
     return res;
 }
 
-#define GET_INDEX(x, i) (TYPEOF(x) == INTSXP ? INTEGER_ELT(x, i) : (size_t)REAL_ELT(x, i) - 1)
 SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
 {
     altrep_print("subsetting object\n");

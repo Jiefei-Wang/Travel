@@ -2,6 +2,7 @@
 #include <Rcpp.h>
 #include "class_Subset_index.h"
 #include "utils.h"
+#include "altrep_macros.h"
 
 Subset_index::Subset_index(size_t start, size_t length, size_t stride)
 {
@@ -96,7 +97,6 @@ bool Subset_index::contains_index(size_t source_index) const
     return true;
 }
 
-#define GET_INDEX(x, i) (TYPEOF(x) == INTSXP ? INTEGER_ELT(x, i) : (size_t)REAL_ELT(x, i) - 1)
 #define GET_SRC_INDEX(idx, idx_idx, i) idx.get_source_index(GET_INDEX(idx_idx, i))
 //Turn idx to the Subset_index object
 Subset_index Subset_index::to_subset_index(SEXP idx, Subset_index &old_index)
