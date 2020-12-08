@@ -49,7 +49,6 @@ static size_t read_data_by_block(Travel_altrep_info &altrep_info, char *buffer,
     {
         //We use <read_contiguous_data> function to mimic the <read_data_by_block> function
         size_t type_size = get_type_size(altrep_info.type);
-        size_t buffer_read_length = 0;
         for (size_t i = 0; i < length; i++)
         {
             size_t read_length = read_contiguous_data(altrep_info, buffer + i * type_size, offset + i * stride, 1);
@@ -110,6 +109,7 @@ static size_t read_source_with_subset(Filesystem_file_data &file_data, char *buf
             length_left = length_left - cur_length;
             cur_offset = cur_offset + cur_length;
         }
+        buffer_read_length = length - length_left;
     }
     return buffer_read_length;
 }

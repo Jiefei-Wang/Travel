@@ -342,12 +342,16 @@ void C_test_read_write_functions_with_coercion_subset(
     Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
     Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
 {
+    size_t total_length=0;
     Subset_index index;
     for(size_t i=0;i<lengths.size();i++){
+        size_t start = lengths[i];
+        size_t stride = i+2;
         index.push_back(0,lengths[i],i+2);
+        total_length=std::max(total_length,start+(size_t)lengths[i]*stride);
     }
     test_read_write_functions_internal(
-        REALSXP, index.get_source_index(index.total_length-1)+1, index,
+        REALSXP, total_length, index,
         write_starts, write_length,
         read_starts, read_length);
 }
