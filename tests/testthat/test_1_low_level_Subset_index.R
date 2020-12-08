@@ -3,9 +3,9 @@ context("Testing the low level class Subset_index")
 
 
 test_that("Subset index basic",{
-    C_test_Subset_index_basic()
+    expect_error(C_test_Subset_index_basic(),NA)
 })
 
 test_that("Subset index conversion",{
-    C_test_Subset_index_conversion()
+    expect_error(C_test_Subset_index_conversion(),NA)
 })

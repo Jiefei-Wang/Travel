@@ -83,70 +83,66 @@ void C_test_Subset_index_basic()
 }
 
 //[[Rcpp::export]]
-void C_test_Subset_index_conversion()
-{
-    Rcpp::NumericVector idx1 = Rcpp::NumericVector::create(1, 2, 3, 4, 6, 7, 8, 9, 11, 13, 15, 17, 18);
-    Subset_index ref_index1(0, 100);
-    Subset_index index1 = Subset_index::to_subset_index(idx1, ref_index1);
-    throw_if_not(index1.total_length == (size_t)idx1.length());
-    throw_if_not(index1.starts[0] == 0);
-    throw_if_not(index1.starts[1] == 5);
-    throw_if_not(index1.starts[2] == 10);
-    throw_if_not(index1.starts[3] == 17);
-    throw_if_not(index1.lengths[0] == 4);
-    throw_if_not(index1.lengths[1] == 4);
-    throw_if_not(index1.lengths[2] == 4);
-    throw_if_not(index1.lengths[3] == 1);
-    throw_if_not(index1.strides[0] == 1);
-    throw_if_not(index1.strides[1] == 1);
-    throw_if_not(index1.strides[2] == 2);
-    throw_if_not(index1.strides[3] == 1);
-    throw_if_not(index1.partial_lengths[0] == 0);
-    throw_if_not(index1.partial_lengths[1] == 4);
-    throw_if_not(index1.partial_lengths[2] == 8);
-    throw_if_not(index1.partial_lengths[3] == 12);
-    for (size_t i = 0; i < index1.total_length; i++)
-    {
-        throw_if_not(index1.get_source_index(i) == idx1[i] - 1);
+void C_test_Subset_index_conversion(){
+    Rcpp::NumericVector idx1=Rcpp::NumericVector::create(1,2,3,4,6,7,8,9,11,13,15,17,18);
+    Subset_index ref_index1(0,100);
+    Subset_index index1 = Subset_index::to_subset_index(idx1,ref_index1);
+    throw_if_not(index1.total_length ==(size_t)idx1.length());
+    throw_if_not(index1.starts[0]==0);
+    throw_if_not(index1.starts[1]==5);
+    throw_if_not(index1.starts[2]==10);
+    throw_if_not(index1.starts[3]==17);
+    throw_if_not(index1.lengths[0]==4);
+    throw_if_not(index1.lengths[1]==4);
+    throw_if_not(index1.lengths[2]==4);
+    throw_if_not(index1.lengths[3]==1);
+    throw_if_not(index1.strides[0]==1);
+    throw_if_not(index1.strides[1]==1);
+    throw_if_not(index1.strides[2]==2);
+    throw_if_not(index1.strides[3]==1);
+    throw_if_not(index1.partial_lengths[0]==0);
+    throw_if_not(index1.partial_lengths[1]==4);
+    throw_if_not(index1.partial_lengths[2]==8);
+    throw_if_not(index1.partial_lengths[3]==12);
+    for(size_t i=0;i<index1.total_length;i++){
+        throw_if_not(index1.get_source_index(i)==idx1[i]-1);
     }
 
     //Unordered subset
-    Rcpp::NumericVector idx2 = Rcpp::NumericVector::create(6, 7, 8, 9, 1, 2, 3, 4);
-    Subset_index ref_index2(0, 100);
-    Subset_index index2 = Subset_index::to_subset_index(idx2, ref_index2);
-    throw_if_not(index2.total_length == (size_t)idx2.length());
-    throw_if_not(index2.starts[0] == 5);
-    throw_if_not(index2.starts[1] == 0);
-    throw_if_not(index2.lengths[0] == 4);
-    throw_if_not(index2.lengths[1] == 4);
-    throw_if_not(index2.strides[0] == 1);
-    throw_if_not(index2.strides[1] == 1);
-    throw_if_not(index2.partial_lengths[0] == 0);
-    throw_if_not(index2.partial_lengths[1] == 4);
-    for (size_t i = 0; i < index2.total_length; i++)
-    {
-        throw_if_not(index2.get_source_index(i) == idx2[i] - 1);
+    Rcpp::NumericVector idx2=Rcpp::NumericVector::create(6,7,8,9,1,2,3,4);
+    Subset_index ref_index2(0,100);
+    Subset_index index2 = Subset_index::to_subset_index(idx2,ref_index2);
+    throw_if_not(index2.total_length ==(size_t)idx2.length());
+    throw_if_not(index2.starts[0]==5);
+    throw_if_not(index2.starts[1]==0);
+    throw_if_not(index2.lengths[0]==4);
+    throw_if_not(index2.lengths[1]==4);
+    throw_if_not(index2.strides[0]==1);
+    throw_if_not(index2.strides[1]==1);
+    throw_if_not(index2.partial_lengths[0]==0);
+    throw_if_not(index2.partial_lengths[1]==4);
+    for(size_t i=0;i<index2.total_length;i++){
+        throw_if_not(index2.get_source_index(i)==idx2[i]-1);
     }
     //subset with reference
     //c(7,8,1,3,4)
-    Rcpp::NumericVector idx3 = Rcpp::NumericVector::create(2, 3, 5, 7, 8);
-    Subset_index index3 = Subset_index::to_subset_index(idx2, ref_index1);
-    throw_if_not(index3.total_length == (size_t)idx3.length());
-    throw_if_not(index3.starts[0] == 6);
-    throw_if_not(index3.starts[1] == 0);
-    throw_if_not(index3.starts[2] == 3);
-    throw_if_not(index3.lengths[0] == 2);
-    throw_if_not(index3.lengths[1] == 2);
-    throw_if_not(index3.lengths[2] == 1);
-    throw_if_not(index3.strides[0] == 1);
-    throw_if_not(index3.strides[1] == 2);
-    throw_if_not(index3.strides[2] == 1);
-    throw_if_not(index3.partial_lengths[0] == 0);
-    throw_if_not(index3.partial_lengths[1] == 2);
-    throw_if_not(index3.partial_lengths[2] == 3);
-    for (size_t i = 0; i < index3.total_length; i++)
-    {
-        throw_if_not(index3.get_source_index(i) == idx2[idx3[i] - 1] - 1);
+    Rcpp::NumericVector idx3=Rcpp::NumericVector::create(2,3,5,7,8);
+    Subset_index index3 = Subset_index::to_subset_index(idx3,index2);
+    throw_if_not(index3.total_length ==(size_t)idx3.length());
+    throw_if_not(index3.starts[0]==6);
+    throw_if_not(index3.starts[1]==0);
+    throw_if_not(index3.starts[2]==3);
+    throw_if_not(index3.lengths[0]==2);
+    throw_if_not(index3.lengths[1]==2);
+    throw_if_not(index3.lengths[2]==1);
+    throw_if_not(index3.strides[0]==1);
+    throw_if_not(index3.strides[1]==2);
+    throw_if_not(index3.strides[2]==1);
+    throw_if_not(index3.partial_lengths[0]==0);
+    throw_if_not(index3.partial_lengths[1]==2);
+    throw_if_not(index3.partial_lengths[2]==4);
+    for(size_t i=0;i<index3.total_length;i++){
+        throw_if_not(index3.get_source_index(i)==idx2[idx3[i]-1]-1);
     }
 }
 
@@ -155,6 +151,7 @@ void C_test_Subset_index_conversion()
                           Cache_block
 =========================================================================================
 */
+//[[Rcpp::export]]
 void C_test_Cache_block()
 {
     size_t cache_size = 1024;
@@ -181,6 +178,7 @@ void C_test_Cache_block()
         throw_if_not(cache2.get() == cache_ptr);
         throw_if_not(cache1.use_count() == 1);
         throw_if_not(cache2.use_count() == 1);
+        cache_ptr = cache1.get();
     }
 
     {
@@ -197,6 +195,187 @@ void C_test_Cache_block()
     }
 }
 
+
+/*
+=========================================================================================
+                          unit test for general read/write functions
+=========================================================================================
+*/
+#include "read_write_operations.h"
+/*
+Create a fake file in the mounted filesystem
+*/
+size_t read_int_arithmetic_sequence(const Travel_altrep_info *altrep_info, void *buffer, size_t offset, size_t length)
+{
+    for (size_t i = 0; i < length; i++)
+    {
+        ((int *)buffer)[i] = offset + i;
+    }
+    return length;
+}
+
+void test_read_write_functions_internal(
+    int type, size_t length, Subset_index index,
+    Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
+    Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
+{
+    Travel_altrep_info altrep_info = {};
+    altrep_info.type = INTSXP;
+    altrep_info.length = length;
+    altrep_info.operations.get_region = read_int_arithmetic_sequence;
+    Filesystem_file_identifier file_info = add_filesystem_file(type, index, altrep_info);
+    Filesystem_file_data &file_data = get_filesystem_file_data(file_info.file_inode);
+    uint8_t &type_size = file_data.unit_size;
+    
+    throw_if_not(file_data.file_length==index.total_length);
+    //Create the test data
+    size_t data_length = file_data.file_length;
+    std::unique_ptr<char[]> data(new char[type_size * data_length]);
+    char *data_ptr = data.get();
+    for (size_t i = 0; i < data_length; i++)
+    {
+        if (type == INTSXP)
+        {
+            ((int *)data_ptr)[i] = index.get_source_index(i);
+        }
+        else
+        {
+            ((double *)data_ptr)[i] = index.get_source_index(i);
+        }
+    }
+    //The data that is written is the negative value of the original value in the file
+    for (R_xlen_t i = 0; i < write_starts.length(); i++)
+    {
+        size_t elt_offset = write_starts[i];
+        size_t offset = elt_offset * type_size;
+        size_t size = write_length[i] * type_size;
+        for (size_t j = 0; j < write_length[i]; j++)
+        {
+            if (type == INTSXP)
+            {
+                ((int *)data_ptr)[elt_offset + j] = -index.get_source_index(elt_offset + j);
+            }
+            else
+            {
+                ((double *)data_ptr)[elt_offset + j] = -index.get_source_index(elt_offset + j);
+            }
+        }
+        size_t true_write_size = general_write_func(file_data, data_ptr + offset, offset, size);
+        if (true_write_size != size)
+        {
+            Rf_error("The write size does not match, offset: %llu, expected: %llu, true: %llu, file size: %llu",
+                     (uint64_t)offset, (uint64_t)size, (uint64_t)true_write_size, (uint64_t)file_data.file_size);
+        }
+    }
+    //Test the read function by reading the data from the file
+    Unique_buffer buffer;
+    for (R_xlen_t i = 0; i < read_starts.length(); i++)
+    {
+        size_t elt_offset = read_starts[i];
+        size_t offset = elt_offset * type_size;
+        size_t size = read_length[i] * type_size;
+        buffer.reserve(size);
+        char *ptr = buffer.get();
+        size_t true_read_size = general_read_func(file_data, ptr, offset, size);
+        if (true_read_size != size)
+        {
+            Rf_error("The read size does not match, offset: %llu, expected: %llu, true: %llu, file size: %llu",
+                     (uint64_t)offset, (uint64_t)size, (uint64_t)true_read_size, (uint64_t)file_data.file_size);
+        }
+        for (size_t j = 0; j < read_length[i]; j++)
+        {
+            double expected_value;
+            double true_value;
+            if (type == INTSXP)
+            {
+                expected_value = ((int *)data_ptr)[elt_offset + j];
+                true_value = ((int *)ptr)[j];
+            }
+            else
+            {
+                expected_value = ((double *)data_ptr)[elt_offset + j];
+                true_value = ((double *)ptr)[j];
+            }
+            if (expected_value != true_value)
+            {
+                Rf_error("The read data does not match, index: %llu, expected: %f, true: %f",
+                         (uint64_t)(elt_offset + j), expected_value, true_value);
+            }
+        }
+    }
+    if (file_data.write_cache.size() == 0)
+    {
+        Rf_error("The write cache seems untouched.");
+    }
+    remove_filesystem_file(file_info.file_inode);
+}
+
+// [[Rcpp::export]]
+void C_test_read_write_functions_native(
+    size_t length,
+    Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
+    Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
+{
+    Subset_index index(0, length);
+    test_read_write_functions_internal(
+        INTSXP, length, index,
+        write_starts, write_length,
+        read_starts, read_length);
+}
+
+// [[Rcpp::export]]
+void C_test_read_write_functions_with_coercion(
+    size_t length,
+    Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
+    Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
+{
+    Subset_index index(0, length);
+    test_read_write_functions_internal(
+        REALSXP, length, index,
+        write_starts, write_length,
+        read_starts, read_length);
+}
+
+// [[Rcpp::export]]
+void C_test_read_write_functions_with_coercion_subset(
+    Rcpp::NumericVector lengths,
+    Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
+    Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
+{
+    Subset_index index;
+    for(size_t i=0;i<lengths.size();i++){
+        index.push_back(0,lengths[i],i+2);
+    }
+    test_read_write_functions_internal(
+        REALSXP, index.get_source_index(index.total_length-1)+1, index,
+        write_starts, write_length,
+        read_starts, read_length);
+}
+
+
+/*
+=========================================================================================
+                     make an arithmetic sequence altrep
+=========================================================================================
+*/
+// [[Rcpp::export]]
+SEXP C_make_arithmetic_sequence_altrep(double n)
+{
+    Travel_altrep_info altrep_info;
+    altrep_info.length = n;
+    altrep_info.type = INTSXP;
+    altrep_info.operations.get_region = read_int_arithmetic_sequence;
+    SEXP x = Travel_make_altrep(altrep_info);
+    return x;
+}
+
+
+
+/*
+=========================================================================================
+                     Unidentified code
+=========================================================================================
+*/
 //[[Rcpp::export]]
 SEXP C_make_altmmap_from_file(SEXP path, SEXP type, size_t length)
 {
@@ -330,160 +509,5 @@ SEXP C_RLE(std::vector<double> length, std::vector<double> value)
     altrep_info.protected_data = PROTECT(Travel_shared_ptr<RLE>(rle));
     SEXP x = Travel_make_altrep(altrep_info);
     Rf_unprotect(1);
-    return x;
-}
-
-/*
-=========================================================================================
-                          unit test for general read/write functions
-=========================================================================================
-*/
-#include "read_write_operations.h"
-/*
-Create a fake file in the mounted filesystem
-*/
-size_t read_int_arithmetic_sequence(const Travel_altrep_info *altrep_info, void *buffer, size_t offset, size_t length)
-{
-    for (size_t i = 0; i < length; i++)
-    {
-        ((int *)buffer)[i] = offset + i;
-    }
-    return length;
-}
-
-void test_read_write_functions_internal(
-    int type, size_t length, Subset_index index,
-    Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
-    Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
-{
-    Travel_altrep_info altrep_info = {};
-    altrep_info.type = INTSXP;
-    altrep_info.length = length;
-    altrep_info.operations.get_region = read_int_arithmetic_sequence;
-    Filesystem_file_identifier file_info = add_filesystem_file(type, index, altrep_info);
-    Filesystem_file_data &file_data = get_filesystem_file_data(file_info.file_inode);
-    uint8_t &type_size = file_data.unit_size;
-
-    //Create the test data
-    size_t data_length = index.total_length;
-    std::unique_ptr<char[]> data(new char[type_size * data_length]);
-    char *data_ptr = data.get();
-    for (size_t i = 0; i < data_length; i++)
-    {
-        if (type == INTSXP)
-        {
-            ((int *)data_ptr)[i] = index.get_source_index(i);
-        }
-        else
-        {
-            ((double *)data_ptr)[i] = index.get_source_index(i);
-        }
-    }
-    //The data that is written is the negative value of the original value in the file
-    for (R_xlen_t i = 0; i < write_starts.length(); i++)
-    {
-        size_t elt_offset = write_starts[i];
-        size_t offset = elt_offset * type_size;
-        size_t size = write_length[i] * type_size;
-        for (size_t j = 0; j < write_length[i]; j++)
-        {
-            if (type == INTSXP)
-            {
-                ((int *)data_ptr)[elt_offset + j] = -index.get_source_index(elt_offset + j);
-            }
-            else
-            {
-                ((double *)data_ptr)[elt_offset + j] = -index.get_source_index(elt_offset + j);
-            }
-        }
-        size_t true_write_size = general_write_func(file_data, data_ptr + offset, offset, size);
-        if (true_write_size != size)
-        {
-            Rf_error("The write size does not match, offset: %llu, expected: %llu, true: %llu, file size: %llu",
-                     (uint64_t)offset, (uint64_t)size, (uint64_t)true_write_size, (uint64_t)file_data.file_size);
-        }
-    }
-    //Test the read function by reading the data from the file
-    Unique_buffer buffer;
-    for (R_xlen_t i = 0; i < read_starts.length(); i++)
-    {
-        size_t elt_offset = read_starts[i];
-        size_t offset = elt_offset * type_size;
-        size_t size = read_length[i] * type_size;
-        buffer.reserve(size);
-        char *ptr = buffer.get();
-        size_t true_read_size = general_read_func(file_data, ptr, offset, size);
-        if (true_read_size != size)
-        {
-            Rf_error("The read size does not match, offset: %llu, expected: %llu, true: %llu, file size: %llu",
-                     (uint64_t)offset, (uint64_t)size, (uint64_t)true_read_size, (uint64_t)file_data.file_size);
-        }
-        for (size_t j = 0; j < read_length[i]; j++)
-        {
-            double expected_value;
-            double true_value;
-            if (type == INTSXP)
-            {
-                expected_value = ((int *)data_ptr)[elt_offset + j];
-                true_value = ((int *)ptr)[j];
-            }
-            else
-            {
-                expected_value = ((double *)data_ptr)[elt_offset + j];
-                true_value = ((double *)ptr)[j];
-            }
-            if (expected_value != true_value)
-            {
-                Rf_error("The read data does not match, index: %llu, expected: %f, true: %f",
-                         (uint64_t)(elt_offset + j), expected_value, true_value);
-            }
-        }
-    }
-    if (file_data.write_cache.size() == 0)
-    {
-        Rf_error("The write cache seems untouched.");
-    }
-    remove_filesystem_file(file_info.file_inode);
-}
-
-// [[Rcpp::export]]
-void C_test_read_write_functions_native(
-    size_t length,
-    Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
-    Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
-{
-    Subset_index index(0, length);
-    test_read_write_functions_internal(
-        INTSXP, length, index,
-        write_starts, write_length,
-        read_starts, read_length);
-}
-
-// [[Rcpp::export]]
-void C_test_read_write_functions_with_coercion(
-    size_t length,
-    Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
-    Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
-{
-    Subset_index index(0, length);
-    test_read_write_functions_internal(
-        REALSXP, length, index,
-        write_starts, write_length,
-        read_starts, read_length);
-}
-
-/*
-=========================================================================================
-                     make an arithmetic sequence altrep
-=========================================================================================
-*/
-// [[Rcpp::export]]
-SEXP C_make_arithmetic_sequence_altrep(double n)
-{
-    Travel_altrep_info altrep_info;
-    altrep_info.length = n;
-    altrep_info.type = INTSXP;
-    altrep_info.operations.get_region = read_int_arithmetic_sequence;
-    SEXP x = Travel_make_altrep(altrep_info);
     return x;
 }

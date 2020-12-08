@@ -97,6 +97,26 @@ C_test_Subset_index_conversion <- function() {
     invisible(.Call(`_Travel_C_test_Subset_index_conversion`))
 }
 
+C_test_Cache_block <- function() {
+    invisible(.Call(`_Travel_C_test_Cache_block`))
+}
+
+C_test_read_write_functions_native <- function(length, write_starts, write_length, read_starts, read_length) {
+    invisible(.Call(`_Travel_C_test_read_write_functions_native`, length, write_starts, write_length, read_starts, read_length))
+}
+
+C_test_read_write_functions_with_coercion <- function(length, write_starts, write_length, read_starts, read_length) {
+    invisible(.Call(`_Travel_C_test_read_write_functions_with_coercion`, length, write_starts, write_length, read_starts, read_length))
+}
+
+C_test_read_write_functions_with_coercion_subset <- function(lengths, write_starts, write_length, read_starts, read_length) {
+    invisible(.Call(`_Travel_C_test_read_write_functions_with_coercion_subset`, lengths, write_starts, write_length, read_starts, read_length))
+}
+
+C_make_arithmetic_sequence_altrep <- function(n) {
+    .Call(`_Travel_C_make_arithmetic_sequence_altrep`, n)
+}
+
 C_make_altmmap_from_file <- function(path, type, length) {
     .Call(`_Travel_C_make_altmmap_from_file`, path, type, length)
 }
@@ -127,18 +147,6 @@ C_allzero <- function(n) {
 
 C_RLE <- function(length, value) {
     .Call(`_Travel_C_RLE`, length, value)
-}
-
-C_test_read_write_functions_native <- function(length, write_starts, write_length, read_starts, read_length) {
-    invisible(.Call(`_Travel_C_test_read_write_functions_native`, length, write_starts, write_length, read_starts, read_length))
-}
-
-C_test_read_write_functions_with_coercion <- function(length, write_starts, write_length, read_starts, read_length) {
-    invisible(.Call(`_Travel_C_test_read_write_functions_with_coercion`, length, write_starts, write_length, read_starts, read_length))
-}
-
-C_make_arithmetic_sequence_altrep <- function(n) {
-    .Call(`_Travel_C_make_arithmetic_sequence_altrep`, n)
 }
 
 C_set_debug_print <- function(x) {
