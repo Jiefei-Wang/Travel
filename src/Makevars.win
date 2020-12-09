@@ -22,4 +22,4 @@ make-static-lib:
 copy-header:
 	 cp "Travel.h" "../inst/include/Travel/" &&\
 	 cp "Travel_package_types.h" "../inst/include/Travel/"
-	 ${CP} "Travel.a" "../inst/usrlib${R_ARCH}/"
+	 cp "Travel.a" "../inst/usrlib${R_ARCH}/"
