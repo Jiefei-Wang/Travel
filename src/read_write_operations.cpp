@@ -84,7 +84,8 @@ static size_t read_source_with_subset(Filesystem_file_data &file_data, char *buf
         size_t type_size = get_type_size(file_data.altrep_info.type);
         Subset_index &index = file_data.index;
         auto start_iter = std::lower_bound(index.partial_lengths.begin(), index.partial_lengths.end(), offset);
-        if (*start_iter != offset)
+        if (start_iter == index.partial_lengths.end() ||
+            *start_iter != offset)
         {
             --start_iter;
         }
