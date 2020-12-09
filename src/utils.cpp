@@ -57,7 +57,7 @@ void close_filesystem_log()
 
 void filesystem_log(const char *format, ...)
 {
-	if (filesystem_log_enabled)
+	if (filesystem_log_enabled&&filesystem_log_opened)
 	{
 		//initial_filesystem_log();
 		va_list args;

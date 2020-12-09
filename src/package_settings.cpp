@@ -8,8 +8,8 @@ static std::string print_location;
 
 
 // [[Rcpp::export]]
-void C_set_print_location(SEXP x){
-	print_location = CHAR(Rf_asChar(x));
+void C_set_print_location(String x){
+	print_location = x;
 	print_location = print_location + "/debug_output";
 }
 // [[Rcpp::export]]

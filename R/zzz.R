@@ -16,5 +16,6 @@ NULL
 }
 
 .onUnload<- function(libname, pkgname){
+    close_filesystem_log()
     stop_filesystem()
 }

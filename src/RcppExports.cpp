@@ -158,6 +158,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Travel_compact_seq
+SEXP Travel_compact_seq(size_t n);
+RcppExport SEXP _Travel_Travel_compact_seq(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< size_t >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(Travel_compact_seq(n));
+    return rcpp_result_gen;
+END_RCPP
+}
 // C_get_virtual_file_list
 Rcpp::DataFrame C_get_virtual_file_list();
 RcppExport SEXP _Travel_C_get_virtual_file_list() {
@@ -225,11 +236,11 @@ BEGIN_RCPP
 END_RCPP
 }
 // C_set_print_location
-void C_set_print_location(SEXP x);
+void C_set_print_location(String x);
 RcppExport SEXP _Travel_C_set_print_location(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< String >::type x(xSEXP);
     C_set_print_location(x);
     return R_NilValue;
 END_RCPP
@@ -436,17 +447,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// Travel_compact_seq
-SEXP Travel_compact_seq(size_t n);
-RcppExport SEXP _Travel_Travel_compact_seq(SEXP nSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< size_t >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(Travel_compact_seq(n));
-    return rcpp_result_gen;
-END_RCPP
-}
 // C_set_debug_print
 void C_set_debug_print(bool x);
 RcppExport SEXP _Travel_C_set_debug_print(SEXP xSEXP) {
@@ -521,6 +521,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_mySum1", (DL_FUNC) &_Travel_mySum1, 1},
     {"_Travel_mySum2", (DL_FUNC) &_Travel_mySum2, 1},
     {"_Travel_mySum3", (DL_FUNC) &_Travel_mySum3, 1},
+    {"_Travel_Travel_compact_seq", (DL_FUNC) &_Travel_Travel_compact_seq, 1},
     {"_Travel_C_get_virtual_file_list", (DL_FUNC) &_Travel_C_get_virtual_file_list, 0},
     {"_Travel_run_filesystem_thread_func", (DL_FUNC) &_Travel_run_filesystem_thread_func, 0},
     {"_Travel_C_run_filesystem_thread", (DL_FUNC) &_Travel_C_run_filesystem_thread, 0},
@@ -547,7 +548,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_is_altrep", (DL_FUNC) &_Travel_C_is_altrep, 1},
     {"_Travel_C_allzero", (DL_FUNC) &_Travel_C_allzero, 1},
     {"_Travel_C_RLE", (DL_FUNC) &_Travel_C_RLE, 2},
-    {"_Travel_Travel_compact_seq", (DL_FUNC) &_Travel_Travel_compact_seq, 1},
     {"_Travel_C_set_debug_print", (DL_FUNC) &_Travel_C_set_debug_print, 1},
     {"_Travel_C_set_altrep_print", (DL_FUNC) &_Travel_C_set_altrep_print, 1},
     {"_Travel_C_set_filesystem_print", (DL_FUNC) &_Travel_C_set_filesystem_print, 1},

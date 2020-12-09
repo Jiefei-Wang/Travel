@@ -153,7 +153,8 @@ SEXP C_coerce(SEXP x, int type)
 double mySum1(SEXP x)
 {
     double s = 0;
-    for (R_xlen_t i = 0; i < XLENGTH(x); i++)
+    R_xlen_t len = XLENGTH(x);
+    for (R_xlen_t i = 0; i < len; i++)
     {
         s += REAL_ELT(x, i);
     }
@@ -181,9 +182,35 @@ double mySum3(SEXP x)
 {
     double s = 0.0;
     double* ptr = (double*)DATAPTR(x);
-    for (R_xlen_t i = 0; i < XLENGTH(x); i++)
+    R_xlen_t len = XLENGTH(x);
+    for (R_xlen_t i = 0; i < len; i++)
     {
         s += ptr[i];
     }
     return s;
 }
+
+
+
+#include "Travel.h"
+size_t arithmetic_sequence_region(const Travel_altrep_info *altrep_info, void *buffer,
+                                     size_t offset, size_t length)
+{
+    for (size_t i = 0; i < length; i++)
+    {
+        ((double *)buffer)[i] = offset + i + 1;
+    }
+    return length;
+}
+
+// [[Rcpp::export]]
+SEXP Travel_compact_seq(size_t n)
+{
+    Travel_altrep_info altrep_info;
+    altrep_info.length = n;
+    altrep_info.type = REALSXP;
+    altrep_info.operations.get_region = arithmetic_sequence_region;
+    SEXP x = Travel_make_altrep(altrep_info);
+    return x;
+}
+
