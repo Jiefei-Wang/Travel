@@ -2,7 +2,7 @@
 #include "Travel.h"
 #include "utils.h"
 
-size_t read_altrep_region(const Travel_altrep_info* altrep_info, void *buffer, size_t offset, size_t length)
+size_t read_altrep_region(const Travel_altrep_info *altrep_info, void *buffer, size_t offset, size_t length)
 {
     SEXP wrapped_object = (SEXP)altrep_info->private_data;
     switch (TYPEOF(wrapped_object))
@@ -29,12 +29,12 @@ SEXP C_make_altmmap_from_altrep(SEXP x)
     Travel_altrep_info altrep_info = {};
     altrep_info.length = XLENGTH(x);
     altrep_info.private_data = x;
-    altrep_info.protected_data= x;
+    altrep_info.protected_data = x;
     altrep_info.type = TYPEOF(x);
     altrep_info.operations.get_region = read_altrep_region;
     PROTECT_GUARD guard;
     SEXP altmmap_object = guard.protect(Travel_make_altrep(altrep_info));
-    SHALLOW_DUPLICATE_ATTRIB(altmmap_object,x);
+    SHALLOW_DUPLICATE_ATTRIB(altmmap_object, x);
     return altmmap_object;
 }
 
@@ -57,7 +57,7 @@ void print_value(SEXP x)
     {
         Rf_error("The pointer is NULL!\n");
     }
-    int max_print = (XLENGTH(x)>100?100:XLENGTH(x));
+    int max_print = (XLENGTH(x) > 100 ? 100 : XLENGTH(x));
     for (int i = 0; i < max_print; i++)
     {
         switch (TYPEOF(x))
@@ -75,15 +75,11 @@ void print_value(SEXP x)
     Rprintf("\n");
 }
 
-
 // [[Rcpp::export]]
-SEXP C_get_ptr(SEXP x){
-    return R_MakeExternalPtr(DATAPTR(x),R_NilValue,R_NilValue);
+SEXP C_get_ptr(SEXP x)
+{
+    return R_MakeExternalPtr(DATAPTR(x), R_NilValue, R_NilValue);
 }
-
-
-
-
 
 /*
 =========================================================================================
@@ -133,18 +129,61 @@ SEXP C_get_altmmap_cache(SEXP x)
 }
 
 // [[Rcpp::export]]
-void C_print_cache(SEXP x, size_t i){
+void C_print_cache(SEXP x, size_t i)
+{
     std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
     Filesystem_file_data &file_data = get_filesystem_file_data(file_name);
-    if(file_data.write_cache.find(i)!=file_data.write_cache.end()){
-        const double* ptr = (const double *) file_data.write_cache.find(i)->second.get_const();
-        for(size_t j = 0; j<4096/8;j++){
+    if (file_data.write_cache.find(i) != file_data.write_cache.end())
+    {
+        const double *ptr = (const double *)file_data.write_cache.find(i)->second.get_const();
+        for (size_t j = 0; j < 4096 / 8; j++)
+        {
             Rprintf("%f,", ptr[j]);
         }
     }
 }
 
 // [[Rcpp::export]]
-SEXP C_coerce(SEXP x, int type){
-    return Rf_coerceVector(x,type);
+SEXP C_coerce(SEXP x, int type)
+{
+    return Rf_coerceVector(x, type);
+}
+
+// [[Rcpp::export]]
+double mySum1(SEXP x)
+{
+    double s = 0;
+    for (R_xlen_t i = 0; i < XLENGTH(x); i++)
+    {
+        s += REAL_ELT(x, i);
+    }
+    return s;
+}
+
+#include "R_ext/Itermacros.h"
+// [[Rcpp::export]]
+double mySum2(SEXP x)
+{
+    double s = 0.0;
+    ITERATE_BY_REGION(x, ptr, ind, nbatch, double, REAL,
+                      {
+                          for (int i = 0; i < nbatch; i++)
+                          {
+                              s = s + ptr[i];
+                          }
+                      });
+    return s;
+}
+
+
+// [[Rcpp::export]]
+double mySum3(SEXP x)
+{
+    double s = 0.0;
+    double* ptr = (double*)DATAPTR(x);
+    for (R_xlen_t i = 0; i < XLENGTH(x); i++)
+    {
+        s += ptr[i];
+    }
+    return s;
 }

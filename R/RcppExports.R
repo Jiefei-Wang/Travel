@@ -45,6 +45,18 @@ C_coerce <- function(x, type) {
     .Call(`_Travel_C_coerce`, x, type)
 }
 
+mySum1 <- function(x) {
+    .Call(`_Travel_mySum1`, x)
+}
+
+mySum2 <- function(x) {
+    .Call(`_Travel_mySum2`, x)
+}
+
+mySum3 <- function(x) {
+    .Call(`_Travel_mySum3`, x)
+}
+
 C_get_virtual_file_list <- function() {
     .Call(`_Travel_C_get_virtual_file_list`)
 }
@@ -147,6 +159,10 @@ C_allzero <- function(n) {
 
 C_RLE <- function(length, value) {
     .Call(`_Travel_C_RLE`, length, value)
+}
+
+Travel_compact_seq <- function(n) {
+    .Call(`_Travel_Travel_compact_seq`, n)
 }
 
 C_set_debug_print <- function(x) {

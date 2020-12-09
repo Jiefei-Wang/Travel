@@ -83,66 +83,70 @@ void C_test_Subset_index_basic()
 }
 
 //[[Rcpp::export]]
-void C_test_Subset_index_conversion(){
-    Rcpp::NumericVector idx1=Rcpp::NumericVector::create(1,2,3,4,6,7,8,9,11,13,15,17,18);
-    Subset_index ref_index1(0,100);
-    Subset_index index1 = Subset_index::to_subset_index(idx1,ref_index1);
-    throw_if_not(index1.total_length ==(size_t)idx1.length());
-    throw_if_not(index1.starts[0]==0);
-    throw_if_not(index1.starts[1]==5);
-    throw_if_not(index1.starts[2]==10);
-    throw_if_not(index1.starts[3]==17);
-    throw_if_not(index1.lengths[0]==4);
-    throw_if_not(index1.lengths[1]==4);
-    throw_if_not(index1.lengths[2]==4);
-    throw_if_not(index1.lengths[3]==1);
-    throw_if_not(index1.strides[0]==1);
-    throw_if_not(index1.strides[1]==1);
-    throw_if_not(index1.strides[2]==2);
-    throw_if_not(index1.strides[3]==1);
-    throw_if_not(index1.partial_lengths[0]==0);
-    throw_if_not(index1.partial_lengths[1]==4);
-    throw_if_not(index1.partial_lengths[2]==8);
-    throw_if_not(index1.partial_lengths[3]==12);
-    for(size_t i=0;i<index1.total_length;i++){
-        throw_if_not(index1.get_source_index(i)==idx1[i]-1);
+void C_test_Subset_index_conversion()
+{
+    Rcpp::NumericVector idx1 = Rcpp::NumericVector::create(1, 2, 3, 4, 6, 7, 8, 9, 11, 13, 15, 17, 18);
+    Subset_index ref_index1(0, 100);
+    Subset_index index1 = Subset_index::to_subset_index(idx1, ref_index1);
+    throw_if_not(index1.total_length == (size_t)idx1.length());
+    throw_if_not(index1.starts[0] == 0);
+    throw_if_not(index1.starts[1] == 5);
+    throw_if_not(index1.starts[2] == 10);
+    throw_if_not(index1.starts[3] == 17);
+    throw_if_not(index1.lengths[0] == 4);
+    throw_if_not(index1.lengths[1] == 4);
+    throw_if_not(index1.lengths[2] == 4);
+    throw_if_not(index1.lengths[3] == 1);
+    throw_if_not(index1.strides[0] == 1);
+    throw_if_not(index1.strides[1] == 1);
+    throw_if_not(index1.strides[2] == 2);
+    throw_if_not(index1.strides[3] == 1);
+    throw_if_not(index1.partial_lengths[0] == 0);
+    throw_if_not(index1.partial_lengths[1] == 4);
+    throw_if_not(index1.partial_lengths[2] == 8);
+    throw_if_not(index1.partial_lengths[3] == 12);
+    for (size_t i = 0; i < index1.total_length; i++)
+    {
+        throw_if_not(index1.get_source_index(i) == idx1[i] - 1);
     }
 
     //Unordered subset
-    Rcpp::NumericVector idx2=Rcpp::NumericVector::create(6,7,8,9,1,2,3,4);
-    Subset_index ref_index2(0,100);
-    Subset_index index2 = Subset_index::to_subset_index(idx2,ref_index2);
-    throw_if_not(index2.total_length ==(size_t)idx2.length());
-    throw_if_not(index2.starts[0]==5);
-    throw_if_not(index2.starts[1]==0);
-    throw_if_not(index2.lengths[0]==4);
-    throw_if_not(index2.lengths[1]==4);
-    throw_if_not(index2.strides[0]==1);
-    throw_if_not(index2.strides[1]==1);
-    throw_if_not(index2.partial_lengths[0]==0);
-    throw_if_not(index2.partial_lengths[1]==4);
-    for(size_t i=0;i<index2.total_length;i++){
-        throw_if_not(index2.get_source_index(i)==idx2[i]-1);
+    Rcpp::NumericVector idx2 = Rcpp::NumericVector::create(6, 7, 8, 9, 1, 2, 3, 4);
+    Subset_index ref_index2(0, 100);
+    Subset_index index2 = Subset_index::to_subset_index(idx2, ref_index2);
+    throw_if_not(index2.total_length == (size_t)idx2.length());
+    throw_if_not(index2.starts[0] == 5);
+    throw_if_not(index2.starts[1] == 0);
+    throw_if_not(index2.lengths[0] == 4);
+    throw_if_not(index2.lengths[1] == 4);
+    throw_if_not(index2.strides[0] == 1);
+    throw_if_not(index2.strides[1] == 1);
+    throw_if_not(index2.partial_lengths[0] == 0);
+    throw_if_not(index2.partial_lengths[1] == 4);
+    for (size_t i = 0; i < index2.total_length; i++)
+    {
+        throw_if_not(index2.get_source_index(i) == idx2[i] - 1);
     }
     //subset with reference
     //c(7,8,1,3,4)
-    Rcpp::NumericVector idx3=Rcpp::NumericVector::create(2,3,5,7,8);
-    Subset_index index3 = Subset_index::to_subset_index(idx3,index2);
-    throw_if_not(index3.total_length ==(size_t)idx3.length());
-    throw_if_not(index3.starts[0]==6);
-    throw_if_not(index3.starts[1]==0);
-    throw_if_not(index3.starts[2]==3);
-    throw_if_not(index3.lengths[0]==2);
-    throw_if_not(index3.lengths[1]==2);
-    throw_if_not(index3.lengths[2]==1);
-    throw_if_not(index3.strides[0]==1);
-    throw_if_not(index3.strides[1]==2);
-    throw_if_not(index3.strides[2]==1);
-    throw_if_not(index3.partial_lengths[0]==0);
-    throw_if_not(index3.partial_lengths[1]==2);
-    throw_if_not(index3.partial_lengths[2]==4);
-    for(size_t i=0;i<index3.total_length;i++){
-        throw_if_not(index3.get_source_index(i)==idx2[idx3[i]-1]-1);
+    Rcpp::NumericVector idx3 = Rcpp::NumericVector::create(2, 3, 5, 7, 8);
+    Subset_index index3 = Subset_index::to_subset_index(idx3, index2);
+    throw_if_not(index3.total_length == (size_t)idx3.length());
+    throw_if_not(index3.starts[0] == 6);
+    throw_if_not(index3.starts[1] == 0);
+    throw_if_not(index3.starts[2] == 3);
+    throw_if_not(index3.lengths[0] == 2);
+    throw_if_not(index3.lengths[1] == 2);
+    throw_if_not(index3.lengths[2] == 1);
+    throw_if_not(index3.strides[0] == 1);
+    throw_if_not(index3.strides[1] == 2);
+    throw_if_not(index3.strides[2] == 1);
+    throw_if_not(index3.partial_lengths[0] == 0);
+    throw_if_not(index3.partial_lengths[1] == 2);
+    throw_if_not(index3.partial_lengths[2] == 4);
+    for (size_t i = 0; i < index3.total_length; i++)
+    {
+        throw_if_not(index3.get_source_index(i) == idx2[idx3[i] - 1] - 1);
     }
 }
 
@@ -161,11 +165,10 @@ void C_test_Cache_block()
     throw_if_not(cache1.use_count() == 1);
     throw_if_not(cache1.get_const() == cache_ptr);
 
-    cache1 =cache1;
+    cache1 = cache1;
     throw_if_not(cache1.get_size() >= cache_size);
     throw_if_not(cache1.use_count() == 1);
     throw_if_not(cache1.get_const() == cache_ptr);
-
 
     {
         Cache_block cache2 = cache1;
@@ -194,7 +197,6 @@ void C_test_Cache_block()
         throw_if_not(cache3.use_count() == 1);
     }
 }
-
 
 /*
 =========================================================================================
@@ -226,8 +228,8 @@ void test_read_write_functions_internal(
     Filesystem_file_identifier file_info = add_filesystem_file(type, index, altrep_info);
     Filesystem_file_data &file_data = get_filesystem_file_data(file_info.file_inode);
     uint8_t &type_size = file_data.unit_size;
-    
-    throw_if_not(file_data.file_length==index.total_length);
+
+    throw_if_not(file_data.file_length == index.total_length);
     //Create the test data
     size_t data_length = file_data.file_length;
     std::unique_ptr<char[]> data(new char[type_size * data_length]);
@@ -342,20 +344,20 @@ void C_test_read_write_functions_with_coercion_subset(
     Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
     Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
 {
-    size_t total_length=0;
+    size_t total_length = 0;
     Subset_index index;
-    for(size_t i=0;i<(size_t)lengths.size();i++){
+    for (size_t i = 0; i < (size_t)lengths.size(); i++)
+    {
         size_t start = lengths[i];
-        size_t stride = i+2;
-        index.push_back(0,lengths[i],i+2);
-        total_length=std::max(total_length,start+(size_t)lengths[i]*stride);
+        size_t stride = i + 2;
+        index.push_back(0, lengths[i], i + 2);
+        total_length = std::max(total_length, start + (size_t)lengths[i] * stride);
     }
     test_read_write_functions_internal(
         REALSXP, total_length, index,
         write_starts, write_length,
         read_starts, read_length);
 }
-
 
 /*
 =========================================================================================
@@ -372,8 +374,6 @@ SEXP C_make_arithmetic_sequence_altrep(double n)
     SEXP x = Travel_make_altrep(altrep_info);
     return x;
 }
-
-
 
 /*
 =========================================================================================
@@ -513,5 +513,27 @@ SEXP C_RLE(std::vector<double> length, std::vector<double> value)
     altrep_info.protected_data = PROTECT(Travel_shared_ptr<RLE>(rle));
     SEXP x = Travel_make_altrep(altrep_info);
     Rf_unprotect(1);
+    return x;
+}
+
+#include "Travel.h"
+size_t arithmetic_sequence_region(const Travel_altrep_info *altrep_info, void *buffer,
+                                     size_t offset, size_t length)
+{
+    for (size_t i = 0; i < length; i++)
+    {
+        ((double *)buffer)[i] = offset + i + 1;
+    }
+    return length;
+}
+
+// [[Rcpp::export]]
+SEXP Travel_compact_seq(size_t n)
+{
+    Travel_altrep_info altrep_info;
+    altrep_info.length = n;
+    altrep_info.type = REALSXP;
+    altrep_info.operations.get_region = arithmetic_sequence_region;
+    SEXP x = Travel_make_altrep(altrep_info);
     return x;
 }
