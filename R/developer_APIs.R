@@ -21,10 +21,19 @@ pkgconfig <- function(x = c("PKG_LIBS", "PKG_CPPFLAGS")){
                                   package = "Travel", mustWork = TRUE)
         }
         files <- "Travel.a"
-        result <- paste0("\"",folder,"/",files,"\" ",
-                         '-L"',Sys.getenv("DokanLibrary1"),'lib" -ldokan1')
+        travel_libs <- paste0('"',folder,"/",files,"'")
+        if(get_OS()=="windows"){
+            filesystem_libs <- paste0('-L"',Sys.getenv("DokanLibrary1"),'lib" -ldokan1')
+        }else{
+            filesystem_libs <- system("pkg-config fuse --libs",intern=TRUE)
+        }
+        result <- paste0(travel_libs," ",filesystem_libs)
     }else{
-        result <- ""
+        if(get_OS()=="windows"){
+            result <- ""
+        }else{
+            result <- system("pkg-config fuse --cflags",intern=TRUE)
+        }
     }
     cat(result)
     invisible(result)
