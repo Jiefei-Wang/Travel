@@ -12,32 +12,20 @@
 #' Travel:::pkgconfig("PKG_CPPFLAGS")
 pkgconfig <- function(x = c("PKG_LIBS", "PKG_CPPFLAGS")){
     x <- match.arg(x)
-    pkg_name <- "Travel"
-    if(get_OS_bit() == 64){
-        folder <- "libs/x64"
-    }else{
-        folder <- "libs/i386"
-    }
     if(x == "PKG_LIBS"){
+        folder <- sprintf("usrlib/%s", .Platform$r_arch)
         folder <- system.file(folder,
-                              package = pkg_name, mustWork = FALSE)
-        ## Ubuntu will put its compiled library under the folder "libs/" 
+                              package = "Travel", mustWork = FALSE)
         if(folder == ""){
-            folder <- system.file("libs",
-                                  package = pkg_name, mustWork = TRUE)
+            folder <- system.file("usrlib",
+                                  package = "Travel", mustWork = TRUE)
         }
-        files <- list.files(folder)
-        if(length(files)>1){
-            ind <- max(which(endsWith(files,".so")),0)
-            if(ind == 0){
-                ind <- max(which(endsWith(files,".dll")),0)
-                stopifnot(ind != 0)
-            }
-            files <- files[ind]
-        }
-        result <- paste0("\"",folder,"/",files,"\"")
+        files <- "Travel.a"
+        result <- paste0("\"",folder,"/",files,"\" ",
+                         '-L"',Sys.getenv("DokanLibrary1"),'lib" -ldokan1')
     }else{
         result <- ""
     }
     cat(result)
+    invisible(result)
 }

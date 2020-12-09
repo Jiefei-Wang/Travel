@@ -14,9 +14,6 @@ get_OS <- function(){
     tolower(os)
 }
 
-get_OS_bit <- function(){
-    .Machine$sizeof.pointer * 8
-}
 
 set_verbose<- function(x){
     C_set_debug_print(x)

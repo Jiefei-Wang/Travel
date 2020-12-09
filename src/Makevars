@@ -1,23 +1,24 @@
 PKG_CPPFLAGS = `pkg-config fuse --cflags`
 PKG_LIBS = `pkg-config fuse --libs`
 CXX_STD= CXX11
-
-
 MKDIR_P = mkdir -p
-package_lib= Travel.so
 
 
-.PHONY: all create-folder copy-header
+.PHONY: all create-folder make-static-lib copy-header
 
-#all: ${package_lib}
-all: create-folder copy-header ${package_lib}
+#all: ${SHLIB}
+all: create-folder ${SHLIB} make-static-lib copy-header 
 
 
 create-folder:
 	 ${MKDIR_P} ../inst/include&&\
-	 ${MKDIR_P} ../inst/include/Travel
+	 ${MKDIR_P} ../inst/include/Travel\
+	 ${MKDIR_P} ../inst/usrlib${R_ARCH}
 
-
+make-static-lib:
+	 ${AR} -crv Travel.a *.o
+	 
 copy-header:
 	 cp "Travel.h" "../inst/include/Travel/" &&\
 	 cp "Travel_package_types.h" "../inst/include/Travel/"
+	 ${CP} "Travel.a" "../inst/usrlib${R_ARCH}/"

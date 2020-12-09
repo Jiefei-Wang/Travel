@@ -48,3 +48,4 @@ debug_output
 inst/test
 inst/doc
 inst/include
+inst/usrlib
