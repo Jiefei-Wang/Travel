@@ -21,7 +21,7 @@ pkgconfig <- function(x = c("PKG_LIBS", "PKG_CPPFLAGS")){
                                   package = "Travel", mustWork = TRUE)
         }
         files <- "Travel.a"
-        travel_libs <- paste0('"',folder,"/",files,"'")
+        travel_libs <- paste0('"',folder,"/",files,'"')
         if(get_OS()=="windows"){
             filesystem_libs <- paste0('-L"',Sys.getenv("DokanLibrary1"),'lib" -ldokan1')
         }else{

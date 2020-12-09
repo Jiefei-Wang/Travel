@@ -177,7 +177,7 @@ static const void *altmmap_dataptr_or_null(SEXP x)
         return NULL;
     }
 }
-
+/*
 static unsigned char altmmap_get_raw_elt(SEXP x, R_xlen_t i){
     altrep_print("Accessing elt at %llu\n", (unsigned long long)i);
     unsigned char result;
@@ -202,7 +202,7 @@ static double altmmap_get_numeric_elt(SEXP x, R_xlen_t i){
     general_read_func(file_data, &result, i*sizeof(result), sizeof(result));
     return result;
 }
-
+*/
 
 static SEXP altmmap_duplicate(SEXP x, Rboolean deep)
 {
@@ -527,14 +527,14 @@ void init_altmmap_logical_class(DllInfo *dll)
 {
     char class_name[] = "travel_altmmap_logical";
     ALT_COMMOM_REGISTRATION(altmmap_logical_class, altlogical, LOGICAL);
-    R_set_altlogical_Elt_method(altmmap_logical_class,altmmap_get_int_elt);
+    //R_set_altlogical_Elt_method(altmmap_logical_class,altmmap_get_int_elt);
 }
 //[[Rcpp::init]]
 void init_altmmap_integer_class(DllInfo *dll)
 {
     char class_name[] = "travel_altmmap_integer";
     ALT_COMMOM_REGISTRATION(altmmap_integer_class, altinteger, INTEGER);
-    R_set_altinteger_Elt_method(altmmap_logical_class,altmmap_get_int_elt);
+    //R_set_altinteger_Elt_method(altmmap_integer_class,altmmap_get_int_elt);
 }
 
 //[[Rcpp::init]]
@@ -542,7 +542,7 @@ void ini_altmmap_real_class(DllInfo *dll)
 {
     char class_name[] = "travel_altmmap_real";
     ALT_COMMOM_REGISTRATION(altmmap_real_class, altreal, REAL);
-    R_set_altreal_Elt_method(altmmap_logical_class,altmmap_get_numeric_elt);
+    //R_set_altreal_Elt_method(altmmap_real_class,altmmap_get_numeric_elt);
 }
 
 //[[Rcpp::init]]
@@ -550,5 +550,5 @@ void init_altmmap_raw_class(DllInfo *dll)
 {
     char class_name[] = "travel_altmmap_raw";
     ALT_COMMOM_REGISTRATION(altmmap_raw_class, altraw, RAW);
-    R_set_altraw_Elt_method(altmmap_logical_class,altmmap_get_raw_elt);
+    //R_set_altraw_Elt_method(altmmap_raw_class,altmmap_get_raw_elt);
 }
