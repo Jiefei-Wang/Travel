@@ -201,7 +201,7 @@ bool Memory_mapped::map()
                     ", error:" + std::to_string(GetLastError()) + "\n";
         return false;
     }
-    void *ptr = MapViewOfFile(map_handle, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, 0);
+    ptr = MapViewOfFile(map_handle, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, 0);
     if (ptr == NULL)
     {
         CloseHandle(map_handle);
