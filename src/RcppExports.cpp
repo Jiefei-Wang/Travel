@@ -169,6 +169,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// C_call_Travel_make_altmmap
+SEXP C_call_Travel_make_altmmap(SEXP x);
+RcppExport SEXP _Travel_C_call_Travel_make_altmmap(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_call_Travel_make_altmmap(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // C_get_virtual_file_list
 Rcpp::DataFrame C_get_virtual_file_list();
 RcppExport SEXP _Travel_C_get_virtual_file_list() {
@@ -522,6 +533,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_mySum2", (DL_FUNC) &_Travel_mySum2, 1},
     {"_Travel_mySum3", (DL_FUNC) &_Travel_mySum3, 1},
     {"_Travel_Travel_compact_seq", (DL_FUNC) &_Travel_Travel_compact_seq, 1},
+    {"_Travel_C_call_Travel_make_altmmap", (DL_FUNC) &_Travel_C_call_Travel_make_altmmap, 1},
     {"_Travel_C_get_virtual_file_list", (DL_FUNC) &_Travel_C_get_virtual_file_list, 0},
     {"_Travel_run_filesystem_thread_func", (DL_FUNC) &_Travel_run_filesystem_thread_func, 0},
     {"_Travel_C_run_filesystem_thread", (DL_FUNC) &_Travel_C_run_filesystem_thread, 0},

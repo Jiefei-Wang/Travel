@@ -61,6 +61,10 @@ Travel_compact_seq <- function(n) {
     .Call(`_Travel_Travel_compact_seq`, n)
 }
 
+C_call_Travel_make_altmmap <- function(x) {
+    .Call(`_Travel_C_call_Travel_make_altmmap`, x)
+}
+
 C_get_virtual_file_list <- function() {
     .Call(`_Travel_C_get_virtual_file_list`)
 }

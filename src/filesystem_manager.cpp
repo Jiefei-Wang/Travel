@@ -206,7 +206,7 @@ void C_stop_filesystem_thread()
   if (filesystem_thread != nullptr)
   {
     // We must release the file handle before stopping the thread
-    std::string status = unmap_filesystem_files();
+    std::string status = unmap_all_files();
     if (status != "")
     {
       Rf_warning(status.c_str());

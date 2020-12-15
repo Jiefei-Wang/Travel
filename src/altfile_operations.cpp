@@ -58,8 +58,8 @@ void *altfile_dataptr(SEXP x, Rboolean writeable)
     {
         Rf_error("The file handle is NULL, this should not happen!\n");
     }
-    file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
-    return handle->ptr;
+    Memory_mapped *handle = (Memory_mapped*)R_ExternalPtrAddr(handle_extptr);
+    return handle->get_ptr();
 }
 
 const void *altfile_dataptr_or_null(SEXP x)

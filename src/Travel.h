@@ -5,6 +5,7 @@
 #include <Rinternals.h>
 #endif
 #include "Travel_package_types.h"
+#include "Travel_impl.h"
 
 /*
 Create an ALTREP object given the data reading function. There

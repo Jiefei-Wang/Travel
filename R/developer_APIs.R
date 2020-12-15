@@ -13,20 +13,21 @@
 pkgconfig <- function(x = c("PKG_LIBS", "PKG_CPPFLAGS")){
     x <- match.arg(x)
     if(x == "PKG_LIBS"){
-        folder <- sprintf("usrlib/%s", .Platform$r_arch)
+        folder <- sprintf("libs/%s", .Platform$r_arch)
         folder <- system.file(folder,
                               package = "Travel", mustWork = FALSE)
         if(folder == ""){
-            folder <- system.file("usrlib",
+            folder <- system.file("libs",
                                   package = "Travel", mustWork = TRUE)
         }
-        files <- "Travel.a"
-        travel_libs <- paste0('"',folder,"/",files,'"')
         if(get_OS()=="windows"){
+            files <- "Travel.dll"
             filesystem_libs <- paste0('-L"',Sys.getenv("DokanLibrary1"),'lib" -ldokan1')
         }else{
+            files <- "Travel.so"
             filesystem_libs <- system("pkg-config fuse --libs",intern=TRUE)
         }
+        travel_libs <- paste0('"',folder,"/",files,'"')
         result <- paste0(travel_libs," ",filesystem_libs)
     }else{
         if(get_OS()=="windows"){

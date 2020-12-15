@@ -1,47 +1,63 @@
 #ifndef HEADER_MEMORY_MAPPED_FILE
 #define HEADER_MEMORY_MAPPED_FILE
 #include <string>
-#include "filesystem_manager.h"
 
-struct file_map_handle
+class Memory_mapped
 {
-    file_map_handle(
-                    std::string file_path,
-                    void *file_handle,
-                    void *map_handle,
-                    void *ptr,
-                    size_t size,
-                    bool filesystem_file) : file_path(file_path),
-                                   file_handle(file_handle),
-                                   map_handle(map_handle),
-                                   ptr(ptr),
-                                   size(size),
-                                   filesystem_file(filesystem_file) {}
+public:
+    enum Cache_hint
+    {
+        Normal,         ///< good overall performance
+        SequentialScan, ///< read file only once with few seeks
+        RandomAccess    ///< jump around
+    };
+
+private:
+    static const size_t file_wait_time = 5;
     std::string file_path;
-    void *file_handle;
-    void *map_handle;
-    void *ptr;
     size_t size;
-    bool filesystem_file;
+    Cache_hint hint = Normal;
+#ifndef _WIN32
+    void *file_handle = nullptr;
+    void *map_handle = nullptr;
+#else
+    void *file_handle;
+    void *map_handle = NULL;
+#endif
+    void *ptr = nullptr;
+    bool mapped = false;
+    std::string error_msg;
+
+public:
+    Memory_mapped(std::string file_path, const size_t size, Cache_hint hint = Normal);
+    ~Memory_mapped();
+    bool map();
+    bool unmap();
+    bool flush();
+    void* get_ptr(){
+        return ptr;
+    }
+    bool is_mapped()
+    {
+        return mapped;
+    }
+    size_t get_size()
+    {
+        return size;
+    }
+    std::string get_last_error()
+    {
+        return error_msg;
+    }
+    std::string get_file_path()
+    {
+        return file_path;
+    }
+    
 };
 
-/*
-Map/Unmap files
-
-If success, the file handle will be returned by file_map_handle
-If not success, the error message will be returned
-
-Args:
-  handle: the file handle
-  file_path: path to the file
-  size: size of the file
-  filesystem_file: is the file from the Travel filesystem?
-*/
-std::string memory_map(file_map_handle *&handle, std::string file_path, const size_t size, bool filesystem_file = true);
-std::string memory_unmap(file_map_handle *handle);
-std::string flush_handle(file_map_handle *handle);
-
-bool has_mapped_file_handle(void *handle);
-std::string unmap_filesystem_files();
-
 #endif
+
+void register_file_handle(Memory_mapped *handle);
+void unregister_file_handle(Memory_mapped *handle);
+std::string unmap_all_files();

@@ -17,7 +17,7 @@
 //File handle external pointer
 #define GET_PROPS_EXTPTR(x) VECTOR_ELT(x,FILE_HANDLE_SLOT)
 //File handle itself
-#define GET_PROPS_FILE_HANDLE(x) ((file_map_handle *)R_ExternalPtrAddr(GET_PROPS_EXTPTR(x)))
+#define GET_PROPS_FILE_HANDLE(x) ((Memory_mapped *)R_ExternalPtrAddr(GET_PROPS_EXTPTR(x)))
 #define GET_PROPS_SIZE(x) VECTOR_ELT(x,SIZE_SLOT)
 #define GET_PROPS_LENGTH(x) VECTOR_ELT(x,LENGTH_SLOT)
 

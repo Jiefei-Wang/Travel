@@ -148,34 +148,18 @@ static R_xlen_t altmmap_length(SEXP x)
 static void *altmmap_dataptr(SEXP x, Rboolean writeable)
 {
     altrep_print("accessing data pointer\n");
-    if (!is_filesystem_running())
-    {
-        Rf_error("The filesystem is not running!\n");
-    }
-    SEXP handle_extptr = GET_ALT_HANDLE_EXTPTR(x);
-    if (handle_extptr == R_NilValue)
-    {
-        Rf_error("The file handle is NULL, this should not happen!\n");
-    }
-    file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
-    if (!has_mapped_file_handle(handle))
+    Memory_mapped *handle = GET_ALT_FILE_HANDLE(x);
+    if (!handle->is_mapped())
     {
         Rf_error("The file handle has been released!\n");
     }
-    return handle->ptr;
+    return handle->get_ptr();
 }
 
 static const void *altmmap_dataptr_or_null(SEXP x)
 {
     altrep_print("accessing data pointer or null\n");
-    if (is_filesystem_running())
-    {
-        return altmmap_dataptr(x, Rboolean::TRUE);
-    }
-    else
-    {
-        return NULL;
-    }
+    return altmmap_dataptr(x, Rboolean::TRUE);
 }
 /*
 static unsigned char altmmap_get_raw_elt(SEXP x, R_xlen_t i){

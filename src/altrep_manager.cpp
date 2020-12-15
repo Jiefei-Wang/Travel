@@ -13,19 +13,21 @@
 static void altmmap_handle_finalizer(SEXP handle_extptr)
 {
     std::string name = Rcpp::as<std::string>(R_ExternalPtrTag(handle_extptr));
-    file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
-    if (!has_mapped_file_handle(handle))
+    Memory_mapped *handle = (Memory_mapped *)R_ExternalPtrAddr(handle_extptr);
+    if (!handle->is_mapped())
     {
         Rf_warning("The altmmap handle has been released: %s, handle: %p\n", name.c_str(), handle);
     }
     else
     {
-        debug_print("Finalizer, name:%s, size:%llu\n", name.c_str(), handle->size);
-        std::string status = memory_unmap(handle);
-        if (status != "")
+        debug_print("Finalizer, name:%s, size:%llu\n", name.c_str(), handle->get_size());
+        bool status = handle->unmap();
+        if (!status)
         {
-            Rf_warning(status.c_str());
+            Rf_warning(handle->get_last_error().c_str());
         }
+        unregister_file_handle(handle);
+        delete handle;
     }
     remove_filesystem_file(name);
 }
@@ -53,14 +55,15 @@ SEXP Travel_make_altmmap(Filesystem_file_identifier &file_info)
 
     SET_PROPS_NAME(altmmap_options, Rcpp::wrap(file_info.file_name));
     SET_PROPS_SIZE(altmmap_options, Rcpp::wrap(file_data.file_size));
-    file_map_handle *handle;
-    std::string status = memory_map(handle, file_info.file_full_path, file_data.file_size);
-    if (status != "")
+    Memory_mapped *handle = new Memory_mapped(file_info.file_full_path,file_data.file_size);
+    if (!handle->is_mapped())
     {
         remove_filesystem_file(file_info.file_name);
-        Rf_warning(status.c_str());
+        Rf_warning(handle->get_last_error().c_str());
+        delete handle;
         return R_NilValue;
     }
+    register_file_handle(handle);
     SEXP handle_extptr = guard.protect(R_MakeExternalPtr(handle,
                                                          GET_PROPS_NAME(altmmap_options),
                                                          R_NilValue));
@@ -77,27 +80,24 @@ SEXP Travel_make_altmmap(Travel_altrep_info &altrep_info)
     Filesystem_file_identifier file_info = add_filesystem_file(altrep_info.type, index, altrep_info);
     return Travel_make_altmmap(file_info);
 }
-SEXP Travel_make_altrep(Travel_altrep_info altrep_info)
-{
-    return Travel_make_altmmap(altrep_info);
-}
 
 static void altfile_handle_finalizer(SEXP handle_extptr)
 {
     std::string name = Rcpp::as<std::string>(R_ExternalPtrTag(handle_extptr));
-    file_map_handle *handle = (file_map_handle *)R_ExternalPtrAddr(handle_extptr);
-    if (!has_mapped_file_handle(handle))
+    Memory_mapped *handle = (Memory_mapped *)R_ExternalPtrAddr(handle_extptr);
+    if (!handle->is_mapped())
     {
         Rf_warning("The altfile handle has been released: %s, handle: %p\n", name.c_str(), handle);
     }
     else
     {
-        debug_print("Finalizer, name:%s, size:%llu\n", name.c_str(), handle->size);
-        std::string status = memory_unmap(handle);
-        if (status != "")
+        debug_print("Altfile finalizer, name:%s, size:%llu\n", name.c_str(), handle->get_size());
+        bool status = handle->unmap();
+        if (!status)
         {
-            Rf_warning(status.c_str());
+            Rf_warning(handle->get_last_error().c_str());
         }
+        delete handle;
     }
 }
 
@@ -118,11 +118,11 @@ SEXP make_altmmap_from_file(std::string path, int type, size_t length)
     Filesystem_file_identifier file_info;
     file_info.file_name = file_name;
     file_info.file_full_path = path;
-    file_map_handle *handle;
-    std::string status = memory_map(handle, file_info.file_full_path, size, false);
-    if (status != "")
+    Memory_mapped *handle= new Memory_mapped(file_info.file_full_path, size);
+    if (!handle->is_mapped())
     {
-        Rf_warning(status.c_str());
+        Rf_warning(handle->get_last_error().c_str());
+        delete handle;
         return R_NilValue;
     }
     SEXP handle_extptr = guard.protect(R_MakeExternalPtr(handle,
@@ -140,16 +140,16 @@ SEXP get_file_name(SEXP x)
 }
 SEXP get_file_path(SEXP x)
 {
-    file_map_handle *handle = GET_ALT_FILE_HANDLE(x);
-    return Rcpp::wrap(handle->file_path);
+    Memory_mapped *handle = GET_ALT_FILE_HANDLE(x);
+    return Rcpp::wrap(handle->get_file_path());
 }
 
 void flush_altrep(SEXP x)
 {
-    file_map_handle *handle = GET_ALT_FILE_HANDLE(x);
-    std::string status = flush_handle(handle);
-    if (status != "")
+    Memory_mapped *handle = GET_ALT_FILE_HANDLE(x);
+    bool status = handle->flush();
+    if (!status)
     {
-        Rf_warning(status.c_str());
+        Rf_warning(handle->get_last_error().c_str());
     }
 }

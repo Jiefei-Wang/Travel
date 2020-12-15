@@ -214,3 +214,9 @@ SEXP Travel_compact_seq(size_t n)
     return x;
 }
 
+// [[Rcpp::export]]
+SEXP C_call_Travel_make_altmmap(SEXP x){
+    Travel_altrep_info* altrep_info = (Travel_altrep_info*)R_ExternalPtrAddr(x);
+    return Travel_make_altmmap(*altrep_info);
+}
+
