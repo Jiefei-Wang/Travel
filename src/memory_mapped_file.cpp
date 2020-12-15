@@ -9,9 +9,11 @@
 #include <fcntl.h>
 //error code
 #include <errno.h>
+#include <cstring>
 #else
 #include <windows.h>
 #endif
+
 
 #include <string>
 #include <set>
@@ -55,66 +57,6 @@ size_t C_get_file_handle_number()
     return mapped_file_handle_list.size();
 }
 
-#ifndef _WIN32
-#include <cstring>
-std::string memory_map(file_map_handle *&handle, std::string file_path, const size_t size, bool filesystem_file)
-{
-    //Wait until the file exist or timeout(5s)
-    Timer timer(FILESYSTEM_WAIT_TIME);
-    int fd = -1;
-    while (fd == -1)
-    {
-        fd = open(file_path.c_str(), O_RDWR);
-        if (timer.expired())
-            break;
-    }
-    if (fd == -1)
-    {
-        return "Fail to open the file " + file_path + ", error: " + strerror(errno) + "\n";
-    }
-    void *ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (ptr == (void *)-1)
-    {
-        close(fd);
-        return "Fail to map the file " + file_path + ", error: " + strerror(errno) + "\n";
-    }
-    close(fd);
-    handle = new file_map_handle(file_path, NULL, NULL, ptr, size, filesystem_file);
-    insert_mapped_file_handle(handle);
-    return "";
-}
-std::string memory_unmap(file_map_handle *handle)
-{
-    filesystem_print("releasing file handle:%s--%p\n", handle->file_path.c_str(), handle->ptr);
-    if (!has_mapped_file_handle(handle))
-    {
-        return "The handle has been released";
-    }
-    int status = munmap(
-        handle->ptr,
-        handle->size);
-    delete handle;
-    erase_mapped_file_handle(handle);
-    if (status == -1)
-        return "Fail to unmap the file" + handle->file_path + ", error: " + strerror(errno) + "\n";
-    else
-        return "";
-}
-
-std::string flush_handle(file_map_handle *handle)
-{
-    if (!has_mapped_file_handle(handle))
-    {
-        return "Fail to flush the changes: The file handle has been released\n";
-    }
-    int status = msync(handle->ptr, handle->size, MS_SYNC);
-    if (status != 0)
-    {
-        return "Fail to flush the changes to the memory mapped file" + handle->file_path + ", error: " + strerror(errno) + "\n";
-    }
-    return "";
-}
-#endif
 
 /*
 class MemoryMapped
@@ -149,6 +91,68 @@ Memory_mapped::~Memory_mapped()
     }
 }
 #ifndef _WIN32
+bool Memory_mapped::map()
+{
+    if(mapped)
+    {
+        return true;
+    }
+    //Wait until the file exist or timeout(5s)
+    Timer timer(FILESYSTEM_WAIT_TIME);
+    int fd = -1;
+    while(fd == -1)
+    {
+        fd = open(file_path.c_str(), O_RDWR);
+        if (timer.expired())
+            break;
+    }
+    if (fd == -1)
+    {
+         error_msg = "Fail to open the file " + file_path + ", error: " + strerror(errno) + "\n";
+         return false;
+    }
+    ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    close(fd);
+    if(ptr == (void *)-1)
+    {
+        ptr=nullptr;
+        error_msg = "Fail to map the file " + file_path + ", error: " + strerror(errno) + "\n";
+        return false;
+    }
+    mapped = true;
+    return true;
+}
+bool Memory_mapped::unmap()
+{
+    if (!mapped)
+        return true;
+    filesystem_print("releasing file handle:%s--%p\n", file_path.c_str(), ptr);
+    int status = munmap(
+        ptr,
+        size);
+    if (status == -1){
+        error_msg= "Fail to unmap the file" + file_path + ", error: " + strerror(errno) + "\n";
+        return false;
+    }
+    else{
+        return true;
+    }
+}
+bool Memory_mapped::flush()
+{
+    if(!mapped)
+    {
+        return true;
+    }
+    int status = msync(ptr, size, MS_SYNC);
+    if (status != 0)
+    {
+        error_msg = "Fail to flush the changes to the memory mapped file" +
+                    file_path + ", error: " + strerror(errno) + "\n";
+        return false;
+    }
+    return true;
+}
 #else
 bool Memory_mapped::map()
 {
