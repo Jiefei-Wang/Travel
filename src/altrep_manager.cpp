@@ -16,7 +16,7 @@ static void altmmap_handle_finalizer(SEXP handle_extptr)
     Memory_mapped *handle = (Memory_mapped *)R_ExternalPtrAddr(handle_extptr);
     if (!handle->is_mapped())
     {
-        Rf_warning("The altmmap handle has been released: %s, handle: %p\n", name.c_str(), handle);
+        Rprintf("The altmmap handle has been released: %s, handle: %p\n", name.c_str(), handle);
     }
     else
     {
@@ -24,11 +24,11 @@ static void altmmap_handle_finalizer(SEXP handle_extptr)
         bool status = handle->unmap();
         if (!status)
         {
-            Rf_warning(handle->get_last_error().c_str());
+            Rprintf(handle->get_last_error().c_str());
         }
-        unregister_file_handle(handle);
-        delete handle;
     }
+    unregister_file_handle(handle);
+    delete handle;
     remove_filesystem_file(name);
 }
 
@@ -87,18 +87,18 @@ static void altfile_handle_finalizer(SEXP handle_extptr)
     Memory_mapped *handle = (Memory_mapped *)R_ExternalPtrAddr(handle_extptr);
     if (!handle->is_mapped())
     {
-        Rf_warning("The altfile handle has been released: %s, handle: %p\n", name.c_str(), handle);
+        Rprintf("The altfile handle has been released: %s, handle: %p\n", name.c_str(), handle);
     }
     else
     {
-        debug_print("Altfile finalizer, name:%s, size:%llu\n", name.c_str(), handle->get_size());
+        Rprintf("Altfile finalizer, name:%s, size:%llu\n", name.c_str(), handle->get_size());
         bool status = handle->unmap();
         if (!status)
         {
             Rf_warning(handle->get_last_error().c_str());
         }
-        delete handle;
     }
+    delete handle;
 }
 
 R_altrep_class_t get_altfile_class(int type);

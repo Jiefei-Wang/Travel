@@ -48,6 +48,7 @@ std::string unmap_all_files()
             msg += handle->get_last_error() + "\n";
         }
     }
+    mapped_file_handle_list.clear();
     return msg;
 }
 

@@ -153,7 +153,6 @@ static void *altmmap_dataptr(SEXP x, Rboolean writeable)
     {
         Rf_error("The file handle has been released!\n");
     }
-    altrep_print("%p\n",handle->get_ptr());
     return handle->get_ptr();
 }
 
