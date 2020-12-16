@@ -161,6 +161,8 @@ static const void *altmmap_dataptr_or_null(SEXP x)
     altrep_print("accessing data pointer or null\n");
     return altmmap_dataptr(x, Rboolean::TRUE);
 }
+
+
 /*
 static unsigned char altmmap_get_raw_elt(SEXP x, R_xlen_t i){
     altrep_print("Accessing elt at %llu\n", (unsigned long long)i);
@@ -187,6 +189,7 @@ static double altmmap_get_numeric_elt(SEXP x, R_xlen_t i){
     return result;
 }
 */
+
 
 static SEXP altmmap_duplicate(SEXP x, Rboolean deep)
 {

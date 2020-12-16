@@ -4,7 +4,7 @@
 
 
 template <class KEY1, class KEY2, class VALUE> 
-class double_key_map { 
+class Double_key_map { 
 private: 
     std::map<const KEY1, VALUE> coreMap;
     std::map<const KEY2, const KEY1> key2_key1_Map;

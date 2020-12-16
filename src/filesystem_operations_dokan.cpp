@@ -5,7 +5,7 @@
 #include "filesystem_manager.h"
 #include "read_write_operations.h"
 #include "package_settings.h"
-#include "double_key_map.h"
+#include "class_Double_key_map.h"
 
 using std::string;
 using std::wstring;

@@ -109,6 +109,10 @@ C_get_mountpoint <- function() {
     .Call(`_Travel_C_get_mountpoint`)
 }
 
+profile_int <- function(x) {
+    .Call(`_Travel_profile_int`, x)
+}
+
 C_test_Subset_index_basic <- function() {
     invisible(.Call(`_Travel_C_test_Subset_index_basic`))
 }

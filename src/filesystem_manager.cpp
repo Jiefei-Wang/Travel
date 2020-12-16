@@ -7,12 +7,12 @@
 #include "filesystem_manager.h"
 #include "filesystem_operations.h"
 #include "package_settings.h"
-#include "double_key_map.h"
+#include "class_Double_key_map.h"
 #include "utils.h"
 #include "memory_mapped_file.h"
 
 static inode_type file_inode_counter = 1;
-double_key_map<inode_type, std::string, Filesystem_file_data> file_list;
+Double_key_map<inode_type, std::string, Filesystem_file_data> file_list;
 
 
 

@@ -286,6 +286,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// profile_int
+double profile_int(SEXP x);
+RcppExport SEXP _Travel_profile_int(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(profile_int(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // C_test_Subset_index_basic
 void C_test_Subset_index_basic();
 RcppExport SEXP _Travel_C_test_Subset_index_basic() {
@@ -545,6 +556,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_get_print_location", (DL_FUNC) &_Travel_C_get_print_location, 0},
     {"_Travel_C_set_mountpoint", (DL_FUNC) &_Travel_C_set_mountpoint, 1},
     {"_Travel_C_get_mountpoint", (DL_FUNC) &_Travel_C_get_mountpoint, 0},
+    {"_Travel_profile_int", (DL_FUNC) &_Travel_profile_int, 1},
     {"_Travel_C_test_Subset_index_basic", (DL_FUNC) &_Travel_C_test_Subset_index_basic, 0},
     {"_Travel_C_test_Subset_index_conversion", (DL_FUNC) &_Travel_C_test_Subset_index_conversion, 0},
     {"_Travel_C_test_Cache_block", (DL_FUNC) &_Travel_C_test_Cache_block, 0},
