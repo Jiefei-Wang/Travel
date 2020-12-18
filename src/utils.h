@@ -18,6 +18,8 @@
  XSTR(__LINE__)" in file <" __FILE__">")
 #define throw_if_not(x) if(!(x))throw_msg(x)
 #define throw_if(x) if(x)throw_msg(x)
+#define throw_error(msg) throw std::runtime_error(msg)
+
 
 //math macro
 #define round_up_division(x, y) (x / y + (x % y != 0))

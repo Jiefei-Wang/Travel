@@ -172,11 +172,11 @@ void C_run_filesystem_thread()
 {
   if (filesystem_thread != nullptr)
   {
-    Rf_error("The filesystem thread has been running!\n");
+    throw_error("The filesystem thread has been running!\n");
   }
   if (get_mountpoint() == "")
   {
-    Rf_error("The mount point have not been set!\n");
+    throw_error("The mount point have not been set!\n");
   }
   thread_status = THREAD_INIT;
   initial_filesystem_log();

@@ -63,8 +63,7 @@ get_temp_mountpoint <- function(){
 #' @export
 deploy_filesystem <- function(){
     if(is_filesystem_running()){
-        message("The filesystem has been running")
-        return()
+        return("The filesystem has been running")
     }
     mountpoint <- get_temp_mountpoint()
     set_mountpoint(mountpoint)

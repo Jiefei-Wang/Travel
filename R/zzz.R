@@ -19,3 +19,11 @@ NULL
     close_filesystem_log()
     stop_filesystem()
 }
+
+
+dummy_env <- new.env()
+.onExit <- function(x){
+    stop_filesystem()
+} 
+reg.finalizer(dummy_env, .onExit, onexit = TRUE)
+
