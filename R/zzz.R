@@ -2,7 +2,7 @@
 #' @importFrom Rcpp sourceCpp
 NULL
 
-exit_hook_env <- new.env()
+pkg_data <- new.env()
 onExit <-function(e){
     stop_filesystem()
 }
@@ -10,7 +10,7 @@ onExit <-function(e){
 .onLoad<- function(libname, pkgname){
     if(Sys.getenv("DEBUG_TRAVEL_PACKAGE")!="T"){
         set_verbose(FALSE)
-        deploy_filesystem()
+        #deploy_filesystem()
     }else{
         C_set_debug_print(TRUE)
         C_set_altrep_print(FALSE)
@@ -18,7 +18,7 @@ onExit <-function(e){
         C_set_filesystem_log(TRUE)
         C_set_print_location(getwd())
     }
-    reg.finalizer(exit_hook_env, onExit, onexit = TRUE)
+    reg.finalizer(pkg_data, onExit, onexit = TRUE)
 }
 
 .onUnload<- function(libname, pkgname){
