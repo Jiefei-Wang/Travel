@@ -16,7 +16,7 @@ get_OS <- function(){
 
 
 set_verbose<- function(x){
-    stopifnot(!is.logical(x))
+    stopifnot(is.logical(x))
     C_set_debug_print(x)
     C_set_altrep_print(x)
     C_set_filesystem_print(x)

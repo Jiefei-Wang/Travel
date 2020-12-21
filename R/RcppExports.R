@@ -113,6 +113,22 @@ profile_int <- function(x) {
     .Call(`_Travel_profile_int`, x)
 }
 
+profile_int2 <- function(x) {
+    .Call(`_Travel_profile_int2`, x)
+}
+
+profile_int3 <- function(x) {
+    .Call(`_Travel_profile_int3`, x)
+}
+
+profile_num <- function(x) {
+    .Call(`_Travel_profile_num`, x)
+}
+
+profile_num2 <- function(x) {
+    .Call(`_Travel_profile_num2`, x)
+}
+
 C_test_Subset_index_basic <- function() {
     invisible(.Call(`_Travel_C_test_Subset_index_basic`))
 }

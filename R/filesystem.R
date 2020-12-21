@@ -38,9 +38,7 @@ run_filesystem <- function(){
 }
 stop_filesystem <- function(){
     if(is_filesystem_running()){
-        if(!is_filesystem_running()){
-            unlink(get_mountpoint(),recursive = TRUE)
-        }
+        C_stop_filesystem_thread()
     }
 }
 is_filesystem_running<-function(){

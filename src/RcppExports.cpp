@@ -297,6 +297,50 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// profile_int2
+double profile_int2(SEXP x);
+RcppExport SEXP _Travel_profile_int2(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(profile_int2(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// profile_int3
+double profile_int3(SEXP x);
+RcppExport SEXP _Travel_profile_int3(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(profile_int3(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// profile_num
+double profile_num(SEXP x);
+RcppExport SEXP _Travel_profile_num(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(profile_num(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// profile_num2
+double profile_num2(SEXP x);
+RcppExport SEXP _Travel_profile_num2(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(profile_num2(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // C_test_Subset_index_basic
 void C_test_Subset_index_basic();
 RcppExport SEXP _Travel_C_test_Subset_index_basic() {
@@ -557,6 +601,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_set_mountpoint", (DL_FUNC) &_Travel_C_set_mountpoint, 1},
     {"_Travel_C_get_mountpoint", (DL_FUNC) &_Travel_C_get_mountpoint, 0},
     {"_Travel_profile_int", (DL_FUNC) &_Travel_profile_int, 1},
+    {"_Travel_profile_int2", (DL_FUNC) &_Travel_profile_int2, 1},
+    {"_Travel_profile_int3", (DL_FUNC) &_Travel_profile_int3, 1},
+    {"_Travel_profile_num", (DL_FUNC) &_Travel_profile_num, 1},
+    {"_Travel_profile_num2", (DL_FUNC) &_Travel_profile_num2, 1},
     {"_Travel_C_test_Subset_index_basic", (DL_FUNC) &_Travel_C_test_Subset_index_basic, 0},
     {"_Travel_C_test_Subset_index_conversion", (DL_FUNC) &_Travel_C_test_Subset_index_conversion, 0},
     {"_Travel_C_test_Cache_block", (DL_FUNC) &_Travel_C_test_Cache_block, 0},

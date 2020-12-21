@@ -37,3 +37,52 @@ double profile_int(SEXP x)
        // ProfilerStop();
     return s;
 }
+
+// [[Rcpp::export]]
+double profile_int2(SEXP x)
+{
+    double s = 0;
+    R_xlen_t len = XLENGTH(x);
+    for (R_xlen_t i = 0; i < len; i++)
+    {
+        s += INTEGER_ELT(x,i);
+    }
+    return s;
+}
+
+// [[Rcpp::export]]
+double profile_int3(SEXP x)
+{
+    double s = 0;
+    int* ptr = (int*)DATAPTR(x);
+    R_xlen_t len = XLENGTH(x);
+    for (R_xlen_t i = 0; i < len; i++)
+    {
+        s += ptr[i];
+    }
+    return s;
+}
+
+// [[Rcpp::export]]
+double profile_num(SEXP x)
+{
+    double s = 0;
+    R_xlen_t len = XLENGTH(x);
+    for (R_xlen_t i = 0; i < len; i++)
+    {
+        s += altmmap_get_numeric_elt(x, i);
+    }
+    return s;
+}
+
+// [[Rcpp::export]]
+double profile_num2(SEXP x)
+{
+    double s = 0;
+    R_xlen_t len = XLENGTH(x);
+    for (R_xlen_t i = 0; i < len; i++)
+    {
+        s += REAL_ELT(x,i);
+    }
+    return s;
+}
