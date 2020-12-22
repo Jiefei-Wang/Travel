@@ -7,8 +7,8 @@ MKDIR_P = mkdir -p
 
 .PHONY: all create-folder copy-header
 
-all: ${SHLIB}
-#all: create-folder ${SHLIB} copy-header 
+#all: ${SHLIB}
+all: create-folder ${SHLIB} copy-header 
 
 
 create-folder:
