@@ -3,7 +3,7 @@ title: "vignette"
 author: 
 - name: Jiefei Wang
   affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
-date: "2020-11-16"
+date: "2020-12-22"
 output:
     BiocStyle::html_document:
         toc: true
@@ -34,18 +34,23 @@ You might think the above crazy code will exhaust all the memory in your machine
 head(x)
 #> [1] 1 2 3 4 5 6
 ```
-You might have a guess on what has happened here. The data of the vector `x` clearly has a lot of redundance. Since it is an arithmetic sequence, you only need to know the first item and the common difference to compute every values in `x`. As long as you do not need the entire data at once, you do not have to put all data into your memory. A minimum ALTREP object can be made by defining a length function and an element retrieving function at C level, the function prototypes are
+You might have a guess on what has happened here. Storing the data of the vector `x` in memory is clearly not a good idea. Since it is an arithmetic sequence, you only need to know the first item and the common difference to compute every values in `x`. As long as you do not need the entire data at once, you do not have to put all data into your memory. A minimum ALTREP object can be made by defining a length function and an element retrieving function at C level, the function prototypes are
 ```{}
 R_xlen_t length(SEXP x);
 double real_elt(SEXP x, R_xlen_t i);
 ```
-We wouldn't go into details of the ALTREP but you can have an intuition on how ALTREP works with these two functions. If you are interested in making your own ALTREP, here are two great documents from the ancient time
+We wouldn't go into the details of the ALTREP but you can have an intuition on how ALTREP works with these two functions. If you are interested in this topic, here are two videos for the ALTREP:
+
+1. [Developers Forum 16](https://www.youtube.com/watch?v=8i7ziLqsE2s&t=269s&ab_channel=Bioconductor)
+2. [Developers Forum 17](https://www.youtube.com/watch?v=biygNnJA1oY&ab_channel=Bioconductor)
+
+Documents are also available:
 
 1. [ALTREP and Other Things](https://www.r-project.org/dsc/2017/slides/dsc2017.pdf): A review of the structure of ALTREP
 2. [ALTREP and C++](https://purrple.cat/blog/2018/10/14/altrep-and-cpp/): A tutorial of ALTREP with  examples. It helps me a lot when I first saw the idea of ALTREP
 
 ## Challenge with ALTREP
-Although the idea of the ALTREP sounds exciting as it greatly extends the flexibility of R's vector, it breaks the assumption that all R's vectors have a pointer associated with them. While today's R developers might be aware of it(or not?), there has been many packages developed before ALTREP and their work depends on this assumption. Before R3.5, It is very common to loop over the data of R's vector at C level like 
+Although the idea of the ALTREP sounds exciting as it greatly extends the flexibility of R's vector, it breaks the assumption that all R's vectors have a pointer associated with them. While today's R developers might be aware of it(or not?), many packages were developed before ALTREP and their work depends on this assumption. Before R3.5, It is very common to loop over the data of R's vector at C level like 
 ```
 double my_sum(SEXP x){
   double* ptr = (double*)DATAPTR(x);
@@ -153,35 +158,13 @@ For *Linux* and *Mac*:
 1. [fuse](https://github.com/libfuse/libfuse)
 2. [pkg-config]()
 
-## Link against Travel library
-To avoid calling any R function when accessing the ALTREP data, you must provide a C++ data reading function to the Travel package. Here is the tutorial on how to include the Travel C++ header and link against its static library.
 
-### Step 1
-For making the Travel header findable, add `Travel` to the `LinkingTo` field of the DESCRIPTION file, e.g.
+
+## Use Travel
+Travel is written by C++, for making the Travel header available, you need to add `Travel` to the `LinkingTo` field of the DESCRIPTION file, e.g.
 ```
 LinkingTo: Travel
 ```
-### Step 2
-In your cpp files, include the header of the Travel functions `#include "Travel/Travel.h"`.
-
-### Step 3
-To compile and link your package successfully against the `Travel` C++ library, you must include a `src/Makevars` file.
-```
-TRAVEL_OBJECT_LIBS = $(shell echo 'Travel:::pkgconfig("PKG_LIBS")'|\
-                     "${R_HOME}/bin/R" --vanilla --slave)
-TRAVEL_OBJECT_CPPFLAGS = $(shell echo 'Travel:::pkgconfig("PKG_CPPFLAGS")'|\
-                         "${R_HOME}/bin/R" --vanilla --slave)
-                         
-PKG_LIBS := $(PKG_LIBS) $(TRAVEL_OBJECT_LIBS)
-PKG_CPPFLAGS := $(PKG_CPPFLAGS) $(TRAVEL_OBJECT_CPPFLAGS)
-```
-Note that `$(shell ...)` is GNU make syntax so you should add GNU make to the SystemRequirements field of the DESCRIPTION file of your package, e.g.
-```
-SystemRequirements: GNU make
-```
-You can find short explanations of the Travel C++ APIs in `Travel/Travel.h`.
-
-## Use Travel
 The main function of the Travel package is `Travel_make_altrep`, its function declaration is as follows
 ```
 SEXP Travel_make_altrep(Travel_altrep_info altrep_info);
@@ -197,11 +180,12 @@ struct Travel_altrep_info
   SEXP protected_data = R_NilValue;
 };
 ```
-`type` specifies the vector type(e.g. `LGLSXP`, `INTSXP` or `REALSXP`), `length` is the length of the vector. `private_data` is a pointer for developers to store any data that is opaque to the Travel package. `protect` is used to make sure the source of the ALTREP(if any) will not be released before the ALTREP object is released. `operations` is a struct which defines the `ALTREP` operations, its design is similar to the ALTREP's API. The stuct definition is
+`type` specifies the vector type(e.g. `LGLSXP`, `INTSXP` or `REALSXP`), `length` is the length of the vector. `private_data` is a pointer for developers to store any data that is opaque to the Travel package. `protected_data` is used to make sure the source of the ALTREP(if any) will not be released before the ALTREP object is released. `operations` is a struct which defines the `ALTREP` operations, its design is similar to the ALTREP's API. The definition of the stuct is
 ```
 struct Travel_altrep_operations
 {
   Travel_get_region get_region = NULL;
+  Travel_read_blocks read_blocks = NULL;
   Travel_set_region set_region = NULL;
   Travel_get_private_size get_private_size = NULL;
   Travel_extract_subset extract_subset = NULL;
@@ -212,12 +196,12 @@ struct Travel_altrep_operations
   Travel_inspect_private inspect_private = NULL;
 };
 ```
-Even though the definition looks complicated, only the function `get_region` is required to make the ALTREP works. Therefore, we will only introduce `Travel_get_region` in this document. For the other functions, please refer to the header file `Travel_package_types.h`. The function `get_region` is the core function for an ALTREP object because Travel package uses it to obtain data from the ALTREP. Its prototype is 
+Even though the definition looks complicated, only the function `get_region` is required to make the ALTREP works. The function `get_region` is the core function for an ALTREP object because Travel package uses it to obtain data from the ALTREP. Its prototype is 
 ```
 typedef size_t (*Travel_get_region)(const Travel_altrep_info *altrep_info, void *buffer,
                                     size_t offset, size_t length);
 ```
-where `altrep_info` is the struct we mentioned previously. `buffer` is the buffer that will hold the requested data. `offset` is the 0-based offset of the vector element that the read should start. `length` is the number of the vector elements that is requested starting from `offset`. Each call to `Travel_get_region` will read a consecutive data in the vector. The final read result should be written back to `buffer` and the length of the read should be sent as the return value of the function. 
+where `altrep_info` is the struct we mentioned previously. `buffer` is the buffer that will hold the requested data. `offset` is the 0-based offset of the vector element that the read should start. `length` is the number of the vector elements that is requested starting from `offset`. Each call to `Travel_get_region` will read a consecutive data in the vector. The read result should be written back to `buffer` and the length of the read should be returned by the function. For the other functions, please refer to the header file `Travel_package_types.h`. 
 
 Besides the ALTREP creation function, the package also provides a smart pointer to ease the development of the ALTREP. The prototypes of the smart pointer are
 ```
@@ -231,7 +215,7 @@ The return value of `Travel_shared_ptr` is R's external pointer object and its l
 SEXP extPtr = Travel_shared_ptr<int>(new int);
 SEXP extPtrArray = Travel_shared_ptr<int[]>(new int[10]);
 ```
-The smart pointer can be used to release your `private_data` when the ALTREP object is releasing. Combining all these functions together, we can make a simple arithmetic sequence with any step value in R. Here are the code snippet for the example. The full example can be found at [TravelExample](https://github.com/Jiefei-Wang/TravelExample) 
+The smart pointer can be used to release your `private_data` after the ALTREP object is released. Combining all these functions together, we can make a simple arithmetic sequence with any step value in R. Here are the code snippet for the example. The full example can be found at [TravelExample](https://github.com/Jiefei-Wang/TravelExample) 
 ```
 #include <Rcpp.h>
 #include "Travel/Travel.h"
@@ -261,13 +245,13 @@ size_t read_sequence(const Travel_altrep_info* altrep_info, void *buffer, size_t
 SEXP make_sequence_altrep(size_t n, size_t start, size_t step)
 {
   Seq_info* info = new Seq_info{start, step};
-  Travel_altrep_info altrep_info;
+  Travel_altrep_info altrep_info = {};
   altrep_info.length = n;
   altrep_info.type = REALSXP;
   altrep_info.operations.get_region = read_sequence;
   altrep_info.private_data = info;
   altrep_info.protected_data = Rf_protect(Travel_shared_ptr<Seq_info>(info));
-  SEXP x = Rf_protect(Travel_make_altptr(altrep_info));
+  SEXP x = Rf_protect(Travel_make_altrep(altrep_info));
   Rf_unprotect(2);
   return x;
 }
@@ -303,8 +287,10 @@ sessionInfo()
 #> Matrix products: default
 #> 
 #> locale:
-#> [1] LC_COLLATE=English_United States.1252  LC_CTYPE=English_United States.1252   
-#> [3] LC_MONETARY=English_United States.1252 LC_NUMERIC=C                          
+#> [1] LC_COLLATE=English_United States.1252 
+#> [2] LC_CTYPE=English_United States.1252   
+#> [3] LC_MONETARY=English_United States.1252
+#> [4] LC_NUMERIC=C                          
 #> [5] LC_TIME=English_United States.1252    
 #> 
 #> attached base packages:
@@ -314,8 +300,8 @@ sessionInfo()
 #> [1] inline_0.3.16 Travel_0.99.0
 #> 
 #> loaded via a namespace (and not attached):
-#> [1] compiler_4.1.0 magrittr_1.5   tools_4.1.0    Rcpp_1.0.5     stringi_1.5.3  knitr_1.30    
-#> [7] stringr_1.4.0  xfun_0.19      evaluate_0.14
+#> [1] compiler_4.1.0 magrittr_1.5   tools_4.1.0    Rcpp_1.0.5     stringi_1.5.3 
+#> [6] knitr_1.30     stringr_1.4.0  xfun_0.19      evaluate_0.14
 ```
 
 

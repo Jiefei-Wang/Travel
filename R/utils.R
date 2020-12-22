@@ -1,40 +1,32 @@
-#' Find path of the Travel header file
-#'
-#' This function will return the path of the Travel header or
-#' the flags that are used to compile C++ code
-#' for the developers who want to use C++ level implementation of the
-#' `Travel` package
-#'
-#' @param x Character, "PKG_LIBS" or "PKG_CPPFLAGS"
-#' @return path to the header or compiler flags
-#' @examples
-#' Travel:::pkgconfig("PKG_LIBS")
-#' Travel:::pkgconfig("PKG_CPPFLAGS")
-pkgconfig <- function(x = c("PKG_LIBS", "PKG_CPPFLAGS")){
-    x <- match.arg(x)
-    if(x == "PKG_LIBS"){
-        folder <- sprintf("usrlib/%s", .Platform$r_arch)
-        folder <- system.file(folder,
-                              package = "Travel", mustWork = FALSE)
-        if(folder == ""){
-            folder <- system.file("usrlib",
-                                  package = "Travel", mustWork = TRUE)
-        }
-        files <- "Travel.a"
-        travel_libs <- paste0('"',folder,"/",files,"'")
-        if(get_OS()=="windows"){
-            filesystem_libs <- paste0('-L"',Sys.getenv("DokanLibrary1"),'lib" -ldokan1')
-        }else{
-            filesystem_libs <- system("pkg-config fuse --libs",intern=TRUE)
-        }
-        result <- paste0(travel_libs," ",filesystem_libs)
-    }else{
-        if(get_OS()=="windows"){
-            result <- ""
-        }else{
-            result <- system("pkg-config fuse --cflags",intern=TRUE)
-        }
+get_OS <- function(){
+    sysinf <- Sys.info()
+    if (!is.null(sysinf)){
+        os <- sysinf['sysname']
+        if (os == 'Darwin')
+            os <- "osx"
+    } else { ## mystery machine
+        os <- .Platform$OS.type
+        if (grepl("^darwin", R.version$os))
+            os <- "osx"
+        if (grepl("linux-gnu", R.version$os))
+            os <- "linux"
     }
-    cat(result)
-    invisible(result)
+    tolower(os)
+}
+
+
+set_verbose<- function(x){
+    stopifnot(is.logical(x))
+    C_set_debug_print(x)
+    C_set_altrep_print(x)
+    C_set_filesystem_print(x)
+    C_set_filesystem_log(x)
+    if(x){
+        if(C_get_print_location()==""){
+            C_set_print_location(getwd())
+        }
+        initial_filesystem_log()
+    }else{
+        close_filesystem_log()
+    }
 }

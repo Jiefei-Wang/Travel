@@ -7,8 +7,8 @@ MKDIR_P = mkdir -p
 
 .PHONY: all create-folder make-static-lib copy-header
 
-all: ${SHLIB}
-#all: create-folder ${SHLIB} make-static-lib copy-header 
+#all: ${SHLIB}
+all: create-folder ${SHLIB} make-static-lib copy-header 
 
 
 create-folder:

@@ -49,25 +49,6 @@ get_temp_mountpoint <- function(){
     tmp_dir <- paste0(tempdir(),"/Travel_filesystem_",Sys.getpid())
     validate_path(tmp_dir)
 }
-#' Automatically deploy the filysystem
-#' 
-#' This function will be called once when the package is loaded.
-#' It will mount a filesystem to a temporary directory. The Travel
-#' package relies on the filesystem to work. It is a no-op if the 
-#' filesystem has been mounted.
-#' @examples 
-#' deploy_filesystem()
-#' @export
-deploy_filesystem <- function(){
-    if(is_filesystem_running()){
-        return("The filesystem has been running")
-    }
-    mountpoint <- get_temp_mountpoint()
-    set_mountpoint(mountpoint)
-    run_filesystem()
-}
-
-
 
 get_virtual_file_list <- function(){
     C_get_virtual_file_list()
