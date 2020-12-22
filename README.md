@@ -1,3 +1,22 @@
+---
+title: "vignette"
+author: 
+- name: Jiefei Wang
+  affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
+date: "2020-12-22"
+output:
+    BiocStyle::html_document:
+        toc: true
+        toc_float: true
+vignette: >
+  %\VignetteIndexEntry{vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+package: Travel
+---
+
+
+
 # Introduction
 ## ALTREP
 ALTREP is a relatively new feature that has been released since R3.5. It stands for alternative representation of R's vector object. ALTREP is capable to create an R vector with a customized data structure. The difference between ALTREP and vector is opaque to R users. The main motivation of the ALTREP is to reduce the memory load when creating some special vector. Consider the example
@@ -69,11 +88,11 @@ Requiring the pointer from an ALTREP object has been a very serious limitation t
 
 Travel package is an utility for developers to build ALTREP objects with a virtual pointer. The pointer of the ALTREP object can be accessed via the regular `DATAPTR` function in `Rinternals.h` at C level. The basic workflow of using the package is
 
-![](vignettes/Making altrep.png)
+![](vignettes/making_altrep.png)
 
 The pointer is "virtual" in the sense that the data does not exist in the memory before one actually try to access the data. The pointer is made via File mapping, but it wouldn't consume any disk space neither for the file being mapped is also a virtual file. All the request to access the file will be sent to Travel callback functions and then delivered to user provided data reading function. Suppose we have made an ALTREP object with the data reading function `read_data`. Let the pointer of the ALTREP object be `ptr`. Here is what happens behind the scenes when you want to read the `i`th element of the pointer
 
-![](vignettes/data request.png)
+![](vignettes/data_request.png)
 
 As we see from the flowchart, the data of the pointer `ptr` is made on-demand. The pointer would not exhaust the memory even if it points to an extremely large object. By doing that we solve the main limitation of the ALTREP. The pointer of the ALTREP object can be accessed in a usual way, and the memory consumption is minimum. Take the super large sequence as an example again, the package provides a wrapper function to turn an old ALTREP object into a new ALTREP object with a virtual pointer. 
 

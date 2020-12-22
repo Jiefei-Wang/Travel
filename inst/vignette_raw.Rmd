@@ -90,11 +90,11 @@ Requiring the pointer from an ALTREP object has been a very serious limitation t
 ## Travel package
 ```{r, include=FALSE}
 if(root_dir){
-  making_altrep <- "vignettes/Making altrep.png"
-  data_request <- "vignettes/data request.png"
+  making_altrep <- "vignettes/making_altrep.png"
+  data_request <- "vignettes/data_request.png"
 }else{
-  making_altrep <- "Making altrep.png"
-  data_request <- "data request.png"
+  making_altrep <- "making_altrep.png.png"
+  data_request <- "data_request.png.png"
 }
 ```
 
