@@ -1,22 +1,3 @@
----
-title: "vignette"
-author: 
-- name: Jiefei Wang
-  affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
-date: "2020-12-22"
-output:
-    BiocStyle::html_document:
-        toc: true
-        toc_float: true
-vignette: >
-  %\VignetteIndexEntry{vignette}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
-package: Travel
----
-
-
-
 # Introduction
 ## ALTREP
 ALTREP is a relatively new feature that has been released since R3.5. It stands for alternative representation of R's vector object. ALTREP is capable to create an R vector with a customized data structure. The difference between ALTREP and vector is opaque to R users. The main motivation of the ALTREP is to reduce the memory load when creating some special vector. Consider the example
@@ -41,8 +22,8 @@ double real_elt(SEXP x, R_xlen_t i);
 ```
 We wouldn't go into the details of the ALTREP but you can have an intuition on how ALTREP works with these two functions. If you are interested in this topic, here are two videos for the ALTREP:
 
-1. [Developers Forum 16](https://www.youtube.com/watch?v=8i7ziLqsE2s&t=269s&ab_channel=Bioconductor)
-2. [Developers Forum 17](https://www.youtube.com/watch?v=biygNnJA1oY&ab_channel=Bioconductor)
+1. [Developers Forum 16](https://www.youtube.com/watch?v=8i7ziLqsE2s&t=269s&ab_channel=Bioconductor): ALTREP basics
+2. [Developers Forum 17](https://www.youtube.com/watch?v=biygNnJA1oY&ab_channel=Bioconductor): ALTREP basics and the design of the Travel package
 
 Documents are also available:
 

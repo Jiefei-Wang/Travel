@@ -41,8 +41,8 @@ double real_elt(SEXP x, R_xlen_t i);
 ```
 We wouldn't go into the details of the ALTREP but you can have an intuition on how ALTREP works with these two functions. If you are interested in this topic, here are two videos for the ALTREP:
 
-1. [Developers Forum 16](https://www.youtube.com/watch?v=8i7ziLqsE2s&t=269s&ab_channel=Bioconductor)
-2. [Developers Forum 17](https://www.youtube.com/watch?v=biygNnJA1oY&ab_channel=Bioconductor)
+1. [Developers Forum 16](https://www.youtube.com/watch?v=8i7ziLqsE2s&t=269s&ab_channel=Bioconductor): ALTREP basics
+2. [Developers Forum 17](https://www.youtube.com/watch?v=biygNnJA1oY&ab_channel=Bioconductor): ALTREP basics and the design of the Travel package
 
 Documents are also available:
 
