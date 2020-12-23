@@ -17,11 +17,6 @@ allocating the entire data in the memory.
 its document can be found at the header "Travel_package_types.h".
 */
 SEXP Travel_make_altrep(Travel_altrep_info altrep_info);
-/*
-Get file info from the ALTREP object returned by Travel_make_altrep
-*/
-SEXP get_file_name(SEXP x);
-SEXP get_file_path(SEXP x);
 
 
 /*
