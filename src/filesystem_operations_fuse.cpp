@@ -15,6 +15,7 @@
 #include "class_Double_key_map.h"
 #include "package_settings.h"
 #include "utils.h"
+#include "class_Unique_buffer.h"
 
 static size_t print_counter = 0;
 /*
