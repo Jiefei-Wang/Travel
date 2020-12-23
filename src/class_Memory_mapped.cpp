@@ -40,7 +40,7 @@ bool Memory_mapped::map()
         return true;
     }
     //Wait until the file exist or timeout(5s)
-    Timer timer(FILESYSTEM_WAIT_TIME);
+    Timer timer(file_wait_time);
     int fd = -1;
     while(fd == -1)
     {

@@ -215,17 +215,17 @@ Rcpp::String C_get_mountpoint()
 // [[Rcpp::export]]
 void C_set_debug_print(bool x)
 {
-	C_set_debug_print(x);
+	set_debug_print(x);
 }
 // [[Rcpp::export]]
 void C_set_altrep_print(bool x)
 {
-	C_set_altrep_print(x);
+	set_altrep_print(x);
 }
 // [[Rcpp::export]]
 void C_set_filesystem_print(bool x)
 {
-	C_set_filesystem_print(x);
+	set_filesystem_print(x);
 }
 // [[Rcpp::export]]
 void C_set_filesystem_log(bool x)

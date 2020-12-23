@@ -14,16 +14,20 @@ get_OS <- function(){
     tolower(os)
 }
 
-
-set_verbose<- function(x){
-    stopifnot(is.logical(x))
-    C_set_debug_print(x)
-    C_set_altrep_print(x)
-    C_set_filesystem_print(x)
+set_filesystem_log<-function(x){
     if(x){
         if(C_filesystem_log_location()==""){
             C_set_filesystem_log_location(getwd())
         }
     }
     C_set_filesystem_log(x)
+}
+
+
+set_verbose<- function(x){
+    stopifnot(is.logical(x))
+    C_set_debug_print(x)
+    C_set_altrep_print(x)
+    C_set_filesystem_print(x)
+    #set_filesystem_log(x)
 }

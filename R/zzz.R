@@ -13,19 +13,18 @@ onExit <-function(e){
 .onLoad<- function(libname, pkgname){
     if(Sys.getenv("DEBUG_TRAVEL_PACKAGE")!="T"){
         set_verbose(FALSE)
-        #deploy_filesystem()
     }else{
         set_verbose(FALSE)
         C_set_debug_print(TRUE)
         C_set_altrep_print(FALSE)
         C_set_filesystem_print(TRUE)
-        C_set_filesystem_log(TRUE)
+        set_filesystem_log(TRUE)
     }
     reg.finalizer(pkg_data, onExit, onexit = TRUE)
 }
 
 .onUnload<- function(libname, pkgname){
-    close_filesystem_log()
+    C_close_filesystem_log()
     stop_filesystem()
     pkg_data$pkg_unloaded <- TRUE
 }
