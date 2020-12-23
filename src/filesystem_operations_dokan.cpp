@@ -202,7 +202,7 @@ NTSTATUS DOKAN_CALLBACK dokan_get_file_information(
 		HandleFileInformation->dwFileAttributes = FILE_ATTRIBUTE_READONLY;
 		Filesystem_file_data &file_data = get_filesystem_file_data(file_name);
 		HandleFileInformation->nFileSizeLow = (unsigned long)file_data.file_size;
-		HandleFileInformation->nFileSizeHigh = file_data.file_size >> 32;
+		HandleFileInformation->nFileSizeHigh = ((uint64_t)file_data.file_size) >> 32;
 	}
 	HandleFileInformation->ftCreationTime = file_time;
 	HandleFileInformation->ftLastAccessTime = file_time;

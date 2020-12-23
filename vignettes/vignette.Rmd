@@ -88,11 +88,11 @@ Requiring the pointer from an ALTREP object has been a very serious limitation t
 
 Travel package is an utility for developers to build ALTREP objects with a virtual pointer. The pointer of the ALTREP object can be accessed via the regular `DATAPTR` function in `Rinternals.h` at C level. The basic workflow of using the package is
 
-![](making_altrep.png.png)
+![](making_altrep.png)
 
 The pointer is "virtual" in the sense that the data does not exist in the memory before one actually try to access the data. The pointer is made via File mapping, but it wouldn't consume any disk space neither for the file being mapped is also a virtual file. All the request to access the file will be sent to Travel callback functions and then delivered to user provided data reading function. Suppose we have made an ALTREP object with the data reading function `read_data`. Let the pointer of the ALTREP object be `ptr`. Here is what happens behind the scenes when you want to read the `i`th element of the pointer
 
-![](data_request.png.png)
+![](data_request.png)
 
 As we see from the flowchart, the data of the pointer `ptr` is made on-demand. The pointer would not exhaust the memory even if it points to an extremely large object. By doing that we solve the main limitation of the ALTREP. The pointer of the ALTREP object can be accessed in a usual way, and the memory consumption is minimum. Take the super large sequence as an example again, the package provides a wrapper function to turn an old ALTREP object into a new ALTREP object with a virtual pointer. 
 

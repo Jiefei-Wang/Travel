@@ -40,7 +40,7 @@
 #ifndef R_INTERNALS_H_
 #include "Rcpp.h"
 #endif
-size_t get_object_size(SEXP x);
+uint64_t get_object_size(SEXP x);
 class PROTECT_GUARD
 {
 private:

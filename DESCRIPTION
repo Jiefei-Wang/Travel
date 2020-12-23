@@ -8,7 +8,7 @@ Description: Creating a virtual pointer for R's ALTREP object which does not hav
     there is no real allocation of the data for the pointer.
     All the requests to access the pointer will be sent to the underlying file system
     and eventually handled by a customized data-reading function.
-License: GNU General Public License v3.0
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
