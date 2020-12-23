@@ -31,3 +31,14 @@ set_verbose<- function(x){
     C_set_filesystem_print(x)
     #set_filesystem_log(x)
 }
+
+copy_header <- function(){
+    src_folder <- "src/"
+    dest_folder <- "inst/include/Travel/"
+    files <- c("Travel.h","Travel_package_types.h","Travel_impl.h")
+    for(i in files){
+        src_file <- paste0(src_folder,i)
+        dest_file <- paste0(dest_folder,i)
+        file.copy(src_file,dest_file,overwrite=TRUE)
+    }
+}

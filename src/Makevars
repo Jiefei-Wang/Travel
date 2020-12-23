@@ -2,21 +2,3 @@ PKG_CPPFLAGS = `pkg-config fuse --cflags`
 PKG_LIBS = `pkg-config fuse --libs` 
 # -lprofiler
 CXX_STD= CXX11
-MKDIR_P = mkdir -p
-
-
-.PHONY: all create-folder copy-header
-
-#all: ${SHLIB}
-all: create-folder ${SHLIB} copy-header 
-
-
-create-folder:
-	 ${MKDIR_P} ../inst/include&&\
-	 ${MKDIR_P} ../inst/include/Travel
-
-
-copy-header:
-	 cp "Travel.h" "../inst/include/Travel/" &&\
-	 cp "Travel_package_types.h" "../inst/include/Travel/"
-	 cp "Travel_impl.h" "../inst/include/Travel/"
