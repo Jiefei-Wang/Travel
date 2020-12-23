@@ -1,6 +1,9 @@
 #ifdef _WIN32
 #include <string>
 #include "dokan/dokan.h"
+#ifdef _WIN32
+#undef ERROR
+#endif
 #include "utils.h"
 #include "filesystem_manager.h"
 #include "read_write_operations.h"

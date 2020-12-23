@@ -29,20 +29,16 @@ C_coerce <- function(x, type) {
     .Call(`_Travel_C_coerce`, x, type)
 }
 
-mySum1 <- function(x) {
-    .Call(`_Travel_mySum1`, x)
+C_getAltData1 <- function(x) {
+    .Call(`_Travel_C_getAltData1`, x)
 }
 
-mySum2 <- function(x) {
-    .Call(`_Travel_mySum2`, x)
+C_getAltData2 <- function(x) {
+    .Call(`_Travel_C_getAltData2`, x)
 }
 
-mySum3 <- function(x) {
-    .Call(`_Travel_mySum3`, x)
-}
-
-Travel_compact_seq <- function(n) {
-    .Call(`_Travel_Travel_compact_seq`, n)
+C_get_ptr <- function(x) {
+    .Call(`_Travel_C_get_ptr`, x)
 }
 
 C_call_Travel_make_altmmap <- function(x) {
@@ -51,22 +47,6 @@ C_call_Travel_make_altmmap <- function(x) {
 
 C_get_file_handle_number <- function() {
     .Call(`_Travel_C_get_file_handle_number`)
-}
-
-C_set_print_location <- function(x) {
-    invisible(.Call(`_Travel_C_set_print_location`, x))
-}
-
-C_get_print_location <- function() {
-    .Call(`_Travel_C_get_print_location`)
-}
-
-C_set_mountpoint <- function(path) {
-    invisible(.Call(`_Travel_C_set_mountpoint`, path))
-}
-
-C_get_mountpoint <- function() {
-    .Call(`_Travel_C_get_mountpoint`)
 }
 
 C_run_filesystem_thread_func <- function() {
@@ -89,24 +69,52 @@ C_show_thread_status <- function() {
     invisible(.Call(`_Travel_C_show_thread_status`))
 }
 
-C_getAltData1 <- function(x) {
-    .Call(`_Travel_C_getAltData1`, x)
+C_set_filesystem_log_location <- function(x) {
+    invisible(.Call(`_Travel_C_set_filesystem_log_location`, x))
 }
 
-C_getAltData2 <- function(x) {
-    .Call(`_Travel_C_getAltData2`, x)
+C_get_filesystem_log_locationn <- function() {
+    .Call(`_Travel_C_get_filesystem_log_locationn`)
 }
 
-C_get_ptr <- function(x) {
-    .Call(`_Travel_C_get_ptr`, x)
+C_set_mountpoint <- function(path) {
+    invisible(.Call(`_Travel_C_set_mountpoint`, path))
+}
+
+C_get_mountpoint <- function() {
+    .Call(`_Travel_C_get_mountpoint`)
+}
+
+C_set_debug_print <- function(x) {
+    invisible(.Call(`_Travel_C_set_debug_print`, x))
+}
+
+C_set_altrep_print <- function(x) {
+    invisible(.Call(`_Travel_C_set_altrep_print`, x))
+}
+
+C_set_filesystem_print <- function(x) {
+    invisible(.Call(`_Travel_C_set_filesystem_print`, x))
+}
+
+C_set_filesystem_log <- function(x) {
+    invisible(.Call(`_Travel_C_set_filesystem_log`, x))
+}
+
+C_initial_filesystem_log <- function() {
+    invisible(.Call(`_Travel_C_initial_filesystem_log`))
+}
+
+C_close_filesystem_log <- function() {
+    invisible(.Call(`_Travel_C_close_filesystem_log`))
+}
+
+Travel_compact_seq <- function(n) {
+    .Call(`_Travel_Travel_compact_seq`, n)
 }
 
 C_get_virtual_file_list <- function() {
     .Call(`_Travel_C_get_virtual_file_list`)
-}
-
-run_filesystem_thread_func <- function() {
-    invisible(.Call(`_Travel_run_filesystem_thread_func`))
 }
 
 profile_int <- function(x) {
@@ -127,6 +135,18 @@ profile_num <- function(x) {
 
 profile_num2 <- function(x) {
     .Call(`_Travel_profile_num2`, x)
+}
+
+mySum1 <- function(x) {
+    .Call(`_Travel_mySum1`, x)
+}
+
+mySum2 <- function(x) {
+    .Call(`_Travel_mySum2`, x)
+}
+
+mySum3 <- function(x) {
+    .Call(`_Travel_mySum3`, x)
 }
 
 C_test_Subset_index_basic <- function() {
@@ -187,29 +207,5 @@ C_allzero <- function(n) {
 
 C_RLE <- function(length, value) {
     .Call(`_Travel_C_RLE`, length, value)
-}
-
-C_set_debug_print <- function(x) {
-    invisible(.Call(`_Travel_C_set_debug_print`, x))
-}
-
-C_set_altrep_print <- function(x) {
-    invisible(.Call(`_Travel_C_set_altrep_print`, x))
-}
-
-C_set_filesystem_print <- function(x) {
-    invisible(.Call(`_Travel_C_set_filesystem_print`, x))
-}
-
-C_set_filesystem_log <- function(x) {
-    invisible(.Call(`_Travel_C_set_filesystem_log`, x))
-}
-
-initial_filesystem_log <- function() {
-    invisible(.Call(`_Travel_initial_filesystem_log`))
-}
-
-close_filesystem_log <- function() {
-    invisible(.Call(`_Travel_close_filesystem_log`))
 }
 

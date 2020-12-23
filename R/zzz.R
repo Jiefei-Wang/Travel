@@ -3,8 +3,11 @@
 NULL
 
 pkg_data <- new.env()
+pkg_data$pkg_unloaded <- FALSE
+
 onExit <-function(e){
-    stop_filesystem()
+    if(!pkg_data$pkg_unloaded)
+        stop_filesystem()
 }
 
 .onLoad<- function(libname, pkgname){
@@ -12,11 +15,11 @@ onExit <-function(e){
         set_verbose(FALSE)
         #deploy_filesystem()
     }else{
+        set_verbose(FALSE)
         C_set_debug_print(TRUE)
         C_set_altrep_print(FALSE)
         C_set_filesystem_print(TRUE)
         C_set_filesystem_log(TRUE)
-        C_set_print_location(getwd())
     }
     reg.finalizer(pkg_data, onExit, onexit = TRUE)
 }
@@ -24,6 +27,7 @@ onExit <-function(e){
 .onUnload<- function(libname, pkgname){
     close_filesystem_log()
     stop_filesystem()
+    pkg_data$pkg_unloaded <- TRUE
 }
 
 

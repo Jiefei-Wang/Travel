@@ -16,22 +16,26 @@
 #define round_up_division(x, y) (x / y + (x % y != 0))
 #define zero_bounded_minus(x, y) (x > y ? x - y : 0)
 
-#ifdef _WIN32
-#undef ERROR
-#endif
+
 
 /*
 =============================
         filesystem path
 =============================
 */
-void set_print_location(std::string x);
-std::string get_print_location();
+void set_filesystem_log_location(std::string x);
+std::string get_filesystem_log_location();
 void set_mountpoint(std::string path);
 std::string get_mountpoint();
-
+//Initial log system
 void initial_filesystem_log();
 void close_filesystem_log();
+//switch print
+void set_debug_print(bool x);
+void set_altrep_print(bool x);
+void set_filesystem_print(bool x);
+void set_filesystem_log(bool x);
+//Print method
 void filesystem_log(const char *format, ...);
 void debug_print(const char *format, ...);
 void filesystem_print(const char *format, ...);

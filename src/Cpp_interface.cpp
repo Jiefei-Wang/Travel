@@ -8,7 +8,6 @@
                      altrep wrapper
 =========================================================================================
 */
-
 size_t read_altrep_region(const Travel_altrep_info *altrep_info, void *buffer, size_t offset, size_t length)
 {
     SEXP wrapped_object = (SEXP)altrep_info->private_data;
@@ -56,7 +55,7 @@ SEXP C_wrap_altrep(SEXP x)
 
 /*
 =========================================================================================
-                     altmmap related operations
+                     debugging tools
 =========================================================================================
 */
 #include "altrep_manager.h"
@@ -123,73 +122,34 @@ SEXP C_coerce(SEXP x, int type)
 }
 
 // [[Rcpp::export]]
-double mySum1(SEXP x)
+SEXP C_getAltData1(SEXP x)
 {
-    double s = 0;
-    R_xlen_t len = XLENGTH(x);
-    for (R_xlen_t i = 0; i < len; i++)
-    {
-        s += REAL_ELT(x, i);
-    }
-    return s;
+    return R_altrep_data1(x);
 }
-
-#include "R_ext/Itermacros.h"
 // [[Rcpp::export]]
-double mySum2(SEXP x)
+SEXP C_getAltData2(SEXP x)
 {
-    double s = 0.0;
-    ITERATE_BY_REGION(x, ptr, ind, nbatch, double, REAL,
-                      {
-                          for (int i = 0; i < nbatch; i++)
-                          {
-                              s = s + ptr[i];
-                          }
-                      });
-    return s;
+    return R_altrep_data2(x);
 }
 
 // [[Rcpp::export]]
-double mySum3(SEXP x)
+SEXP C_get_ptr(SEXP x)
 {
-    double s = 0.0;
-    double *ptr = (double *)DATAPTR(x);
-    R_xlen_t len = XLENGTH(x);
-    for (R_xlen_t i = 0; i < len; i++)
-    {
-        s += ptr[i];
-    }
-    return s;
+    return R_MakeExternalPtr(DATAPTR(x), R_NilValue, R_NilValue);
 }
 
-#include "Travel.h"
-size_t arithmetic_sequence_region(const Travel_altrep_info *altrep_info, void *buffer,
-                                  size_t offset, size_t length)
-{
-    for (size_t i = 0; i < length; i++)
-    {
-        ((double *)buffer)[i] = offset + i + 1;
-    }
-    return length;
-}
-
-// [[Rcpp::export]]
-SEXP Travel_compact_seq(size_t n)
-{
-    Travel_altrep_info altrep_info;
-    altrep_info.length = n;
-    altrep_info.type = REALSXP;
-    altrep_info.operations.get_region = arithmetic_sequence_region;
-    SEXP x = Travel_make_altrep(altrep_info);
-    return x;
-}
-
+/*
+=========================================================================================
+                     For Travel_impl.h
+=========================================================================================
+*/
 // [[Rcpp::export]]
 SEXP C_call_Travel_make_altmmap(SEXP x)
 {
     Travel_altrep_info *altrep_info = (Travel_altrep_info *)R_ExternalPtrAddr(x);
     return Travel_make_altmmap(*altrep_info);
 }
+
 
 /*========================================================================================= */
 #include "memory_mapped_file.h"
@@ -199,28 +159,6 @@ size_t C_get_file_handle_number()
     return get_file_handle_number();
 }
 
-/*========================================================================================= */
-#include "utils.h"
-// [[Rcpp::export]]
-void C_set_print_location(Rcpp::String x)
-{
-    set_print_location(x);
-}
-// [[Rcpp::export]]
-Rcpp::String C_get_print_location()
-{
-    return get_print_location();
-}
-// [[Rcpp::export]]
-void C_set_mountpoint(Rcpp::String path)
-{
-    return set_mountpoint(path);
-}
-// [[Rcpp::export]]
-Rcpp::String C_get_mountpoint()
-{
-    return get_mountpoint();
-}
 
 /*========================================================================================= */
 #include "filesystem_manager.h"
@@ -250,25 +188,62 @@ void C_show_thread_status(){
     show_thread_status();
 }
 
-/*
-=========================================================================================
-                     ALTREP functions
-=========================================================================================
-*/
 
+
+/*========================================================================================= */
+#include "utils.h"
 // [[Rcpp::export]]
-SEXP C_getAltData1(SEXP x)
+void C_set_filesystem_log_location(Rcpp::String x)
 {
-    return R_altrep_data1(x);
+    set_filesystem_log_location(x);
 }
 // [[Rcpp::export]]
-SEXP C_getAltData2(SEXP x)
+Rcpp::String C_get_filesystem_log_locationn()
 {
-    return R_altrep_data2(x);
+    return get_filesystem_log_location();
+}
+// [[Rcpp::export]]
+void C_set_mountpoint(Rcpp::String path)
+{
+    return set_mountpoint(path);
+}
+// [[Rcpp::export]]
+Rcpp::String C_get_mountpoint()
+{
+    return get_mountpoint();
+}
+// [[Rcpp::export]]
+void C_set_debug_print(bool x)
+{
+	C_set_debug_print(x);
+}
+// [[Rcpp::export]]
+void C_set_altrep_print(bool x)
+{
+	C_set_altrep_print(x);
+}
+// [[Rcpp::export]]
+void C_set_filesystem_print(bool x)
+{
+	C_set_filesystem_print(x);
+}
+// [[Rcpp::export]]
+void C_set_filesystem_log(bool x)
+{
+	set_filesystem_log(x);
+}
+// [[Rcpp::export]]
+void C_initial_filesystem_log()
+{
+	initial_filesystem_log();
+}
+// [[Rcpp::export]]
+void C_close_filesystem_log()
+{
+	close_filesystem_log();
 }
 
-// [[Rcpp::export]]
-SEXP C_get_ptr(SEXP x)
-{
-    return R_MakeExternalPtr(DATAPTR(x), R_NilValue, R_NilValue);
-}
+
+
+
+

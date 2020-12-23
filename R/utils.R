@@ -20,13 +20,10 @@ set_verbose<- function(x){
     C_set_debug_print(x)
     C_set_altrep_print(x)
     C_set_filesystem_print(x)
-    C_set_filesystem_log(x)
     if(x){
-        if(C_get_print_location()==""){
-            C_set_print_location(getwd())
+        if(C_filesystem_log_location()==""){
+            C_set_filesystem_log_location(getwd())
         }
-        initial_filesystem_log()
-    }else{
-        close_filesystem_log()
     }
+    C_set_filesystem_log(x)
 }

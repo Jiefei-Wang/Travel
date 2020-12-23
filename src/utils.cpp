@@ -6,8 +6,7 @@
 #include "utils.h"
 #include "package_settings.h"
 
-
-static std::string print_location;
+static std::string filesystem_log_path;
 static std::string mount_point;
 static bool debug_print_enabled = false;
 static bool altrep_print_enabled = false;
@@ -19,55 +18,58 @@ static bool filesystem_log_opened = false;
 #define BUFFER_SIZE 1024 * 1024
 static char buffer[BUFFER_SIZE];
 
-
-void set_print_location(std::string x){
-	print_location = x;
-	print_location = print_location + "/debug_output";
+void set_filesystem_log_location(std::string x)
+{
+	filesystem_log_path = x;
+	filesystem_log_path = filesystem_log_path + "/debug_output";
 }
-std::string get_print_location(){
-    return print_location;
+std::string get_filesystem_log_location()
+{
+	return filesystem_log_path;
 }
 
 void set_mountpoint(std::string path)
 {
-    mount_point = path;
+	mount_point = path;
 }
-std::string get_mountpoint(){
-    return mount_point;
+std::string get_mountpoint()
+{
+	return mount_point;
 }
 
-
-// [[Rcpp::export]]
-void C_set_debug_print(bool x)
+void set_debug_print(bool x)
 {
 	debug_print_enabled = x;
 }
-// [[Rcpp::export]]
-void C_set_altrep_print(bool x)
+void set_altrep_print(bool x)
 {
 	altrep_print_enabled = x;
 }
-// [[Rcpp::export]]
-void C_set_filesystem_print(bool x)
+void set_filesystem_print(bool x)
 {
 	filesystem_print_enabled = x;
 }
-// [[Rcpp::export]]
-void C_set_filesystem_log(bool x)
+void set_filesystem_log(bool x)
 {
 	filesystem_log_enabled = x;
+	if (x)
+	{
+		throw_if(get_filesystem_log_location() == "");
+		initial_filesystem_log();
+	}
+	else
+	{
+		close_filesystem_log();
+	}
 }
-
-// [[Rcpp::export]]
 void initial_filesystem_log()
 {
-	if (filesystem_log_enabled && !filesystem_log_opened)
+	if (!filesystem_log_opened)
 	{
-		filesystem_log_stream.open(get_print_location().c_str(), std::ofstream::out);
+		filesystem_log_stream.open(get_filesystem_log_location().c_str(), std::ofstream::out);
 		filesystem_log_opened = true;
 	}
 }
-// [[Rcpp::export]]
 void close_filesystem_log()
 {
 	if (filesystem_log_opened)
@@ -79,7 +81,7 @@ void close_filesystem_log()
 
 void filesystem_log(const char *format, ...)
 {
-	if (filesystem_log_enabled&&filesystem_log_opened)
+	if (filesystem_log_enabled && filesystem_log_opened)
 	{
 		//initial_filesystem_log();
 		va_list args;
@@ -238,7 +240,7 @@ std::string get_file_name_in_path(std::string path)
 		((double *)dest)[i] = src_value;     \
 		break;                               \
 	default:                                 \
-		assert(!"Unknown type");              \
+		assert(!"Unknown type");             \
 	}
 
 void covert_data(int dest_type, int src_type, void *dest, const void *src, size_t length, bool reverse)
@@ -257,9 +259,12 @@ void covert_data(int dest_type, int src_type, void *dest, const void *src, size_
 	for (size_t j = 0; j < length; j++)
 	{
 		size_t i;
-		if(reverse){
+		if (reverse)
+		{
 			i = length - j - 1L;
-		}else{
+		}
+		else
+		{
 			i = j;
 		}
 		switch (src_type)
@@ -293,10 +298,6 @@ void covert_data(int dest_type, int src_type, void *dest, const void *src, size_
 		}
 	}
 }
-
-
-
-
 
 #ifndef _WIN32
 #include <unistd.h>

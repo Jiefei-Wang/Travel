@@ -86,3 +86,43 @@ double profile_num2(SEXP x)
     }
     return s;
 }
+
+// [[Rcpp::export]]
+double mySum1(SEXP x)
+{
+    double s = 0;
+    R_xlen_t len = XLENGTH(x);
+    for (R_xlen_t i = 0; i < len; i++)
+    {
+        s += REAL_ELT(x, i);
+    }
+    return s;
+}
+
+#include "R_ext/Itermacros.h"
+// [[Rcpp::export]]
+double mySum2(SEXP x)
+{
+    double s = 0.0;
+    ITERATE_BY_REGION(x, ptr, ind, nbatch, double, REAL,
+                      {
+                          for (int i = 0; i < nbatch; i++)
+                          {
+                              s = s + ptr[i];
+                          }
+                      });
+    return s;
+}
+
+// [[Rcpp::export]]
+double mySum3(SEXP x)
+{
+    double s = 0.0;
+    double *ptr = (double *)DATAPTR(x);
+    R_xlen_t len = XLENGTH(x);
+    for (R_xlen_t i = 0; i < len; i++)
+    {
+        s += ptr[i];
+    }
+    return s;
+}

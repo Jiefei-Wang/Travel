@@ -82,47 +82,36 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// mySum1
-double mySum1(SEXP x);
-RcppExport SEXP _Travel_mySum1(SEXP xSEXP) {
+// C_getAltData1
+SEXP C_getAltData1(SEXP x);
+RcppExport SEXP _Travel_C_getAltData1(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(mySum1(x));
+    rcpp_result_gen = Rcpp::wrap(C_getAltData1(x));
     return rcpp_result_gen;
 END_RCPP
 }
-// mySum2
-double mySum2(SEXP x);
-RcppExport SEXP _Travel_mySum2(SEXP xSEXP) {
+// C_getAltData2
+SEXP C_getAltData2(SEXP x);
+RcppExport SEXP _Travel_C_getAltData2(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(mySum2(x));
+    rcpp_result_gen = Rcpp::wrap(C_getAltData2(x));
     return rcpp_result_gen;
 END_RCPP
 }
-// mySum3
-double mySum3(SEXP x);
-RcppExport SEXP _Travel_mySum3(SEXP xSEXP) {
+// C_get_ptr
+SEXP C_get_ptr(SEXP x);
+RcppExport SEXP _Travel_C_get_ptr(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(mySum3(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// Travel_compact_seq
-SEXP Travel_compact_seq(size_t n);
-RcppExport SEXP _Travel_Travel_compact_seq(SEXP nSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< size_t >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(Travel_compact_seq(n));
+    rcpp_result_gen = Rcpp::wrap(C_get_ptr(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -144,46 +133,6 @@ BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     rcpp_result_gen = Rcpp::wrap(C_get_file_handle_number());
-    return rcpp_result_gen;
-END_RCPP
-}
-// C_set_print_location
-void C_set_print_location(Rcpp::String x);
-RcppExport SEXP _Travel_C_set_print_location(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::String >::type x(xSEXP);
-    C_set_print_location(x);
-    return R_NilValue;
-END_RCPP
-}
-// C_get_print_location
-Rcpp::String C_get_print_location();
-RcppExport SEXP _Travel_C_get_print_location() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(C_get_print_location());
-    return rcpp_result_gen;
-END_RCPP
-}
-// C_set_mountpoint
-void C_set_mountpoint(Rcpp::String path);
-RcppExport SEXP _Travel_C_set_mountpoint(SEXP pathSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::String >::type path(pathSEXP);
-    C_set_mountpoint(path);
-    return R_NilValue;
-END_RCPP
-}
-// C_get_mountpoint
-Rcpp::String C_get_mountpoint();
-RcppExport SEXP _Travel_C_get_mountpoint() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(C_get_mountpoint());
     return rcpp_result_gen;
 END_RCPP
 }
@@ -233,36 +182,112 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// C_getAltData1
-SEXP C_getAltData1(SEXP x);
-RcppExport SEXP _Travel_C_getAltData1(SEXP xSEXP) {
+// C_set_filesystem_log_location
+void C_set_filesystem_log_location(Rcpp::String x);
+RcppExport SEXP _Travel_C_set_filesystem_log_location(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::String >::type x(xSEXP);
+    C_set_filesystem_log_location(x);
+    return R_NilValue;
+END_RCPP
+}
+// C_get_filesystem_log_locationn
+Rcpp::String C_get_filesystem_log_locationn();
+RcppExport SEXP _Travel_C_get_filesystem_log_locationn() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_getAltData1(x));
+    rcpp_result_gen = Rcpp::wrap(C_get_filesystem_log_locationn());
     return rcpp_result_gen;
 END_RCPP
 }
-// C_getAltData2
-SEXP C_getAltData2(SEXP x);
-RcppExport SEXP _Travel_C_getAltData2(SEXP xSEXP) {
+// C_set_mountpoint
+void C_set_mountpoint(Rcpp::String path);
+RcppExport SEXP _Travel_C_set_mountpoint(SEXP pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::String >::type path(pathSEXP);
+    C_set_mountpoint(path);
+    return R_NilValue;
+END_RCPP
+}
+// C_get_mountpoint
+Rcpp::String C_get_mountpoint();
+RcppExport SEXP _Travel_C_get_mountpoint() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_getAltData2(x));
+    rcpp_result_gen = Rcpp::wrap(C_get_mountpoint());
     return rcpp_result_gen;
 END_RCPP
 }
-// C_get_ptr
-SEXP C_get_ptr(SEXP x);
-RcppExport SEXP _Travel_C_get_ptr(SEXP xSEXP) {
+// C_set_debug_print
+void C_set_debug_print(bool x);
+RcppExport SEXP _Travel_C_set_debug_print(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< bool >::type x(xSEXP);
+    C_set_debug_print(x);
+    return R_NilValue;
+END_RCPP
+}
+// C_set_altrep_print
+void C_set_altrep_print(bool x);
+RcppExport SEXP _Travel_C_set_altrep_print(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< bool >::type x(xSEXP);
+    C_set_altrep_print(x);
+    return R_NilValue;
+END_RCPP
+}
+// C_set_filesystem_print
+void C_set_filesystem_print(bool x);
+RcppExport SEXP _Travel_C_set_filesystem_print(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< bool >::type x(xSEXP);
+    C_set_filesystem_print(x);
+    return R_NilValue;
+END_RCPP
+}
+// C_set_filesystem_log
+void C_set_filesystem_log(bool x);
+RcppExport SEXP _Travel_C_set_filesystem_log(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< bool >::type x(xSEXP);
+    C_set_filesystem_log(x);
+    return R_NilValue;
+END_RCPP
+}
+// C_initial_filesystem_log
+void C_initial_filesystem_log();
+RcppExport SEXP _Travel_C_initial_filesystem_log() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    C_initial_filesystem_log();
+    return R_NilValue;
+END_RCPP
+}
+// C_close_filesystem_log
+void C_close_filesystem_log();
+RcppExport SEXP _Travel_C_close_filesystem_log() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    C_close_filesystem_log();
+    return R_NilValue;
+END_RCPP
+}
+// Travel_compact_seq
+SEXP Travel_compact_seq(size_t n);
+RcppExport SEXP _Travel_Travel_compact_seq(SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_get_ptr(x));
+    Rcpp::traits::input_parameter< size_t >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(Travel_compact_seq(n));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -274,15 +299,6 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     rcpp_result_gen = Rcpp::wrap(C_get_virtual_file_list());
     return rcpp_result_gen;
-END_RCPP
-}
-// run_filesystem_thread_func
-void run_filesystem_thread_func();
-RcppExport SEXP _Travel_run_filesystem_thread_func() {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    run_filesystem_thread_func();
-    return R_NilValue;
 END_RCPP
 }
 // profile_int
@@ -337,6 +353,39 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
     rcpp_result_gen = Rcpp::wrap(profile_num2(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// mySum1
+double mySum1(SEXP x);
+RcppExport SEXP _Travel_mySum1(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(mySum1(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// mySum2
+double mySum2(SEXP x);
+RcppExport SEXP _Travel_mySum2(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(mySum2(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// mySum3
+double mySum3(SEXP x);
+RcppExport SEXP _Travel_mySum3(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(mySum3(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -512,64 +561,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// C_set_debug_print
-void C_set_debug_print(bool x);
-RcppExport SEXP _Travel_C_set_debug_print(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< bool >::type x(xSEXP);
-    C_set_debug_print(x);
-    return R_NilValue;
-END_RCPP
-}
-// C_set_altrep_print
-void C_set_altrep_print(bool x);
-RcppExport SEXP _Travel_C_set_altrep_print(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< bool >::type x(xSEXP);
-    C_set_altrep_print(x);
-    return R_NilValue;
-END_RCPP
-}
-// C_set_filesystem_print
-void C_set_filesystem_print(bool x);
-RcppExport SEXP _Travel_C_set_filesystem_print(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< bool >::type x(xSEXP);
-    C_set_filesystem_print(x);
-    return R_NilValue;
-END_RCPP
-}
-// C_set_filesystem_log
-void C_set_filesystem_log(bool x);
-RcppExport SEXP _Travel_C_set_filesystem_log(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< bool >::type x(xSEXP);
-    C_set_filesystem_log(x);
-    return R_NilValue;
-END_RCPP
-}
-// initial_filesystem_log
-void initial_filesystem_log();
-RcppExport SEXP _Travel_initial_filesystem_log() {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    initial_filesystem_log();
-    return R_NilValue;
-END_RCPP
-}
-// close_filesystem_log
-void close_filesystem_log();
-RcppExport SEXP _Travel_close_filesystem_log() {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    close_filesystem_log();
-    return R_NilValue;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_wrap_altrep", (DL_FUNC) &_Travel_C_wrap_altrep, 1},
@@ -579,31 +570,36 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_get_altmmap_cache", (DL_FUNC) &_Travel_C_get_altmmap_cache, 1},
     {"_Travel_C_print_cache", (DL_FUNC) &_Travel_C_print_cache, 2},
     {"_Travel_C_coerce", (DL_FUNC) &_Travel_C_coerce, 2},
-    {"_Travel_mySum1", (DL_FUNC) &_Travel_mySum1, 1},
-    {"_Travel_mySum2", (DL_FUNC) &_Travel_mySum2, 1},
-    {"_Travel_mySum3", (DL_FUNC) &_Travel_mySum3, 1},
-    {"_Travel_Travel_compact_seq", (DL_FUNC) &_Travel_Travel_compact_seq, 1},
+    {"_Travel_C_getAltData1", (DL_FUNC) &_Travel_C_getAltData1, 1},
+    {"_Travel_C_getAltData2", (DL_FUNC) &_Travel_C_getAltData2, 1},
+    {"_Travel_C_get_ptr", (DL_FUNC) &_Travel_C_get_ptr, 1},
     {"_Travel_C_call_Travel_make_altmmap", (DL_FUNC) &_Travel_C_call_Travel_make_altmmap, 1},
     {"_Travel_C_get_file_handle_number", (DL_FUNC) &_Travel_C_get_file_handle_number, 0},
-    {"_Travel_C_set_print_location", (DL_FUNC) &_Travel_C_set_print_location, 1},
-    {"_Travel_C_get_print_location", (DL_FUNC) &_Travel_C_get_print_location, 0},
-    {"_Travel_C_set_mountpoint", (DL_FUNC) &_Travel_C_set_mountpoint, 1},
-    {"_Travel_C_get_mountpoint", (DL_FUNC) &_Travel_C_get_mountpoint, 0},
     {"_Travel_C_run_filesystem_thread_func", (DL_FUNC) &_Travel_C_run_filesystem_thread_func, 0},
     {"_Travel_C_run_filesystem_thread", (DL_FUNC) &_Travel_C_run_filesystem_thread, 0},
     {"_Travel_C_stop_filesystem_thread", (DL_FUNC) &_Travel_C_stop_filesystem_thread, 0},
     {"_Travel_C_is_filesystem_running", (DL_FUNC) &_Travel_C_is_filesystem_running, 0},
     {"_Travel_C_show_thread_status", (DL_FUNC) &_Travel_C_show_thread_status, 0},
-    {"_Travel_C_getAltData1", (DL_FUNC) &_Travel_C_getAltData1, 1},
-    {"_Travel_C_getAltData2", (DL_FUNC) &_Travel_C_getAltData2, 1},
-    {"_Travel_C_get_ptr", (DL_FUNC) &_Travel_C_get_ptr, 1},
+    {"_Travel_C_set_filesystem_log_location", (DL_FUNC) &_Travel_C_set_filesystem_log_location, 1},
+    {"_Travel_C_get_filesystem_log_locationn", (DL_FUNC) &_Travel_C_get_filesystem_log_locationn, 0},
+    {"_Travel_C_set_mountpoint", (DL_FUNC) &_Travel_C_set_mountpoint, 1},
+    {"_Travel_C_get_mountpoint", (DL_FUNC) &_Travel_C_get_mountpoint, 0},
+    {"_Travel_C_set_debug_print", (DL_FUNC) &_Travel_C_set_debug_print, 1},
+    {"_Travel_C_set_altrep_print", (DL_FUNC) &_Travel_C_set_altrep_print, 1},
+    {"_Travel_C_set_filesystem_print", (DL_FUNC) &_Travel_C_set_filesystem_print, 1},
+    {"_Travel_C_set_filesystem_log", (DL_FUNC) &_Travel_C_set_filesystem_log, 1},
+    {"_Travel_C_initial_filesystem_log", (DL_FUNC) &_Travel_C_initial_filesystem_log, 0},
+    {"_Travel_C_close_filesystem_log", (DL_FUNC) &_Travel_C_close_filesystem_log, 0},
+    {"_Travel_Travel_compact_seq", (DL_FUNC) &_Travel_Travel_compact_seq, 1},
     {"_Travel_C_get_virtual_file_list", (DL_FUNC) &_Travel_C_get_virtual_file_list, 0},
-    {"_Travel_run_filesystem_thread_func", (DL_FUNC) &_Travel_run_filesystem_thread_func, 0},
     {"_Travel_profile_int", (DL_FUNC) &_Travel_profile_int, 1},
     {"_Travel_profile_int2", (DL_FUNC) &_Travel_profile_int2, 1},
     {"_Travel_profile_int3", (DL_FUNC) &_Travel_profile_int3, 1},
     {"_Travel_profile_num", (DL_FUNC) &_Travel_profile_num, 1},
     {"_Travel_profile_num2", (DL_FUNC) &_Travel_profile_num2, 1},
+    {"_Travel_mySum1", (DL_FUNC) &_Travel_mySum1, 1},
+    {"_Travel_mySum2", (DL_FUNC) &_Travel_mySum2, 1},
+    {"_Travel_mySum3", (DL_FUNC) &_Travel_mySum3, 1},
     {"_Travel_C_test_Subset_index_basic", (DL_FUNC) &_Travel_C_test_Subset_index_basic, 0},
     {"_Travel_C_test_Subset_index_conversion", (DL_FUNC) &_Travel_C_test_Subset_index_conversion, 0},
     {"_Travel_C_test_Cache_block", (DL_FUNC) &_Travel_C_test_Cache_block, 0},
@@ -619,12 +615,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_is_altrep", (DL_FUNC) &_Travel_C_is_altrep, 1},
     {"_Travel_C_allzero", (DL_FUNC) &_Travel_C_allzero, 1},
     {"_Travel_C_RLE", (DL_FUNC) &_Travel_C_RLE, 2},
-    {"_Travel_C_set_debug_print", (DL_FUNC) &_Travel_C_set_debug_print, 1},
-    {"_Travel_C_set_altrep_print", (DL_FUNC) &_Travel_C_set_altrep_print, 1},
-    {"_Travel_C_set_filesystem_print", (DL_FUNC) &_Travel_C_set_filesystem_print, 1},
-    {"_Travel_C_set_filesystem_log", (DL_FUNC) &_Travel_C_set_filesystem_log, 1},
-    {"_Travel_initial_filesystem_log", (DL_FUNC) &_Travel_initial_filesystem_log, 0},
-    {"_Travel_close_filesystem_log", (DL_FUNC) &_Travel_close_filesystem_log, 0},
     {NULL, NULL, 0}
 };
 

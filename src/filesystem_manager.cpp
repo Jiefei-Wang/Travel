@@ -161,7 +161,7 @@ static std::unique_ptr<std::thread> filesystem_thread(nullptr);
 #define THREAD_INIT INT_MAX
 static int thread_status;
 static bool thread_finished = true;
-// [[Rcpp::export]]
+
 void run_filesystem_thread_func()
 {
   thread_guard guard(thread_finished);
