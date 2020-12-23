@@ -15,7 +15,9 @@ struct Filesystem_file_identifier
 };
 
 /*
+==========================================================
 Manage virtual files
+==========================================================
 */
 Filesystem_file_identifier add_filesystem_file(const int type,
                                          const Subset_index &index,
@@ -39,5 +41,18 @@ bool remove_filesystem_file(inode_type inode);
 typename std::map<const inode_type, const std::string>::iterator filesystem_file_begin();
 typename std::map<const inode_type, const std::string>::iterator filesystem_file_end();
 
+
+
+
+
+/*
+==========================================================
+Filesystem management
+==========================================================
+*/
+void run_filesystem_thread_func();
+void run_filesystem_thread();
+void stop_filesystem_thread();
 bool is_filesystem_running();
+void show_thread_status();
 #endif

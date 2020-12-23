@@ -1,19 +1,41 @@
-#define UTILS_ENABLE_R
-#include "utils.h"
 #include <cstdarg>
 #include <iostream>
 #include <fstream>
+#include <assert.h>
+#include "Rcpp.h"
+#include "utils.h"
 #include "package_settings.h"
 
-bool debug_print_enabled = false;
-bool altrep_print_enabled = false;
-bool filesystem_print_enabled = false;
-bool filesystem_log_enabled = false;
 
-#define BUFFER_SIZE 1024 * 1024
-static char buffer[BUFFER_SIZE];
+static std::string print_location;
+static std::string mount_point;
+static bool debug_print_enabled = false;
+static bool altrep_print_enabled = false;
+static bool filesystem_print_enabled = false;
+static bool filesystem_log_enabled = false;
+
 static std::ofstream filesystem_log_stream;
 static bool filesystem_log_opened = false;
+#define BUFFER_SIZE 1024 * 1024
+static char buffer[BUFFER_SIZE];
+
+
+void set_print_location(std::string x){
+	print_location = x;
+	print_location = print_location + "/debug_output";
+}
+std::string get_print_location(){
+    return print_location;
+}
+
+void set_mountpoint(std::string path)
+{
+    mount_point = path;
+}
+std::string get_mountpoint(){
+    return mount_point;
+}
+
 
 // [[Rcpp::export]]
 void C_set_debug_print(bool x)
@@ -119,7 +141,7 @@ uint8_t get_type_size(int type)
 		elt_size = 1;
 		break;
 	default:
-		claim(!"Unknown type");
+		assert(!"Unknown type");
 	}
 	return elt_size;
 }
@@ -142,7 +164,7 @@ std::string get_type_name(int type)
 		name = "raw";
 		break;
 	default:
-		claim(!"Unknown type");
+		assert(!"Unknown type");
 	}
 	return name;
 }
@@ -216,7 +238,7 @@ std::string get_file_name_in_path(std::string path)
 		((double *)dest)[i] = src_value;     \
 		break;                               \
 	default:                                 \
-		claim(!"Unknown type");              \
+		assert(!"Unknown type");              \
 	}
 
 void covert_data(int dest_type, int src_type, void *dest, const void *src, size_t length, bool reverse)
@@ -267,7 +289,7 @@ void covert_data(int dest_type, int src_type, void *dest, const void *src, size_
 			break;
 		}
 		default:
-			claim(!"Unknown type");
+			assert(!"Unknown type");
 		}
 	}
 }
@@ -278,7 +300,7 @@ void covert_data(int dest_type, int src_type, void *dest, const void *src, size_
 
 #ifndef _WIN32
 #include <unistd.h>
-void mySleep(int sleepMs)
+void sleep(int sleepMs)
 {
 	usleep(sleepMs * 1000); // usleep takes sleep time in us (1 millionth of a second)
 }
@@ -290,7 +312,7 @@ void mySleep(int sleepMs)
 #include <codecvt>
 #include <locale>
 
-void mySleep(int sleepMs)
+void sleep(int sleepMs)
 {
 	Sleep(sleepMs);
 }

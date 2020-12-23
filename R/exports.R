@@ -13,7 +13,7 @@
 #' y <- wrap_altrep(x)
 #' @export
 wrap_altrep<-function(x){
-    C_make_altmmap_from_altrep(x)
+    C_wrap_altrep(x)
 }
 
 #' Automatically deploy the filysystem

@@ -1,15 +1,6 @@
 #ifndef HEADER_UTILS
 #define HEADER_UTILS
 
-#define TRAVEL_PACKAGE_DEBUG
-
-#ifdef TRAVEL_PACKAGE_DEBUG
-#include <assert.h>
-#define claim(x) assert(x)
-#else
-#define claim(x)
-#endif
-
 #define STRINGIZING(x) #x
 #define XSTR(x) STRINGIZING(x)
 
@@ -29,88 +20,15 @@
 #undef ERROR
 #endif
 
-#ifdef Rcpp_hpp
-#ifndef UTILS_ENABLE_R
-#define UTILS_ENABLE_R
-#endif
-#endif
-
-
-#ifdef UTILS_ENABLE_R
-#ifndef R_INTERNALS_H_
-#include "Rcpp.h"
-#endif
-uint64_t get_object_size(SEXP x);
-class PROTECT_GUARD
-{
-private:
-  int protect_num = 0;
-
-public:
-  PROTECT_GUARD() {}
-  ~PROTECT_GUARD()
-  {
-    if (protect_num != 0)
-      UNPROTECT(protect_num);
-  }
-  SEXP protect(SEXP x)
-  {
-    protect_num++;
-    return PROTECT(x);
-  }
-};
-#endif
-
-#include <chrono>
-class Timer
-{
-private:
-  std::chrono::time_point<std::chrono::steady_clock> begin_time;
-  int time;
-
-public:
-  Timer(int time) : time(time)
-  {
-    begin_time = std::chrono::steady_clock::now();
-  }
-  bool expired()
-  {
-    auto end_time = std::chrono::steady_clock::now();
-    double elapsed_time_s = std::chrono::duration<double>(end_time - begin_time).count();
-    return elapsed_time_s > time;
-  }
-  void reset()
-  {
-    begin_time = std::chrono::steady_clock::now();
-  }
-};
-
-#include <memory>
-class Unique_buffer
-{
-  size_t size = 0;
-  std::unique_ptr<char[]> ptr;
-public:
-  void reserve(size_t reserve_size)
-  {
-    if (reserve_size > size)
-    {
-      ptr.reset(new char[reserve_size]);
-      size = reserve_size;
-    }
-  }
-  void release()
-  {
-    if (size > 1024 * 1024)
-    {
-      ptr.reset(nullptr);
-      size = 0;
-    }
-  }
-  char* get(){
-    return ptr.get();
-  }
-};
+/*
+=============================
+        filesystem path
+=============================
+*/
+void set_print_location(std::string x);
+std::string get_print_location();
+void set_mountpoint(std::string path);
+std::string get_mountpoint();
 
 void initial_filesystem_log();
 void close_filesystem_log();
@@ -118,9 +36,14 @@ void filesystem_log(const char *format, ...);
 void debug_print(const char *format, ...);
 void filesystem_print(const char *format, ...);
 void altrep_print(const char *format, ...);
+
+
+#ifdef Rcpp_hpp
+uint64_t get_object_size(SEXP x);
+#endif
 uint8_t get_type_size(int type);
 std::string get_type_name(int type);
-void mySleep(int sleepMs);
+void sleep(int sleepMs);
 size_t get_file_read_size(size_t file_size, size_t offset, size_t size);
 
 /*

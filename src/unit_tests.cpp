@@ -3,6 +3,7 @@
 //#include "utils.h"
 #include "filesystem_manager.h"
 #include "altrep_manager.h"
+#include "class_Unique_buffer.h"
 #include "utils.h"
 
 /*

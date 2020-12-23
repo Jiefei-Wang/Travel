@@ -10,6 +10,8 @@
 #include "class_Double_key_map.h"
 #include "utils.h"
 #include "memory_mapped_file.h"
+#include "class_Timer.h"
+
 
 static inode_type file_inode_counter = 1;
 Double_key_map<inode_type, std::string, Filesystem_file_data> file_list;
@@ -156,9 +158,9 @@ private:
 static std::unique_ptr<std::thread> filesystem_thread(nullptr);
 //An indicator to check whether the thread is running or not.
 //When a thread reaches the end of its excution this indicator will becomes true.
-static bool thread_finished = true;
 #define THREAD_INIT INT_MAX
 static int thread_status;
+static bool thread_finished = true;
 // [[Rcpp::export]]
 void run_filesystem_thread_func()
 {
@@ -166,9 +168,7 @@ void run_filesystem_thread_func()
   filesystem_thread_func(&thread_status);
 }
 
-void C_stop_filesystem_thread();
-// [[Rcpp::export]]
-void C_run_filesystem_thread()
+void run_filesystem_thread()
 {
   if (filesystem_thread != nullptr)
   {
@@ -182,11 +182,11 @@ void C_run_filesystem_thread()
   initial_filesystem_log();
   filesystem_thread.reset(new std::thread(run_filesystem_thread_func));
   //Check if the thread is running correctly, if not, kill the thread
-  mySleep(100);
+  sleep(100);
   if (thread_status != THREAD_INIT)
   {
     Rf_warning("The filesystem has been stopped, killing the filesystem thread\n");
-    C_stop_filesystem_thread();
+    stop_filesystem_thread();
     return;
   }
   Timer timer(FILESYSTEM_WAIT_TIME);
@@ -199,9 +199,7 @@ void C_run_filesystem_thread()
   }
 }
 
-//#include <unistd.h>
-// [[Rcpp::export]]
-void C_stop_filesystem_thread()
+void stop_filesystem_thread()
 {
   if (filesystem_thread != nullptr)
   {
@@ -211,7 +209,7 @@ void C_stop_filesystem_thread()
     {
       Rf_warning(status.c_str());
     }
-    mySleep(100);
+    sleep(100);
     //stop the filesystem
     filesystem_stop();
     //Check if the thread can be stopped
@@ -238,22 +236,16 @@ void C_stop_filesystem_thread()
   }
 }
 
-// [[Rcpp::export]]
-bool C_is_filesystem_running()
-{
-  return is_filesystem_running();
-}
 
 bool is_filesystem_running()
 {
   if (thread_finished && (filesystem_thread != nullptr))
   {
-    C_stop_filesystem_thread();
+    stop_filesystem_thread();
   }
   return filesystem_thread != nullptr && is_filesystem_alive();
 }
 
-// [[Rcpp::export]]
 void show_thread_status()
 {
   Rprintf("Thread stop indicator:%d\n", thread_finished);

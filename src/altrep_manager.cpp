@@ -6,9 +6,8 @@
 //#include "package_settings.h"
 #include "filesystem_manager.h"
 #include "memory_mapped_file.h"
-#define UTILS_ENABLE_R
 #include "utils.h"
-#undef UTILS_ENABLE_R
+#include "class_Protect_guard.h"
 
 static void altmmap_handle_finalizer(SEXP handle_extptr)
 {
@@ -47,7 +46,7 @@ SEXP Travel_make_altmmap(Filesystem_file_identifier &file_info)
     {
         Rf_error("The filesystem is not running!\n");
     }
-    PROTECT_GUARD guard;
+    Protect_guard guard;
     R_altrep_class_t alt_class = get_altmmap_class(file_data.coerced_type);
     SEXP altmmap_options = guard.protect(Rf_allocVector(VECSXP, SLOT_NUM));
     SET_PROPS_LENGTH(altmmap_options, Rcpp::wrap(file_data.file_length));
@@ -104,7 +103,7 @@ static void altfile_handle_finalizer(SEXP handle_extptr)
 R_altrep_class_t get_altfile_class(int type);
 SEXP make_altmmap_from_file(std::string path, int type, size_t length)
 {
-    PROTECT_GUARD guard;
+    Protect_guard guard;
     R_altrep_class_t alt_class = get_altfile_class(type);
     SEXP altfile_options = guard.protect(Rf_allocVector(VECSXP, SLOT_NUM));
     SET_PROPS_LENGTH(altfile_options, Rcpp::wrap(length));

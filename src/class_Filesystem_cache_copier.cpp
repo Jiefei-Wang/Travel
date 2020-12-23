@@ -26,8 +26,8 @@ void Filesystem_cache_copier::copy(size_t dest_index, size_t source_index)
     //The offset of the data within the cache measured in bytes
     size_t source_within_cache_offset = source_data_offset - source_cache_offset;
     size_t dest_within_cache_offset = dest_data_offset - dest_cache_offset;
-    claim(source_within_cache_offset + source_file_data.unit_size<=source_file_data.cache_size);
-    claim(dest_within_cache_offset + dest_file_data.unit_size<=dest_file_data.cache_size);
+    assert(source_within_cache_offset + source_file_data.unit_size<=source_file_data.cache_size);
+    assert(dest_within_cache_offset + dest_file_data.unit_size<=dest_file_data.cache_size);
     covert_data(dest_file_data.coerced_type, source_file_data.coerced_type,
                 dest_cache_ptr + dest_within_cache_offset,
                 source_cache_ptr + source_within_cache_offset, 1, false);
@@ -38,7 +38,7 @@ void Filesystem_cache_copier::load_source_cache(size_t source_data_offset)
     if (source_cache_id != current_source_cache_id ||
         source_cache_ptr == nullptr)
     {
-        claim(source_file_data.has_cache_id(current_source_cache_id));
+        assert(source_file_data.has_cache_id(current_source_cache_id));
         source_cache_id = current_source_cache_id;
         source_cache_ptr = source_file_data.get_cache_block(source_cache_id).get_const();
     }

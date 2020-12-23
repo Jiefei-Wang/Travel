@@ -6,11 +6,11 @@
 #include "memory_mapped_file.h"
 #include "read_write_operations.h"
 #include "package_settings.h"
-#include "class_Filesystem_cache_copier.h"
-#define UTILS_ENABLE_R
 #include "utils.h"
+#include "class_Filesystem_cache_copier.h"
+#include "class_Timer.h"
+#include "class_Protect_guard.h"
 
-size_t default_subset_length_cutoff = 3;
 
 R_altrep_class_t altmmap_real_class;
 R_altrep_class_t altmmap_integer_class;
@@ -227,11 +227,11 @@ static SEXP altmmap_duplicate(SEXP x, Rboolean deep)
     Filesystem_file_data &new_file_data = get_filesystem_file_data(new_file_name);
 
     //Copy write cache
-    claim(old_file_data.cache_size == new_file_data.cache_size);
+    assert(old_file_data.cache_size == new_file_data.cache_size);
     new_file_data.write_cache = old_file_data.write_cache;
 
     //Duplicate the object
-    PROTECT_GUARD guard;
+    Protect_guard guard;
     SEXP res = guard.protect(Travel_make_altmmap(new_file_info));
     //SHALLOW_DUPLICATE_ATTRIB(res, x);
     return res;
@@ -284,7 +284,7 @@ static SEXP altmmap_coerce(SEXP x, int type)
         }
     }
     //Make the new altrep
-    PROTECT_GUARD guard;
+    Protect_guard guard;
     SEXP res = guard.protect(Travel_make_altmmap(new_file_info));
     //SHALLOW_DUPLICATE_ATTRIB(res, x);
     return res;
@@ -402,7 +402,7 @@ static SEXP altmmap_serialize(SEXP x)
     Filesystem_file_data &file_data = get_filesystem_file_data(file_name);
     Travel_altrep_info &altrep_info = file_data.altrep_info;
 
-    PROTECT_GUARD guard;
+    Protect_guard guard;
     SEXP serialized_object;
     if (altrep_info.operations.serialize == R_NilValue)
     {
@@ -462,7 +462,7 @@ static SEXP altmmap_unserialize(SEXP R_class, SEXP serialized_object)
     }
     Rcpp::List serialized_list = serialized_object;
     Rcpp::Function unserialize_func = serialized_list[0];
-    PROTECT_GUARD guard;
+    Protect_guard guard;
     SEXP x = guard.protect(unserialize_func(serialized_list[1]));
     SEXP serialized_file_data = serialized_list[2];
     Exported_file_data *exported_data = (Exported_file_data *)DATAPTR(serialized_file_data);

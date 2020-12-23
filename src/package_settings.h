@@ -1,3 +1,6 @@
+#ifndef HEADER_PACKAGE_SETTINGS
+#define HEADER_PACKAGE_SETTINGS
+
 #include <string>
 
 #define PACKAGE_NAME "Travel"
@@ -5,6 +8,5 @@
 #define CACHE_SIZE 4096
 
 
-std::string get_print_location();
-std::string get_mountpoint();
 
+#endif

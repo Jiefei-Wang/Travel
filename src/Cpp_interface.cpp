@@ -1,6 +1,13 @@
-#include "filesystem_manager.h"
+#include <Rcpp.h>
 #include "Travel.h"
 #include "utils.h"
+#include "filesystem_manager.h"
+#include "class_Protect_guard.h"
+/*
+=========================================================================================
+                     altrep wrapper
+=========================================================================================
+*/
 
 size_t read_altrep_region(const Travel_altrep_info *altrep_info, void *buffer, size_t offset, size_t length)
 {
@@ -24,61 +31,27 @@ size_t read_altrep_region(const Travel_altrep_info *altrep_info, void *buffer, s
 }
 
 //[[Rcpp::export]]
-SEXP C_make_altmmap_from_altrep(SEXP x)
+SEXP C_wrap_altrep(SEXP x)
 {
+    switch (TYPEOF(x))
+    {
+    case INTSXP:
+    case LGLSXP:
+    case REALSXP:
+        break;
+    default:
+        return NULL;
+    }
     Travel_altrep_info altrep_info = {};
     altrep_info.length = XLENGTH(x);
     altrep_info.private_data = x;
     altrep_info.protected_data = x;
     altrep_info.type = TYPEOF(x);
     altrep_info.operations.get_region = read_altrep_region;
-    PROTECT_GUARD guard;
+    Protect_guard guard;
     SEXP altmmap_object = guard.protect(Travel_make_altrep(altrep_info));
     SHALLOW_DUPLICATE_ATTRIB(altmmap_object, x);
     return altmmap_object;
-}
-
-// [[Rcpp::export]]
-SEXP C_getAltData1(SEXP x)
-{
-    return R_altrep_data1(x);
-}
-// [[Rcpp::export]]
-SEXP C_getAltData2(SEXP x)
-{
-    return R_altrep_data2(x);
-}
-
-// [[Rcpp::export]]
-void print_value(SEXP x)
-{
-    void *ptr = DATAPTR(x);
-    if (ptr == NULL || ptr == nullptr)
-    {
-        Rf_error("The pointer is NULL!\n");
-    }
-    int max_print = (XLENGTH(x) > 100 ? 100 : XLENGTH(x));
-    for (int i = 0; i < max_print; i++)
-    {
-        switch (TYPEOF(x))
-        {
-        case INTSXP:
-            Rprintf("%d,", ((int *)ptr)[i]);
-            break;
-        case REALSXP:
-            Rprintf("%f,", ((double *)ptr)[i]);
-            break;
-        default:
-            break;
-        }
-    }
-    Rprintf("\n");
-}
-
-// [[Rcpp::export]]
-SEXP C_get_ptr(SEXP x)
-{
-    return R_MakeExternalPtr(DATAPTR(x), R_NilValue, R_NilValue);
 }
 
 /*
@@ -176,12 +149,11 @@ double mySum2(SEXP x)
     return s;
 }
 
-
 // [[Rcpp::export]]
 double mySum3(SEXP x)
 {
     double s = 0.0;
-    double* ptr = (double*)DATAPTR(x);
+    double *ptr = (double *)DATAPTR(x);
     R_xlen_t len = XLENGTH(x);
     for (R_xlen_t i = 0; i < len; i++)
     {
@@ -190,11 +162,9 @@ double mySum3(SEXP x)
     return s;
 }
 
-
-
 #include "Travel.h"
 size_t arithmetic_sequence_region(const Travel_altrep_info *altrep_info, void *buffer,
-                                     size_t offset, size_t length)
+                                  size_t offset, size_t length)
 {
     for (size_t i = 0; i < length; i++)
     {
@@ -215,8 +185,90 @@ SEXP Travel_compact_seq(size_t n)
 }
 
 // [[Rcpp::export]]
-SEXP C_call_Travel_make_altmmap(SEXP x){
-    Travel_altrep_info* altrep_info = (Travel_altrep_info*)R_ExternalPtrAddr(x);
+SEXP C_call_Travel_make_altmmap(SEXP x)
+{
+    Travel_altrep_info *altrep_info = (Travel_altrep_info *)R_ExternalPtrAddr(x);
     return Travel_make_altmmap(*altrep_info);
 }
 
+/*========================================================================================= */
+#include "memory_mapped_file.h"
+// [[Rcpp::export]]
+size_t C_get_file_handle_number()
+{
+    return get_file_handle_number();
+}
+
+/*========================================================================================= */
+#include "utils.h"
+// [[Rcpp::export]]
+void C_set_print_location(Rcpp::String x)
+{
+    set_print_location(x);
+}
+// [[Rcpp::export]]
+Rcpp::String C_get_print_location()
+{
+    return get_print_location();
+}
+// [[Rcpp::export]]
+void C_set_mountpoint(Rcpp::String path)
+{
+    return set_mountpoint(path);
+}
+// [[Rcpp::export]]
+Rcpp::String C_get_mountpoint()
+{
+    return get_mountpoint();
+}
+
+/*========================================================================================= */
+#include "filesystem_manager.h"
+
+// [[Rcpp::export]]
+void C_run_filesystem_thread_func()
+{
+    run_filesystem_thread_func();
+}
+// [[Rcpp::export]]
+void C_run_filesystem_thread()
+{
+    run_filesystem_thread();
+}
+// [[Rcpp::export]]
+void C_stop_filesystem_thread()
+{
+    stop_filesystem_thread();
+}
+// [[Rcpp::export]]
+bool C_is_filesystem_running()
+{
+    return is_filesystem_running();
+}
+// [[Rcpp::export]]
+void C_show_thread_status(){
+    show_thread_status();
+}
+
+/*
+=========================================================================================
+                     ALTREP functions
+=========================================================================================
+*/
+
+// [[Rcpp::export]]
+SEXP C_getAltData1(SEXP x)
+{
+    return R_altrep_data1(x);
+}
+// [[Rcpp::export]]
+SEXP C_getAltData2(SEXP x)
+{
+    return R_altrep_data2(x);
+}
+
+// [[Rcpp::export]]
+SEXP C_get_ptr(SEXP x)
+{
+    return R_MakeExternalPtr(DATAPTR(x), R_NilValue, R_NilValue);
+}
