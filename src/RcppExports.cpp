@@ -416,12 +416,21 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// C_test_read_source_with_subset
-void C_test_read_source_with_subset();
-RcppExport SEXP _Travel_C_test_read_source_with_subset() {
+// C_test_int_read_source_with_subset
+void C_test_int_read_source_with_subset();
+RcppExport SEXP _Travel_C_test_int_read_source_with_subset() {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    C_test_read_source_with_subset();
+    C_test_int_read_source_with_subset();
+    return R_NilValue;
+END_RCPP
+}
+// C_test_int_sub_read_source_with_subset
+void C_test_int_sub_read_source_with_subset();
+RcppExport SEXP _Travel_C_test_int_sub_read_source_with_subset() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    C_test_int_sub_read_source_with_subset();
     return R_NilValue;
 END_RCPP
 }
@@ -612,7 +621,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_test_Subset_index_basic", (DL_FUNC) &_Travel_C_test_Subset_index_basic, 0},
     {"_Travel_C_test_Subset_index_conversion", (DL_FUNC) &_Travel_C_test_Subset_index_conversion, 0},
     {"_Travel_C_test_Cache_block", (DL_FUNC) &_Travel_C_test_Cache_block, 0},
-    {"_Travel_C_test_read_source_with_subset", (DL_FUNC) &_Travel_C_test_read_source_with_subset, 0},
+    {"_Travel_C_test_int_read_source_with_subset", (DL_FUNC) &_Travel_C_test_int_read_source_with_subset, 0},
+    {"_Travel_C_test_int_sub_read_source_with_subset", (DL_FUNC) &_Travel_C_test_int_sub_read_source_with_subset, 0},
     {"_Travel_C_test_read_write_functions_native", (DL_FUNC) &_Travel_C_test_read_write_functions_native, 5},
     {"_Travel_C_test_read_write_functions_with_coercion", (DL_FUNC) &_Travel_C_test_read_write_functions_with_coercion, 5},
     {"_Travel_C_test_read_write_functions_with_coercion_subset", (DL_FUNC) &_Travel_C_test_read_write_functions_with_coercion_subset, 5},

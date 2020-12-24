@@ -161,8 +161,12 @@ C_test_Cache_block <- function() {
     invisible(.Call(`_Travel_C_test_Cache_block`))
 }
 
-C_test_read_source_with_subset <- function() {
-    invisible(.Call(`_Travel_C_test_read_source_with_subset`))
+C_test_int_read_source_with_subset <- function() {
+    invisible(.Call(`_Travel_C_test_int_read_source_with_subset`))
+}
+
+C_test_int_sub_read_source_with_subset <- function() {
+    invisible(.Call(`_Travel_C_test_int_sub_read_source_with_subset`))
 }
 
 C_test_read_write_functions_native <- function(length, write_starts, write_length, read_starts, read_length) {

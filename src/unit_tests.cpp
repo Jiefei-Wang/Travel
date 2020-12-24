@@ -201,7 +201,7 @@ void C_test_Cache_block()
 
 /*
 =========================================================================================
-                          unit test for general read/write functions
+                          unit test for read_source_with_subset
 =========================================================================================
 */
 #include "read_write_operations.h"
@@ -230,7 +230,7 @@ size_t read_int_arithmetic_sequence(const Travel_altrep_info *altrep_info, void 
 }
 Filesystem_file_data& make_test_file(int type, Subset_index index){
     Travel_altrep_info altrep_info;
-    altrep_info.type = type;
+    altrep_info.type = INTSXP;
     altrep_info.length = 1024*1024*1024;
     altrep_info.operations.get_region = read_int_arithmetic_sequence;
     Filesystem_file_identifier file_info = add_filesystem_file(type, index, altrep_info);
@@ -245,12 +245,12 @@ void fill_data(T* ptr, Subset_index index){
     }
 }
 
-template<class T>
-void test_read_source_with_subset_internal(int type, Subset_index index){
+void test_read_source_with_subset_internal(Subset_index index){
+    int type =INTSXP;
     size_t type_size = get_type_size(type);
     size_t length = index.total_length;
     std::unique_ptr<char[]> data(new char[type_size * length]);
-    T* ptr = (T*)data.get();
+    int* ptr = (int*)data.get();
     fill_data(ptr, index);
     Filesystem_file_data& file_data = make_test_file(type, index);
 
@@ -269,24 +269,29 @@ void test_read_source_with_subset_internal(int type, Subset_index index){
 }
 
 // [[Rcpp::export]]
-void C_test_read_source_with_subset(){
+void C_test_int_read_source_with_subset(){
     size_t length = 1024*1024;
     Subset_index index(0,length);
-    test_read_source_with_subset_internal<int>(INTSXP, index);
-    test_read_source_with_subset_internal<double>(REALSXP, index);
+    test_read_source_with_subset_internal(index);
+} 
 
+// [[Rcpp::export]]
+void C_test_int_sub_read_source_with_subset(){
+    size_t length = 1024*1024;
     Subset_index index1;
     for(size_t i =0;i<10;i++){
         size_t start = (size_t)R::runif(1,length);
-        size_t length = (size_t)R::runif(1,length);
+        size_t sub_length = (size_t)R::runif(1,length);
         size_t stride = (size_t)R::runif(1,10);
-        index1.push_back(start,length,stride);
+        index1.push_back(start,sub_length,stride);
     }
-    test_read_source_with_subset_internal<int>(INTSXP, index1);
-    test_read_source_with_subset_internal<double>(REALSXP, index1);
+    test_read_source_with_subset_internal(index1); 
 }
-
-
+/*
+=========================================================================================
+                          unit test for general read/write functions
+=========================================================================================
+*/
 void test_read_write_functions_internal(
     int type, size_t length, Subset_index index,
     Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,

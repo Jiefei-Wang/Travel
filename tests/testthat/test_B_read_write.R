@@ -3,7 +3,9 @@ context("Testing C++ level read and write function")
 
 
 test_that("Testing read_source_with_subset",{
-    expect_error(C_test_read_source_with_subset()
+    expect_error(C_test_int_read_source_with_subset()
+                 ,NA)
+    expect_error(C_test_int_sub_read_source_with_subset()
                  ,NA)
 })
 
