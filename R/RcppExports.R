@@ -77,8 +77,8 @@ C_set_filesystem_log_location <- function(x) {
     invisible(.Call(`_Travel_C_set_filesystem_log_location`, x))
 }
 
-C_get_filesystem_log_locationn <- function() {
-    .Call(`_Travel_C_get_filesystem_log_locationn`)
+C_get_filesystem_log_location <- function() {
+    .Call(`_Travel_C_get_filesystem_log_location`)
 }
 
 C_set_mountpoint <- function(path) {

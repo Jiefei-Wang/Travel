@@ -201,7 +201,7 @@ void C_set_filesystem_log_location(Rcpp::String x)
     set_filesystem_log_location(x);
 }
 // [[Rcpp::export]]
-Rcpp::String C_get_filesystem_log_locationn()
+Rcpp::String C_get_filesystem_log_location()
 {
     return get_filesystem_log_location();
 }

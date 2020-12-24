@@ -201,13 +201,13 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// C_get_filesystem_log_locationn
-Rcpp::String C_get_filesystem_log_locationn();
-RcppExport SEXP _Travel_C_get_filesystem_log_locationn() {
+// C_get_filesystem_log_location
+Rcpp::String C_get_filesystem_log_location();
+RcppExport SEXP _Travel_C_get_filesystem_log_location() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(C_get_filesystem_log_locationn());
+    rcpp_result_gen = Rcpp::wrap(C_get_filesystem_log_location());
     return rcpp_result_gen;
 END_RCPP
 }
@@ -632,7 +632,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_show_thread_status", (DL_FUNC) &_Travel_C_show_thread_status, 0},
     {"_Travel_C_remove_all_filesystem_files", (DL_FUNC) &_Travel_C_remove_all_filesystem_files, 0},
     {"_Travel_C_set_filesystem_log_location", (DL_FUNC) &_Travel_C_set_filesystem_log_location, 1},
-    {"_Travel_C_get_filesystem_log_locationn", (DL_FUNC) &_Travel_C_get_filesystem_log_locationn, 0},
+    {"_Travel_C_get_filesystem_log_location", (DL_FUNC) &_Travel_C_get_filesystem_log_location, 0},
     {"_Travel_C_set_mountpoint", (DL_FUNC) &_Travel_C_set_mountpoint, 1},
     {"_Travel_C_get_mountpoint", (DL_FUNC) &_Travel_C_get_mountpoint, 0},
     {"_Travel_C_set_debug_print", (DL_FUNC) &_Travel_C_set_debug_print, 1},
