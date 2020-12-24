@@ -5,6 +5,7 @@ NULL
 pkg_data <- new.env()
 pkg_data$pkg_unloaded <- FALSE
 
+#file.remove()
 onExit <-function(e){
     if(!pkg_data$pkg_unloaded)
         stop_filesystem()
@@ -23,10 +24,11 @@ onExit <-function(e){
     reg.finalizer(pkg_data, onExit, onexit = TRUE)
 }
 
-.onUnload<- function(libname, pkgname){
+.onUnload<- function(libpath){
     C_close_filesystem_log()
     stop_filesystem()
     pkg_data$pkg_unloaded <- TRUE
+    library.dynam.unload("Travel", libpath)
 }
 
 

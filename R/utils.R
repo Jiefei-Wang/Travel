@@ -16,7 +16,7 @@ get_OS <- function(){
 
 set_filesystem_log<-function(x){
     if(x){
-        if(C_filesystem_log_location()==""){
+        if(C_get_filesystem_log_location()==""){
             C_set_filesystem_log_location(getwd())
         }
     }

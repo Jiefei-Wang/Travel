@@ -2,6 +2,12 @@ context("Testing C++ level read and write function")
 
 
 
+test_that("Testing read_source_with_subset",{
+    expect_error(C_test_read_source_with_subset()
+                 ,NA)
+})
+
+
 test_that("Testing naive read and write",{
     data_length <- 10*1024
     write_offset <- sample(0:(data_length - 1024), 5)

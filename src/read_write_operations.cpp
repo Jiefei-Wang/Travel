@@ -11,7 +11,7 @@
 =========================================================================================
 */
 
-static size_t read_contiguous_data(Travel_altrep_info &altrep_info, char *buffer, size_t offset, size_t length)
+size_t read_contiguous_data(Travel_altrep_info &altrep_info, char *buffer, size_t offset, size_t length)
 {
     size_t true_read_length;
     if (altrep_info.operations.get_region != NULL)
@@ -31,7 +31,7 @@ static size_t read_contiguous_data(Travel_altrep_info &altrep_info, char *buffer
     return true_read_length;
 }
 
-static size_t read_data_by_block(Travel_altrep_info &altrep_info, char *buffer, size_t type_size,
+size_t read_data_by_block(Travel_altrep_info &altrep_info, char *buffer, size_t type_size,
                                  size_t offset, size_t length, size_t stride)
 {
     size_t buffer_read_length = 0;
@@ -70,7 +70,7 @@ static size_t read_data_by_block(Travel_altrep_info &altrep_info, char *buffer, 
 map from the index of the vector to the index of the source vector. 
 the unit of offset and length are the element of the vector
 */
-static size_t read_source_with_subset(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t length)
+size_t read_source_with_subset(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t length)
 {
     Subset_index &subset_index = file_data.index;
     size_t buffer_read_length = 0;
@@ -118,12 +118,12 @@ static size_t read_source_with_subset(Filesystem_file_data &file_data, char *buf
 }
 
 //This buffer will hold a certain amount of data in memory
-static Unique_buffer coercion_buffer;
+Unique_buffer coercion_buffer;
 /*
 Coerce the data that is read from the file source
 the return value is the number of the element that has been read
 */
-static size_t read_source_with_coercion(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t length)
+size_t read_source_with_coercion(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t length)
 {
     //If the type of the file is the same as the type of the source
     //We just pass the request to the downstream function
@@ -147,7 +147,7 @@ static size_t read_source_with_coercion(Filesystem_file_data &file_data, char *b
     the downstream function would not need to align the offset with
     the element size
 */
-static size_t read_with_alignment(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t size)
+size_t read_with_alignment(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t size)
 {
     uint8_t &unit_size = file_data.unit_size;
     size_t misalign_begin = offset % unit_size;
@@ -225,7 +225,7 @@ then from the downstream function
 
 The offset has no alignment requirement
 */
-static size_t read_data_with_cache(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t size)
+size_t read_data_with_cache(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t size)
 {
     size_t &cache_size = file_data.cache_size;
     size_t lowest_cache_id = offset / cache_size;

@@ -206,8 +206,20 @@ void C_test_Cache_block()
 */
 #include "read_write_operations.h"
 /*
-Create a fake file in the mounted filesystem
+cache layer: read_data_with_cache
+source alignment layer: read_with_alignment
+coercion layer: read_source_with_coercion
+source offset layer: read_source_with_subset
+source layer: read_contiguous_data/read_data_by_block
 */
+size_t read_data_with_cache(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t size);
+size_t read_with_alignment(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t size);
+size_t read_source_with_coercion(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t length);
+size_t read_source_with_subset(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t length);
+size_t read_data_by_block(Travel_altrep_info &altrep_info, char *buffer, size_t type_size,
+                                 size_t offset, size_t length, size_t stride);
+size_t read_contiguous_data(Travel_altrep_info &altrep_info, char *buffer, size_t offset, size_t length);
+
 size_t read_int_arithmetic_sequence(const Travel_altrep_info *altrep_info, void *buffer, size_t offset, size_t length)
 {
     for (size_t i = 0; i < length; i++)
@@ -216,6 +228,64 @@ size_t read_int_arithmetic_sequence(const Travel_altrep_info *altrep_info, void 
     }
     return length;
 }
+Filesystem_file_data& make_test_file(int type, Subset_index index){
+    Travel_altrep_info altrep_info;
+    altrep_info.type = type;
+    altrep_info.length = 1024*1024*1024;
+    altrep_info.operations.get_region = read_int_arithmetic_sequence;
+    Filesystem_file_identifier file_info = add_filesystem_file(type, index, altrep_info);
+    Filesystem_file_data &file_data = get_filesystem_file_data(file_info.file_inode);
+    return file_data;
+}
+
+template<class T>
+void fill_data(T* ptr, Subset_index index){
+    for(size_t i=0;i<index.total_length;i++){
+        ptr[i]=index.get_source_index(i);
+    }
+}
+
+template<class T>
+void test_read_source_with_subset_internal(int type, Subset_index index){
+    size_t type_size = get_type_size(type);
+    size_t length = index.total_length;
+    std::unique_ptr<char[]> data(new char[type_size * length]);
+    T* ptr = (T*)data.get();
+    fill_data(ptr, index);
+    Filesystem_file_data& file_data = make_test_file(type, index);
+
+    Unique_buffer buffer;
+    for(size_t i =0;i<length;i++){
+        size_t read_length = (size_t)R::runif(1,100);
+        if(i+read_length>length){
+            read_length = length - i;
+        }
+        size_t read_size = read_length*type_size;
+        buffer.reserve(read_size);
+        size_t true_read_len = read_source_with_subset(file_data,buffer.get(),i,read_length);
+        throw_if(true_read_len!=read_length);
+        throw_if(memcmp(buffer.get(),ptr+i,read_size));
+    }
+}
+
+// [[Rcpp::export]]
+void C_test_read_source_with_subset(){
+    size_t length = 1024*1024;
+    Subset_index index(0,length);
+    test_read_source_with_subset_internal<int>(INTSXP, index);
+    test_read_source_with_subset_internal<double>(REALSXP, index);
+
+    Subset_index index1;
+    for(size_t i =0;i<10;i++){
+        size_t start = (size_t)R::runif(1,length);
+        size_t length = (size_t)R::runif(1,length);
+        size_t stride = (size_t)R::runif(1,10);
+        index1.push_back(start,length,stride);
+    }
+    test_read_source_with_subset_internal<int>(INTSXP, index1);
+    test_read_source_with_subset_internal<double>(REALSXP, index1);
+}
+
 
 void test_read_write_functions_internal(
     int type, size_t length, Subset_index index,
