@@ -1,8 +1,8 @@
 #ifndef HEADER_SUBSET_INDEX
 #define HEADER_SUBSET_INDEX
 
-#include<map>
-#include<vector>
+#include <map>
+#include <vector>
 #ifndef R_INTERNALS_H_
 #include <Rcpp.h>
 #endif
@@ -15,9 +15,10 @@ public:
     std::vector<size_t> lengths;
     std::vector<size_t> partial_lengths;
     std::vector<size_t> strides;
+
 public:
-Subset_index(){}
-Subset_index(size_t start, size_t length, size_t stride =1);
+    Subset_index() {}
+    Subset_index(size_t start, size_t length, size_t stride = 1);
     void push_back(size_t start, size_t length, size_t stride);
     //Is the subset index consecutive?
     bool is_consecutive() const;
@@ -41,8 +42,13 @@ Subset_index(size_t start, size_t length, size_t stride =1);
     //Compute the size of the subset index based on the raw indices
     static size_t get_index_size(SEXP idx, Subset_index &index);
     std::string summarize(size_t n_print);
+
+    size_t get_serialize_size();
+    void serialize(char *ptr);
+    void unserialize(char *ptr);
+
 private:
-    std::string vector_to_string(std::vector<size_t>& vec, size_t n_print);
+    std::string vector_to_string(std::vector<size_t> &vec, size_t n_print);
 };
 
 #endif

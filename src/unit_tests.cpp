@@ -5,7 +5,7 @@
 #include "altrep_manager.h"
 #include "class_Unique_buffer.h"
 #include "utils.h"
-
+#include "unit_test_utils.h"
 /*
 =========================================================================================
                           Subset_index
@@ -198,10 +198,9 @@ void C_test_Cache_block()
         throw_if_not(cache3.use_count() == 1);
     }
 }
-
 /*
 =========================================================================================
-                          unit test for read_source_with_subset
+                          unit test for read write layers
 =========================================================================================
 */
 #include "read_write_operations.h"
@@ -216,134 +215,169 @@ size_t read_data_with_cache(Filesystem_file_data &file_data, char *buffer, size_
 size_t read_with_alignment(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t size);
 size_t read_source_with_coercion(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t length);
 size_t read_source_with_subset(Filesystem_file_data &file_data, char *buffer, size_t offset, size_t length);
-size_t read_data_by_block(Travel_altrep_info &altrep_info, char *buffer, size_t type_size,
-                                 size_t offset, size_t length, size_t stride);
-size_t read_contiguous_data(Travel_altrep_info &altrep_info, char *buffer, size_t offset, size_t length);
 
-size_t read_int_arithmetic_sequence(const Travel_altrep_info *altrep_info, void *buffer, size_t offset, size_t length)
+/*
+=========================================================================================
+                          unit test for read_source_with_subset
+=========================================================================================
+*/
+void test_read_source_with_subset_internal(Subset_index index)
 {
-    for (size_t i = 0; i < length; i++)
-    {
-        ((int *)buffer)[i] = offset + i;
-    }
-    return length;
-}
-Filesystem_file_data& make_test_file(int type, Subset_index index){
-    Travel_altrep_info altrep_info;
-    altrep_info.type = INTSXP;
-    altrep_info.length = 1024*1024*1024;
-    altrep_info.operations.get_region = read_int_arithmetic_sequence;
-    Filesystem_file_identifier file_info = add_filesystem_file(type, index, altrep_info);
-    Filesystem_file_data &file_data = get_filesystem_file_data(file_info.file_inode);
-    return file_data;
-}
-
-template<class T>
-void fill_data(T* ptr, Subset_index index){
-    for(size_t i=0;i<index.total_length;i++){
-        ptr[i]=index.get_source_index(i);
-    }
-}
-
-void test_read_source_with_subset_internal(Subset_index index){
-    int type =INTSXP;
+    int type = INTSXP;
     size_t type_size = get_type_size(type);
     size_t length = index.total_length;
     std::unique_ptr<char[]> data(new char[type_size * length]);
-    int* ptr = (int*)data.get();
-    fill_data(ptr, index);
-    Filesystem_file_data& file_data = make_test_file(type, index);
+    int *ptr = (int *)data.get();
+    fill_int_seq_data(ptr, index);
+    Filesystem_file_data &file_data = make_int_sequence_file(type, index);
 
     Unique_buffer buffer;
-    for(size_t i =0;i<length;i++){
-        size_t read_length = (size_t)R::runif(1,100);
-        if(i+read_length>length){
+    for (size_t i = 0; i < length; i++)
+    {
+        size_t read_length = (size_t)R::runif(1, 100);
+        if (i + read_length > length)
+        {
             read_length = length - i;
         }
-        size_t read_size = read_length*type_size;
+        size_t read_size = read_length * type_size;
         buffer.reserve(read_size);
-        size_t true_read_len = read_source_with_subset(file_data,buffer.get(),i,read_length);
-        throw_if(true_read_len!=read_length);
-        throw_if(memcmp(buffer.get(),ptr+i,read_size));
+        size_t true_read_len = read_source_with_subset(file_data, buffer.get(), i, read_length);
+        throw_if(true_read_len != read_length);
+        throw_if(memcmp(buffer.get(), ptr + i, read_size));
     }
 }
 
 // [[Rcpp::export]]
-void C_test_int_read_source_with_subset(){
-    size_t length = 1024*1024;
-    Subset_index index(0,length);
+void C_test_int_read_source_with_subset()
+{
+    size_t length = 1024 * 1024;
+    Subset_index index(0, length);
     test_read_source_with_subset_internal(index);
-} 
+}
 
 // [[Rcpp::export]]
-void C_test_int_sub_read_source_with_subset(){
-    size_t length = 1024*1024;
+void C_test_int_sub_read_source_with_subset()
+{
+    size_t length = 1024 * 1024;
     Subset_index index1;
-    for(size_t i =0;i<10;i++){
-        size_t start = (size_t)R::runif(1,length);
-        size_t sub_length = (size_t)R::runif(1,length);
-        size_t stride = (size_t)R::runif(1,10);
-        index1.push_back(start,sub_length,stride);
+    for (size_t i = 0; i < 10; i++)
+    {
+        size_t start = (size_t)R::runif(1, length);
+        size_t sub_length = (size_t)R::runif(1, length);
+        size_t stride = R::rnbinom(2, 0.7);
+        index1.push_back(start, sub_length, stride);
     }
-    test_read_source_with_subset_internal(index1); 
+    test_read_source_with_subset_internal(index1);
 }
+/*
+=========================================================================================
+                          unit test for read_with_alignment
+=========================================================================================
+*/
+template<class T>
+void test_read_with_alignment_internal(int type, Subset_index index)
+{
+    size_t type_size = get_type_size(type);
+    size_t length = index.total_length;
+    size_t file_size = type_size * length;
+    std::unique_ptr<char[]> data(new char[file_size]);
+    T *ptr = (T *)data.get();
+    fill_int_seq_data(ptr, index);
+    Filesystem_file_data &file_data = make_int_sequence_file(type, index);
+
+    Unique_buffer buffer;
+    for (size_t i = 0; i < file_size; i++)
+    {
+        size_t read_size = (size_t)R::runif(1, 100);
+        if (i + read_size > file_size)
+        {
+            read_size = file_size - i;
+        }
+        buffer.reserve(read_size);
+        size_t true_read_size = read_with_alignment(file_data, buffer.get(), i, read_size);
+        throw_if(true_read_size != read_size);
+        throw_if(memcmp(buffer.get(), ((char*)ptr) + i, read_size));
+    }
+}
+
+// [[Rcpp::export]]
+void C_test_int_read_with_alignment()
+{
+    size_t length = 1024 * 1024;
+    Subset_index index(0, length);
+    test_read_with_alignment_internal<int>(INTSXP,index);
+}
+
+// [[Rcpp::export]]
+void C_test_int_sub_read_with_alignment()
+{
+    size_t length = 1024 * 1024;
+    Subset_index index1;
+    for (size_t i = 0; i < 10; i++)
+    {
+        size_t start = (size_t)R::runif(1, length);
+        size_t sub_length = (size_t)R::runif(1, 1024);
+        size_t stride = R::rnbinom(2, 0.7);
+        index1.push_back(start, sub_length, stride);
+    }
+    test_read_with_alignment_internal<int>(INTSXP,index1);
+}
+// [[Rcpp::export]]
+void C_test_real_read_with_alignment()
+{
+    size_t length = 1024 * 1024;
+    Subset_index index(0, length);
+    test_read_with_alignment_internal<double>(REALSXP,index);
+}
+
+// [[Rcpp::export]]
+void C_test_real_sub_read_with_alignment()
+{
+    size_t length = 1024 * 1024;
+    Subset_index index1;
+    for (size_t i = 0; i < 10; i++)
+    {
+        size_t start = (size_t)R::runif(1, length);
+        size_t sub_length = (size_t)R::runif(1, 1024);
+        size_t stride = R::rnbinom(2, 0.7);
+        index1.push_back(start, sub_length, stride);
+    }
+    test_read_with_alignment_internal<double>(REALSXP,index1);
+}
+
+
 /*
 =========================================================================================
                           unit test for general read/write functions
 =========================================================================================
 */
+template<class T>
 void test_read_write_functions_internal(
     int type, size_t length, Subset_index index,
     Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
     Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
 {
-    Travel_altrep_info altrep_info = {};
-    altrep_info.type = INTSXP;
-    altrep_info.length = length;
-    altrep_info.operations.get_region = read_int_arithmetic_sequence;
-    Filesystem_file_identifier file_info = add_filesystem_file(type, index, altrep_info);
-    Filesystem_file_data &file_data = get_filesystem_file_data(file_info.file_inode);
+    Filesystem_file_data &file_data = make_int_sequence_file(type,index);
     uint8_t &type_size = file_data.unit_size;
-
     throw_if_not(file_data.file_length == index.total_length);
     //Create the test data
     size_t data_length = file_data.file_length;
     std::unique_ptr<char[]> data(new char[type_size * data_length]);
-    char *data_ptr = data.get();
-    for (size_t i = 0; i < data_length; i++)
-    {
-        if (type == INTSXP)
-        {
-            ((int *)data_ptr)[i] = index.get_source_index(i);
-        }
-        else
-        {
-            ((double *)data_ptr)[i] = index.get_source_index(i);
-        }
-    }
+    T *data_ptr = (T*)data.get();
+    fill_int_seq_data(data_ptr,index);
+
     //The data that is written is the negative value of the original value in the file
     for (R_xlen_t i = 0; i < write_starts.length(); i++)
     {
         size_t elt_offset = write_starts[i];
-        size_t offset = elt_offset * type_size;
+        size_t offset= elt_offset* type_size;
         size_t size = write_length[i] * type_size;
         for (size_t j = 0; j < write_length[i]; j++)
         {
-            if (type == INTSXP)
-            {
-                ((int *)data_ptr)[elt_offset + j] = -index.get_source_index(elt_offset + j);
-            }
-            else
-            {
-                ((double *)data_ptr)[elt_offset + j] = -index.get_source_index(elt_offset + j);
-            }
+            data_ptr[elt_offset + j] = -index.get_source_index(elt_offset + j);
         }
-        size_t true_write_size = general_write_func(file_data, data_ptr + offset, offset, size);
-        if (true_write_size != size)
-        {
-            Rf_error("The write size does not match, offset: %llu, expected: %llu, true: %llu, file size: %llu",
-                     (uint64_t)offset, (uint64_t)size, (uint64_t)true_write_size, (uint64_t)file_data.file_size);
-        }
+        size_t true_write_size = general_write_func(file_data, data_ptr + elt_offset, offset, size);
+        throw_if(true_write_size!=size);
     }
     //Test the read function by reading the data from the file
     Unique_buffer buffer;
@@ -355,37 +389,13 @@ void test_read_write_functions_internal(
         buffer.reserve(size);
         char *ptr = buffer.get();
         size_t true_read_size = general_read_func(file_data, ptr, offset, size);
-        if (true_read_size != size)
-        {
-            Rf_error("The read size does not match, offset: %llu, expected: %llu, true: %llu, file size: %llu",
-                     (uint64_t)offset, (uint64_t)size, (uint64_t)true_read_size, (uint64_t)file_data.file_size);
-        }
-        for (size_t j = 0; j < read_length[i]; j++)
-        {
-            double expected_value;
-            double true_value;
-            if (type == INTSXP)
-            {
-                expected_value = ((int *)data_ptr)[elt_offset + j];
-                true_value = ((int *)ptr)[j];
-            }
-            else
-            {
-                expected_value = ((double *)data_ptr)[elt_offset + j];
-                true_value = ((double *)ptr)[j];
-            }
-            if (expected_value != true_value)
-            {
-                Rf_error("The read data does not match, index: %llu, expected: %f, true: %f",
-                         (uint64_t)(elt_offset + j), expected_value, true_value);
-            }
-        }
+        throw_if(true_read_size!=size);
+        throw_if(memcmp(buffer.get(), data_ptr + elt_offset, size));
     }
     if (file_data.write_cache.size() == 0)
     {
         Rf_error("The write cache seems untouched.");
     }
-    remove_filesystem_file(file_info.file_inode);
 }
 
 // [[Rcpp::export]]
@@ -395,7 +405,7 @@ void C_test_read_write_functions_native(
     Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
 {
     Subset_index index(0, length);
-    test_read_write_functions_internal(
+    test_read_write_functions_internal<int>(
         INTSXP, length, index,
         write_starts, write_length,
         read_starts, read_length);
@@ -408,7 +418,7 @@ void C_test_read_write_functions_with_coercion(
     Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
 {
     Subset_index index(0, length);
-    test_read_write_functions_internal(
+    test_read_write_functions_internal<double>(
         REALSXP, length, index,
         write_starts, write_length,
         read_starts, read_length);
@@ -429,26 +439,12 @@ void C_test_read_write_functions_with_coercion_subset(
         index.push_back(0, lengths[i], i + 2);
         total_length = std::max(total_length, start + (size_t)lengths[i] * stride);
     }
-    test_read_write_functions_internal(
+    test_read_write_functions_internal<double>(
         REALSXP, total_length, index,
         write_starts, write_length,
         read_starts, read_length);
-}
-
-/*
-=========================================================================================
-                     make an arithmetic sequence altrep
-=========================================================================================
-*/
-// [[Rcpp::export]]
-SEXP C_make_arithmetic_sequence_altrep(double n)
-{
-    Travel_altrep_info altrep_info;
-    altrep_info.length = n;
-    altrep_info.type = INTSXP;
-    altrep_info.operations.get_region = read_int_arithmetic_sequence;
-    SEXP x = Travel_make_altrep(altrep_info);
-    return x;
+    
+    
 }
 
 /*
@@ -456,31 +452,6 @@ SEXP C_make_arithmetic_sequence_altrep(double n)
                      Unidentified code
 =========================================================================================
 */
-//[[Rcpp::export]]
-SEXP C_make_altmmap_from_file(SEXP path, SEXP type, size_t length)
-{
-    std::string path_str = Rcpp::as<std::string>(path);
-    std::string type_str = Rcpp::as<std::string>(type);
-    int type_num;
-    if (type_str == "logical")
-    {
-        type_num = LGLSXP;
-    }
-    else if (type_str == "integer")
-    {
-        type_num = INTSXP;
-    }
-    else if (type_str == "double" || type_str == "real")
-    {
-        type_num = REALSXP;
-    }
-    else
-    {
-        Rf_error("Unknown type <%s>\n", type_str.c_str());
-    }
-    return make_altmmap_from_file(path_str, type_num, length);
-}
-
 // [[Rcpp::export]]
 void C_set_real_value(SEXP x, size_t i, double v)
 {

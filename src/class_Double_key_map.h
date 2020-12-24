@@ -72,6 +72,11 @@ public:
     size_t size(){
         return coreMap.size();
     }
+    void clear(){
+        coreMap.clear();
+        key1_key2_Map.clear();
+        key2_key1_Map.clear();
+    }
 }; 
 
 

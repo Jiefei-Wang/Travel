@@ -69,6 +69,10 @@ C_show_thread_status <- function() {
     invisible(.Call(`_Travel_C_show_thread_status`))
 }
 
+C_remove_all_filesystem_files <- function() {
+    invisible(.Call(`_Travel_C_remove_all_filesystem_files`))
+}
+
 C_set_filesystem_log_location <- function(x) {
     invisible(.Call(`_Travel_C_set_filesystem_log_location`, x))
 }
@@ -107,6 +111,10 @@ C_initial_filesystem_log <- function() {
 
 C_close_filesystem_log <- function() {
     invisible(.Call(`_Travel_C_close_filesystem_log`))
+}
+
+C_make_int_sequence_altrep <- function(n) {
+    .Call(`_Travel_C_make_int_sequence_altrep`, n)
 }
 
 Travel_compact_seq <- function(n) {
@@ -169,6 +177,22 @@ C_test_int_sub_read_source_with_subset <- function() {
     invisible(.Call(`_Travel_C_test_int_sub_read_source_with_subset`))
 }
 
+C_test_int_read_with_alignment <- function() {
+    invisible(.Call(`_Travel_C_test_int_read_with_alignment`))
+}
+
+C_test_int_sub_read_with_alignment <- function() {
+    invisible(.Call(`_Travel_C_test_int_sub_read_with_alignment`))
+}
+
+C_test_real_read_with_alignment <- function() {
+    invisible(.Call(`_Travel_C_test_real_read_with_alignment`))
+}
+
+C_test_real_sub_read_with_alignment <- function() {
+    invisible(.Call(`_Travel_C_test_real_sub_read_with_alignment`))
+}
+
 C_test_read_write_functions_native <- function(length, write_starts, write_length, read_starts, read_length) {
     invisible(.Call(`_Travel_C_test_read_write_functions_native`, length, write_starts, write_length, read_starts, read_length))
 }
@@ -179,14 +203,6 @@ C_test_read_write_functions_with_coercion <- function(length, write_starts, writ
 
 C_test_read_write_functions_with_coercion_subset <- function(lengths, write_starts, write_length, read_starts, read_length) {
     invisible(.Call(`_Travel_C_test_read_write_functions_with_coercion_subset`, lengths, write_starts, write_length, read_starts, read_length))
-}
-
-C_make_arithmetic_sequence_altrep <- function(n) {
-    .Call(`_Travel_C_make_arithmetic_sequence_altrep`, n)
-}
-
-C_make_altmmap_from_file <- function(path, type, length) {
-    .Call(`_Travel_C_make_altmmap_from_file`, path, type, length)
 }
 
 C_set_real_value <- function(x, i, v) {

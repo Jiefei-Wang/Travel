@@ -182,6 +182,15 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// C_remove_all_filesystem_files
+void C_remove_all_filesystem_files();
+RcppExport SEXP _Travel_C_remove_all_filesystem_files() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    C_remove_all_filesystem_files();
+    return R_NilValue;
+END_RCPP
+}
 // C_set_filesystem_log_location
 void C_set_filesystem_log_location(Rcpp::String x);
 RcppExport SEXP _Travel_C_set_filesystem_log_location(SEXP xSEXP) {
@@ -278,6 +287,17 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     C_close_filesystem_log();
     return R_NilValue;
+END_RCPP
+}
+// C_make_int_sequence_altrep
+SEXP C_make_int_sequence_altrep(double n);
+RcppExport SEXP _Travel_C_make_int_sequence_altrep(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_make_int_sequence_altrep(n));
+    return rcpp_result_gen;
 END_RCPP
 }
 // Travel_compact_seq
@@ -434,6 +454,42 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// C_test_int_read_with_alignment
+void C_test_int_read_with_alignment();
+RcppExport SEXP _Travel_C_test_int_read_with_alignment() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    C_test_int_read_with_alignment();
+    return R_NilValue;
+END_RCPP
+}
+// C_test_int_sub_read_with_alignment
+void C_test_int_sub_read_with_alignment();
+RcppExport SEXP _Travel_C_test_int_sub_read_with_alignment() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    C_test_int_sub_read_with_alignment();
+    return R_NilValue;
+END_RCPP
+}
+// C_test_real_read_with_alignment
+void C_test_real_read_with_alignment();
+RcppExport SEXP _Travel_C_test_real_read_with_alignment() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    C_test_real_read_with_alignment();
+    return R_NilValue;
+END_RCPP
+}
+// C_test_real_sub_read_with_alignment
+void C_test_real_sub_read_with_alignment();
+RcppExport SEXP _Travel_C_test_real_sub_read_with_alignment() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    C_test_real_sub_read_with_alignment();
+    return R_NilValue;
+END_RCPP
+}
 // C_test_read_write_functions_native
 void C_test_read_write_functions_native(size_t length, Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length, Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length);
 RcppExport SEXP _Travel_C_test_read_write_functions_native(SEXP lengthSEXP, SEXP write_startsSEXP, SEXP write_lengthSEXP, SEXP read_startsSEXP, SEXP read_lengthSEXP) {
@@ -474,30 +530,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type read_length(read_lengthSEXP);
     C_test_read_write_functions_with_coercion_subset(lengths, write_starts, write_length, read_starts, read_length);
     return R_NilValue;
-END_RCPP
-}
-// C_make_arithmetic_sequence_altrep
-SEXP C_make_arithmetic_sequence_altrep(double n);
-RcppExport SEXP _Travel_C_make_arithmetic_sequence_altrep(SEXP nSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_make_arithmetic_sequence_altrep(n));
-    return rcpp_result_gen;
-END_RCPP
-}
-// C_make_altmmap_from_file
-SEXP C_make_altmmap_from_file(SEXP path, SEXP type, size_t length);
-RcppExport SEXP _Travel_C_make_altmmap_from_file(SEXP pathSEXP, SEXP typeSEXP, SEXP lengthSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type path(pathSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type type(typeSEXP);
-    Rcpp::traits::input_parameter< size_t >::type length(lengthSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_make_altmmap_from_file(path, type, length));
-    return rcpp_result_gen;
 END_RCPP
 }
 // C_set_real_value
@@ -598,6 +630,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_stop_filesystem_thread", (DL_FUNC) &_Travel_C_stop_filesystem_thread, 0},
     {"_Travel_C_is_filesystem_running", (DL_FUNC) &_Travel_C_is_filesystem_running, 0},
     {"_Travel_C_show_thread_status", (DL_FUNC) &_Travel_C_show_thread_status, 0},
+    {"_Travel_C_remove_all_filesystem_files", (DL_FUNC) &_Travel_C_remove_all_filesystem_files, 0},
     {"_Travel_C_set_filesystem_log_location", (DL_FUNC) &_Travel_C_set_filesystem_log_location, 1},
     {"_Travel_C_get_filesystem_log_locationn", (DL_FUNC) &_Travel_C_get_filesystem_log_locationn, 0},
     {"_Travel_C_set_mountpoint", (DL_FUNC) &_Travel_C_set_mountpoint, 1},
@@ -608,6 +641,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_set_filesystem_log", (DL_FUNC) &_Travel_C_set_filesystem_log, 1},
     {"_Travel_C_initial_filesystem_log", (DL_FUNC) &_Travel_C_initial_filesystem_log, 0},
     {"_Travel_C_close_filesystem_log", (DL_FUNC) &_Travel_C_close_filesystem_log, 0},
+    {"_Travel_C_make_int_sequence_altrep", (DL_FUNC) &_Travel_C_make_int_sequence_altrep, 1},
     {"_Travel_Travel_compact_seq", (DL_FUNC) &_Travel_Travel_compact_seq, 1},
     {"_Travel_C_get_virtual_file_list", (DL_FUNC) &_Travel_C_get_virtual_file_list, 0},
     {"_Travel_profile_int", (DL_FUNC) &_Travel_profile_int, 1},
@@ -623,11 +657,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_test_Cache_block", (DL_FUNC) &_Travel_C_test_Cache_block, 0},
     {"_Travel_C_test_int_read_source_with_subset", (DL_FUNC) &_Travel_C_test_int_read_source_with_subset, 0},
     {"_Travel_C_test_int_sub_read_source_with_subset", (DL_FUNC) &_Travel_C_test_int_sub_read_source_with_subset, 0},
+    {"_Travel_C_test_int_read_with_alignment", (DL_FUNC) &_Travel_C_test_int_read_with_alignment, 0},
+    {"_Travel_C_test_int_sub_read_with_alignment", (DL_FUNC) &_Travel_C_test_int_sub_read_with_alignment, 0},
+    {"_Travel_C_test_real_read_with_alignment", (DL_FUNC) &_Travel_C_test_real_read_with_alignment, 0},
+    {"_Travel_C_test_real_sub_read_with_alignment", (DL_FUNC) &_Travel_C_test_real_sub_read_with_alignment, 0},
     {"_Travel_C_test_read_write_functions_native", (DL_FUNC) &_Travel_C_test_read_write_functions_native, 5},
     {"_Travel_C_test_read_write_functions_with_coercion", (DL_FUNC) &_Travel_C_test_read_write_functions_with_coercion, 5},
     {"_Travel_C_test_read_write_functions_with_coercion_subset", (DL_FUNC) &_Travel_C_test_read_write_functions_with_coercion_subset, 5},
-    {"_Travel_C_make_arithmetic_sequence_altrep", (DL_FUNC) &_Travel_C_make_arithmetic_sequence_altrep, 1},
-    {"_Travel_C_make_altmmap_from_file", (DL_FUNC) &_Travel_C_make_altmmap_from_file, 3},
     {"_Travel_C_set_real_value", (DL_FUNC) &_Travel_C_set_real_value, 3},
     {"_Travel_C_set_int_value", (DL_FUNC) &_Travel_C_set_int_value, 3},
     {"_Travel_C_reset_int", (DL_FUNC) &_Travel_C_reset_int, 1},

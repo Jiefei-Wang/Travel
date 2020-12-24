@@ -53,20 +53,79 @@ Cache_block &Filesystem_file_data::get_cache_block(size_t cache_id)
 {
     return write_cache.at(cache_id);
 }
-
-Exported_file_data Filesystem_file_data::serialize()
+size_t Filesystem_file_data::get_serialize_size()
 {
-    Exported_file_data data;
-    data.unit_size = unit_size;
-    data.file_length = file_length;
-    data.file_size = file_size;
-    data.source_length = altrep_info.length;
-    data.cache_size = cache_size;
-    data.coerced_type = coerced_type;
-    data.index = index;
-    return data;
+    size_t size = 0;
+    size += sizeof(unit_size);
+    size += sizeof(file_length);
+    size += sizeof(file_size);
+    size += sizeof(cache_size);
+    size += sizeof(coerced_type);
+    size += sizeof(size_t);
+    size += index.get_serialize_size();
+    size += sizeof(size_t);
+     for(const auto& i: write_cache){
+        size += sizeof(i.first);
+        size += sizeof(size_t);
+        size += i.second.get_serialize_size();
+    }
+    return size;
 }
-Filesystem_cache_index_iterator Filesystem_file_data::get_cache_iterator(){
+
+#define assign_to_and_next(ptr, type, value)\
+    *(type*)ptr = value;\
+    ptr= (type*)ptr + 1;
+void Filesystem_file_data::serialize(void *ptr)
+{
+    assign_to_and_next(ptr, uint8_t, unit_size);
+    assign_to_and_next(ptr, size_t, file_length);
+    assign_to_and_next(ptr, size_t, file_size);
+    assign_to_and_next(ptr, size_t, cache_size);
+    assign_to_and_next(ptr, int, coerced_type);
+    size_t index_size = index.get_serialize_size();
+    assign_to_and_next(ptr, size_t, index_size);
+    index.serialize((char*)ptr);
+    ptr = (char*)ptr + index_size;
+    assign_to_and_next(ptr, size_t, write_cache.size());
+    for(const auto& i: write_cache){
+        assign_to_and_next(ptr, size_t, i.first);
+        size_t buffer_size = i.second.get_serialize_size();
+        assign_to_and_next(ptr, size_t, buffer_size);
+        i.second.serialize((char*)ptr);
+        ptr = (char*)ptr + buffer_size;
+    }
+}
+
+#define assign_back_and_next(ptr, type, variable)\
+    variable=*(type*)ptr;\
+    ptr= (type*)ptr + 1;
+
+void Filesystem_file_data::unserialize(void *ptr)
+{
+    assign_back_and_next(ptr, uint8_t, unit_size);
+    assign_back_and_next(ptr, size_t, file_length);
+    assign_back_and_next(ptr, size_t, file_size);
+    assign_back_and_next(ptr, size_t, cache_size);
+    assign_back_and_next(ptr, int, coerced_type);
+    size_t index_size;
+    assign_back_and_next(ptr, size_t, index_size);
+    index.unserialize((char*)ptr);
+    ptr = (char*)ptr + index_size;
+    size_t cache_num;
+    assign_back_and_next(ptr, size_t, cache_num);
+    write_cache.clear();
+    for(size_t i=0;i<cache_num;i++){
+        size_t cache_index;
+        assign_back_and_next(ptr, size_t, cache_index);
+        size_t cache_size;
+        assign_back_and_next(ptr, size_t, cache_size);
+        Cache_block block((char*)ptr);
+        ptr = (char*)ptr + cache_size;
+        write_cache.emplace(cache_index,block);
+    }
+}
+Filesystem_cache_index_iterator Filesystem_file_data::get_cache_iterator()
+{
     return Filesystem_cache_index_iterator(*this);
 }
 /*
@@ -80,7 +139,7 @@ Filesystem_cache_index_iterator::Filesystem_cache_index_iterator(Filesystem_file
     block_iter = file_data.write_cache.begin();
     within_block_id = 0;
     type_size = get_type_size(file_data.coerced_type);
-    if(!is_final())
+    if (!is_final())
         compute_block_info();
 }
 Filesystem_cache_index_iterator &Filesystem_cache_index_iterator::operator++()

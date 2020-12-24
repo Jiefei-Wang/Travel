@@ -419,30 +419,13 @@ static SEXP altmmap_serialize(SEXP x)
         Rcpp::Function serialize_func(altrep_info.operations.serialize);
         SEXP altrep_info_extptr = guard.protect(R_MakeExternalPtr(&altrep_info, R_NilValue, R_NilValue));
         SEXP serialized_altrep_info = guard.protect(serialize_func(altrep_info_extptr));
-        Exported_file_data exported_data = file_data.serialize();
-        SEXP serialized_file_data = guard.protect(Rf_allocVector(RAWSXP, sizeof(Exported_file_data)));
-        //prepare the file data
-        void *file_ptr = (void *)DATAPTR(serialized_file_data);
-        memcpy(file_ptr, &exported_data, sizeof(Exported_file_data));
-        //prepare the cache data
-        size_t cache_num = file_data.write_cache.size();
-        size_t cache_size = file_data.cache_size;
-        Rcpp::NumericVector cache_id(cache_num);
-        Rcpp::RawVector cache_data(cache_num * file_data.cache_size);
-        size_t j = 0;
-        char *cache_ptr = (char *)DATAPTR(cache_data);
-        for (const auto &i : file_data.write_cache)
-        {
-            cache_id[j] = i.first;
-            memcpy(cache_ptr + j * cache_size, i.second.get_const(), cache_size);
-            j++;
-        }
-        serialized_object = guard.protect(Rf_allocVector(VECSXP, 5));
+        size_t serialized_size = file_data.get_serialize_size();
+        SEXP serialized_file_data = guard.protect(Rf_allocVector(RAWSXP, serialized_size));
+        file_data.serialize(DATAPTR(serialized_file_data));
+        serialized_object = guard.protect(Rf_allocVector(VECSXP, 3));
         SET_VECTOR_ELT(serialized_object, 0, altrep_info.operations.unserialize);
         SET_VECTOR_ELT(serialized_object, 1, serialized_altrep_info);
         SET_VECTOR_ELT(serialized_object, 2, serialized_file_data);
-        SET_VECTOR_ELT(serialized_object, 3, cache_id);
-        SET_VECTOR_ELT(serialized_object, 4, cache_data);
     }
     return serialized_object;
 }
@@ -456,36 +439,16 @@ static SEXP altmmap_unserialize(SEXP R_class, SEXP serialized_object)
         return serialized_object;
     }
     //Otherwise, we build the ALTREP object from scratch
-    if (!is_filesystem_running())
-    {
-        Rf_error("The filesystem is not running!\n");
-    }
     Rcpp::List serialized_list = serialized_object;
     Rcpp::Function unserialize_func = serialized_list[0];
     Protect_guard guard;
     SEXP x = guard.protect(unserialize_func(serialized_list[1]));
+
+    //update the filesystem data;
     SEXP serialized_file_data = serialized_list[2];
-    Exported_file_data *exported_data = (Exported_file_data *)DATAPTR(serialized_file_data);
-    Rcpp::NumericVector cache_id = serialized_list[3];
-    Rcpp::RawVector cache_data = serialized_list[4];
-    //If the length of the unserialized object does not match
-    //the length of the orignal one, we directly return the object
-    //with a warning
-    if (exported_data->source_length != (size_t)XLENGTH(x))
-    {
-        Rf_warning("The length of the unserialized object does not match the orignal one, "
-                   "expected: %llu, true: %llu\n",
-                   (uint64_t)exported_data->source_length, (uint64_t)XLENGTH(x));
-        return x;
-    }
-    //Otherwise, we overwrite the original data with the cache data
-    char *x_ptr = (char *)DATAPTR(x);
-    char *cache_ptr = (char *)DATAPTR(cache_data);
-    for (size_t i = 0; i < (size_t)cache_id.size(); i++)
-    {
-        size_t cache_offset = cache_id[i] * exported_data->cache_size;
-        memcpy(x_ptr + cache_offset, cache_ptr + i * exported_data->cache_size, exported_data->cache_size);
-    }
+    std::string file_name = Rcpp::as<std::string>(GET_ALT_NAME(x));
+    Filesystem_file_data &file_data = get_filesystem_file_data(file_name);
+    file_data.unserialize(DATAPTR(serialized_file_data));
     return x;
 }
 

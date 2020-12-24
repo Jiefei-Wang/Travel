@@ -37,6 +37,7 @@ bool has_filesystem_file(inode_type inode);
 //Delete the file from the filesystem
 bool remove_filesystem_file(std::string name);
 bool remove_filesystem_file(inode_type inode);
+void remove_all_filesystem_files();
 //File iterator
 typename std::map<const inode_type, const std::string>::iterator filesystem_file_begin();
 typename std::map<const inode_type, const std::string>::iterator filesystem_file_end();

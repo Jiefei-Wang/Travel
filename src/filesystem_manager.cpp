@@ -84,6 +84,10 @@ bool remove_filesystem_file(std::string name)
   }
   return false;
 }
+void remove_all_filesystem_files(){
+  file_list.clear();
+}
+
 bool remove_filesystem_file(inode_type inode)
 {
   if (has_filesystem_file(inode))

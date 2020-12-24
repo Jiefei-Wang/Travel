@@ -192,9 +192,57 @@ std::string Subset_index::summarize(size_t n_print)
     std::string summary;
     summary = "Total length: " + std::to_string(total_length) + ", ";
     summary += "Starts: " + vector_to_string(starts, n_print) + ", ";
-    summary += "Lengths: " + vector_to_string(starts, n_print) + ", ";
-    summary += "Strides: " + vector_to_string(starts, n_print);
+    summary += "Lengths: " + vector_to_string(lengths, n_print) + ", ";
+    summary += "Strides: " + vector_to_string(strides, n_print);
     return summary;
+}
+
+size_t Subset_index::get_serialize_size()
+{
+    size_t size = 0;
+    size += sizeof(total_length);
+    size += sizeof(size_t);
+    size += sizeof(size_t) * starts.size();
+    size += sizeof(size_t) * starts.size();
+    size += sizeof(size_t) * starts.size();
+    size += sizeof(size_t) * starts.size();
+    return size;
+}
+void Subset_index::serialize(char *ptr)
+{
+    *(size_t *)ptr = total_length;
+    ptr += sizeof(size_t);
+    *(size_t *)ptr = starts.size();
+    ptr += sizeof(size_t);
+    size_t vec_size = sizeof(size_t) * starts.size();
+    memcpy(ptr, starts.data(), vec_size);
+    ptr += vec_size;
+    memcpy(ptr, lengths.data(), vec_size);
+    ptr += vec_size;
+    memcpy(ptr, partial_lengths.data(), vec_size);
+    ptr += vec_size;
+    memcpy(ptr, strides.data(), vec_size);
+    ptr += vec_size;
+}
+void Subset_index::unserialize(char *ptr)
+{
+    total_length = *(size_t *)ptr;
+    ptr += sizeof(size_t);
+    size_t vec_length = *(size_t *)ptr;
+    ptr += sizeof(size_t);
+    size_t vec_size = sizeof(size_t) * vec_length;
+    starts.reserve(vec_length);
+    lengths.reserve(vec_length);
+    partial_lengths.reserve(vec_length);
+    strides.reserve(vec_length);
+    memcpy(starts.data(), ptr, vec_size);
+    ptr += vec_size;
+    memcpy(lengths.data(), ptr, vec_size);
+    ptr += vec_size;
+    memcpy(partial_lengths.data(), ptr, vec_size);
+    ptr += vec_size;
+    memcpy(strides.data(), ptr, vec_size);
+    ptr += vec_size;
 }
 
 /*

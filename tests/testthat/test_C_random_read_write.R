@@ -1,15 +1,6 @@
 context("Testing C++ level read and write function")
 
 
-
-test_that("Testing read_source_with_subset",{
-    expect_error(C_test_int_read_source_with_subset()
-                 ,NA)
-    expect_error(C_test_int_sub_read_source_with_subset()
-                 ,NA)
-})
-
-
 test_that("Testing naive read and write",{
     data_length <- 10*1024
     write_offset <- sample(0:(data_length - 1024), 5)
@@ -22,7 +13,6 @@ test_that("Testing naive read and write",{
                  ,NA)
 })
 
-
 test_that("Testing read and write with coercion",{
     data_length <- 10*1024
     write_offset <- sample(0:(data_length - 1024), 5)
@@ -34,8 +24,6 @@ test_that("Testing read and write with coercion",{
                                                            read_offset, read_length)
                  ,NA)
 })
-
-
 test_that("Testing read and write with coercion and subset",{
     set.seed(1)
     lengths <- c(2*1024,4*1024,4*1024)
@@ -49,3 +37,5 @@ test_that("Testing read and write with coercion and subset",{
                                                            read_offset, read_length)
                  ,NA)
 })
+
+C_remove_all_filesystem_files()

@@ -13,6 +13,13 @@ Cache_block::Cache_block(size_t size) : size(size)
   counter = new size_t;
   *counter = 1;
 }
+Cache_block::Cache_block(char *ptr)
+{
+  size_t size = *(size_t *)ptr;
+  ptr += sizeof(size_t);
+  this->ptr = new char[size];
+  memcpy(this->ptr, ptr, size);
+}
 Cache_block::~Cache_block()
 {
   if (!is_shared())
@@ -99,4 +106,15 @@ char *Cache_block::get()
 const char *Cache_block::get_const() const
 {
   return ptr;
+}
+
+size_t Cache_block::get_serialize_size() const
+{
+  return sizeof(size_t) + get_size();
+}
+void Cache_block::serialize(char *ptr) const
+{
+  *(size_t *)ptr = get_size();
+  ptr += sizeof(size_t);
+  memcpy(ptr, this->ptr, get_size());
 }

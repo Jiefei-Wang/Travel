@@ -8,23 +8,6 @@
 
 class Filesystem_cache_index_iterator;
 
-struct Exported_file_data
-{
-    uint8_t unit_size;
-    size_t file_length;
-    size_t source_length;
-    size_t file_size;
-    size_t cache_size;
-    int coerced_type;
-    Subset_index index;
-};
-
-struct Region_info
-{
-    size_t start_offset;
-    size_t end_offset;
-    size_t size;
-};
 
 /*
 The object that holds all data of a file
@@ -49,7 +32,10 @@ public:
     size_t get_cache_size(size_t cache_id);
     bool has_cache_id(size_t cache_id);
     Cache_block &get_cache_block(size_t cache_id);
-    Exported_file_data serialize();
+    size_t get_serialize_size();
+    void serialize(void* ptr);
+    void unserialize(void *ptr);
+
     Filesystem_cache_index_iterator get_cache_iterator();
 public:
     Travel_altrep_info altrep_info;

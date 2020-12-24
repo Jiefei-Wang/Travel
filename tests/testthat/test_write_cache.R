@@ -7,7 +7,7 @@ deploy_filesystem()
 n <- 1024*16
 
 test_that("write to an integer cache",{
-    expect_error(x <- C_make_arithmetic_sequence_altrep(n),NA)
+    expect_error(x <- C_make_int_sequence_altrep(n),NA)
     C_set_int_value(x,1,11)
     C_flush_altrep(x)
     expect_true(x[1]==11)

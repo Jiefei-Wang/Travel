@@ -12,6 +12,8 @@ private:
     char *ptr = nullptr;
 public:
     Cache_block(size_t size);
+    //Unserialize method
+    Cache_block(char* ptr);
     ~Cache_block();
     Cache_block(const Cache_block &cb);
     Cache_block(Cache_block &cb);
@@ -21,6 +23,9 @@ public:
     size_t get_size() const;
     char *get();
     const char *get_const() const;
+
+    size_t get_serialize_size() const;
+    void serialize(char* ptr) const;
 };
 
 

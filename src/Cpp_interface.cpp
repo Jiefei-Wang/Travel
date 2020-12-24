@@ -188,7 +188,10 @@ void C_show_thread_status(){
     show_thread_status();
 }
 
-
+// [[Rcpp::export]]
+void C_remove_all_filesystem_files(){
+    remove_all_filesystem_files();
+}
 
 /*========================================================================================= */
 #include "utils.h"
@@ -244,6 +247,10 @@ void C_close_filesystem_log()
 }
 
 
-
-
+/*========================================================================================= */
+#include "unit_test_utils.h"
+// [[Rcpp::export]]
+SEXP C_make_int_sequence_altrep(double n){
+    return make_int_sequence_altrep(n);
+}
 
