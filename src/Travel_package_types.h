@@ -124,14 +124,12 @@ typedef Travel_altrep_info (*Travel_coerce)(const Travel_altrep_info *altrep_inf
 /*
 Serialize the altrep object(optional function)
 
-An R function that takes an external pointer as the input,
-The external pointer points to the Travel_altrep_info struct that 
-is used to construct the ALTREP object.
+A function that serialize the altrep_info object
 
 Return:
-  Any R object that is serializable
+  Any serializable R object
 */
-typedef SEXP Travel_serialize;
+typedef SEXP (*Travel_serialize)(const Travel_altrep_info *altrep_info);
 /*
 unserialize the altrep object(optional function)
 
@@ -170,7 +168,7 @@ struct Travel_altrep_operations
   Travel_extract_subset extract_subset = NULL;
   Travel_duplicate duplicate = NULL;
   Travel_coerce coerce = NULL;
-  Travel_serialize serialize = R_NilValue;
+  Travel_serialize serialize = NULL;
   Travel_unserialize unserialize = R_NilValue;
   Travel_inspect_private inspect_private = NULL;
 };

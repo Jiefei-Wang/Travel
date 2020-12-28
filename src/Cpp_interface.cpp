@@ -138,6 +138,11 @@ SEXP C_get_ptr(SEXP x)
     return R_MakeExternalPtr(DATAPTR(x), R_NilValue, R_NilValue);
 }
 
+// [[Rcpp::export]]
+bool C_is_altrep(SEXP x){
+    return ALTREP(x);
+}
+
 /*
 =========================================================================================
                      For Travel_impl.h

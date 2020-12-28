@@ -17,11 +17,11 @@ Filesystem_file_data::Filesystem_file_data(int coerced_type,
     {
         Rf_error("The function <get_region> and <read_blocks> are NULL!\n");
     }
-    if (altrep_info.operations.serialize != R_NilValue &&
+    if (altrep_info.operations.serialize != NULL &&
         altrep_info.operations.unserialize == R_NilValue)
     {
         Rf_warning("The serialize function is defined but unserialize is not.\n");
-        this->altrep_info.operations.serialize = R_NilValue;
+        this->altrep_info.operations.serialize = NULL;
     }
     unit_size = get_type_size(coerced_type);
     file_length = index.total_length;

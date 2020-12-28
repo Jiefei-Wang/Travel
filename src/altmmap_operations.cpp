@@ -116,7 +116,7 @@ static Rboolean altmmap_Inspect(SEXP x, int pre, int deep, int pvec,
         Rprintf("   get_private_size\n");
     if (file_data.altrep_info.operations.inspect_private != 0)
         Rprintf("   inspect_private\n");
-    if (file_data.altrep_info.operations.serialize != R_NilValue)
+    if (file_data.altrep_info.operations.serialize != NULL)
         Rprintf("   serialize\n");
     if (file_data.altrep_info.operations.unserialize != R_NilValue)
         Rprintf("   unserialize\n");
@@ -404,7 +404,7 @@ static SEXP altmmap_serialize(SEXP x)
 
     Protect_guard guard;
     SEXP serialized_object;
-    if (altrep_info.operations.serialize == R_NilValue)
+    if (altrep_info.operations.serialize == NULL)
     {
         //If the serialize function is not set
         //We just pass a regular vector
@@ -416,11 +416,9 @@ static SEXP altmmap_serialize(SEXP x)
         //If the serialize function has been set,
         //we use the user-provided function to serialize
         //the altrep_info
-        Rcpp::Function serialize_func(altrep_info.operations.serialize);
-        SEXP altrep_info_extptr = guard.protect(R_MakeExternalPtr(&altrep_info, R_NilValue, R_NilValue));
-        SEXP serialized_altrep_info = guard.protect(serialize_func(altrep_info_extptr));
-        size_t serialized_size = file_data.get_serialize_size();
-        SEXP serialized_file_data = guard.protect(Rf_allocVector(RAWSXP, serialized_size));
+        SEXP serialized_altrep_info = guard.protect(altrep_info.operations.serialize(&altrep_info));
+        size_t serialized_file_data_size = file_data.get_serialize_size();
+        SEXP serialized_file_data = guard.protect(Rf_allocVector(RAWSXP, serialized_file_data_size));
         file_data.serialize(DATAPTR(serialized_file_data));
         serialized_object = guard.protect(Rf_allocVector(VECSXP, 3));
         SET_VECTOR_ELT(serialized_object, 0, altrep_info.operations.unserialize);

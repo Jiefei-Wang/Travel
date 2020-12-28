@@ -10,8 +10,6 @@ SEXP make_int_sequence_altrep(double n);
 
 
 
-
-
 template <class T>
 void fill_int_seq_data(T *ptr, Subset_index index)
 {
