@@ -278,6 +278,10 @@ Vcells 1863208 14.3    8388608 64.0  2630899 20.1
 ```
 Now you get a vector `x` with a crazy size, all operations of the ALTREP can be supported. Enjoy the full power of the ALTREP objects!
 
+# Known issue
+
+1. Data writing is unstable on Ubuntu
+
 # Session info
 ```{r}
 sessionInfo()

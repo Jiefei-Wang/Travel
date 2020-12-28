@@ -453,15 +453,6 @@ void C_test_read_write_functions_with_coercion_subset(
 =========================================================================================
 */
 // [[Rcpp::export]]
-void C_set_real_value(SEXP x, size_t i, double v)
-{
-    if (TYPEOF(x) != REALSXP)
-    {
-        Rf_error("The variable is not of double type!\n");
-    }
-    ((double *)DATAPTR(x))[i - 1] = v;
-}
-// [[Rcpp::export]]
 void C_set_int_value(SEXP x, size_t i, double v)
 {
     if (TYPEOF(x) != INTSXP)
@@ -492,11 +483,6 @@ SEXP C_duplicate(SEXP x)
     return Rf_duplicate(x);
 }
 
-// [[Rcpp::export]]
-bool C_is_altrep(SEXP x)
-{
-    return ALTREP(x);
-}
 
 #include "utils.h"
 

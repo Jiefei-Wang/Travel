@@ -115,6 +115,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// C_is_altrep
+bool C_is_altrep(SEXP x);
+RcppExport SEXP _Travel_C_is_altrep(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_is_altrep(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // C_call_Travel_make_altmmap
 SEXP C_call_Travel_make_altmmap(SEXP x);
 RcppExport SEXP _Travel_C_call_Travel_make_altmmap(SEXP xSEXP) {
@@ -409,6 +420,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// unserialize_sequence_func
+SEXP unserialize_sequence_func(SEXP x);
+RcppExport SEXP _Travel_unserialize_sequence_func(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(unserialize_sequence_func(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// C_make_int_sequence_altrep_with_serialize
+SEXP C_make_int_sequence_altrep_with_serialize(double n);
+RcppExport SEXP _Travel_C_make_int_sequence_altrep_with_serialize(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_make_int_sequence_altrep_with_serialize(n));
+    return rcpp_result_gen;
+END_RCPP
+}
 // C_test_Subset_index_basic
 void C_test_Subset_index_basic();
 RcppExport SEXP _Travel_C_test_Subset_index_basic() {
@@ -532,18 +565,6 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// C_set_real_value
-void C_set_real_value(SEXP x, size_t i, double v);
-RcppExport SEXP _Travel_C_set_real_value(SEXP xSEXP, SEXP iSEXP, SEXP vSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    Rcpp::traits::input_parameter< size_t >::type i(iSEXP);
-    Rcpp::traits::input_parameter< double >::type v(vSEXP);
-    C_set_real_value(x, i, v);
-    return R_NilValue;
-END_RCPP
-}
 // C_set_int_value
 void C_set_int_value(SEXP x, size_t i, double v);
 RcppExport SEXP _Travel_C_set_int_value(SEXP xSEXP, SEXP iSEXP, SEXP vSEXP) {
@@ -574,17 +595,6 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
     rcpp_result_gen = Rcpp::wrap(C_duplicate(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// C_is_altrep
-bool C_is_altrep(SEXP x);
-RcppExport SEXP _Travel_C_is_altrep(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_is_altrep(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -623,6 +633,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_getAltData1", (DL_FUNC) &_Travel_C_getAltData1, 1},
     {"_Travel_C_getAltData2", (DL_FUNC) &_Travel_C_getAltData2, 1},
     {"_Travel_C_get_ptr", (DL_FUNC) &_Travel_C_get_ptr, 1},
+    {"_Travel_C_is_altrep", (DL_FUNC) &_Travel_C_is_altrep, 1},
     {"_Travel_C_call_Travel_make_altmmap", (DL_FUNC) &_Travel_C_call_Travel_make_altmmap, 1},
     {"_Travel_C_get_file_handle_number", (DL_FUNC) &_Travel_C_get_file_handle_number, 0},
     {"_Travel_C_run_filesystem_thread_func", (DL_FUNC) &_Travel_C_run_filesystem_thread_func, 0},
@@ -652,6 +663,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_mySum1", (DL_FUNC) &_Travel_mySum1, 1},
     {"_Travel_mySum2", (DL_FUNC) &_Travel_mySum2, 1},
     {"_Travel_mySum3", (DL_FUNC) &_Travel_mySum3, 1},
+    {"_Travel_unserialize_sequence_func", (DL_FUNC) &_Travel_unserialize_sequence_func, 1},
+    {"_Travel_C_make_int_sequence_altrep_with_serialize", (DL_FUNC) &_Travel_C_make_int_sequence_altrep_with_serialize, 1},
     {"_Travel_C_test_Subset_index_basic", (DL_FUNC) &_Travel_C_test_Subset_index_basic, 0},
     {"_Travel_C_test_Subset_index_conversion", (DL_FUNC) &_Travel_C_test_Subset_index_conversion, 0},
     {"_Travel_C_test_Cache_block", (DL_FUNC) &_Travel_C_test_Cache_block, 0},
@@ -664,11 +677,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_test_read_write_functions_native", (DL_FUNC) &_Travel_C_test_read_write_functions_native, 5},
     {"_Travel_C_test_read_write_functions_with_coercion", (DL_FUNC) &_Travel_C_test_read_write_functions_with_coercion, 5},
     {"_Travel_C_test_read_write_functions_with_coercion_subset", (DL_FUNC) &_Travel_C_test_read_write_functions_with_coercion_subset, 5},
-    {"_Travel_C_set_real_value", (DL_FUNC) &_Travel_C_set_real_value, 3},
     {"_Travel_C_set_int_value", (DL_FUNC) &_Travel_C_set_int_value, 3},
     {"_Travel_C_reset_int", (DL_FUNC) &_Travel_C_reset_int, 1},
     {"_Travel_C_duplicate", (DL_FUNC) &_Travel_C_duplicate, 1},
-    {"_Travel_C_is_altrep", (DL_FUNC) &_Travel_C_is_altrep, 1},
     {"_Travel_C_allzero", (DL_FUNC) &_Travel_C_allzero, 1},
     {"_Travel_C_RLE", (DL_FUNC) &_Travel_C_RLE, 2},
     {NULL, NULL, 0}

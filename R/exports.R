@@ -26,7 +26,6 @@ wrap_altrep<-function(x){
 #' deploy_filesystem()
 #' @export
 deploy_filesystem <- function(){
-    message("Deploying filesystem")
     if(is_filesystem_running()){
         return("The filesystem has been running")
     }

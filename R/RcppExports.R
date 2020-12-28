@@ -41,6 +41,10 @@ C_get_ptr <- function(x) {
     .Call(`_Travel_C_get_ptr`, x)
 }
 
+C_is_altrep <- function(x) {
+    .Call(`_Travel_C_is_altrep`, x)
+}
+
 C_call_Travel_make_altmmap <- function(x) {
     .Call(`_Travel_C_call_Travel_make_altmmap`, x)
 }
@@ -157,6 +161,14 @@ mySum3 <- function(x) {
     .Call(`_Travel_mySum3`, x)
 }
 
+unserialize_sequence_func <- function(x) {
+    .Call(`_Travel_unserialize_sequence_func`, x)
+}
+
+C_make_int_sequence_altrep_with_serialize <- function(n) {
+    .Call(`_Travel_C_make_int_sequence_altrep_with_serialize`, n)
+}
+
 C_test_Subset_index_basic <- function() {
     invisible(.Call(`_Travel_C_test_Subset_index_basic`))
 }
@@ -205,10 +217,6 @@ C_test_read_write_functions_with_coercion_subset <- function(lengths, write_star
     invisible(.Call(`_Travel_C_test_read_write_functions_with_coercion_subset`, lengths, write_starts, write_length, read_starts, read_length))
 }
 
-C_set_real_value <- function(x, i, v) {
-    invisible(.Call(`_Travel_C_set_real_value`, x, i, v))
-}
-
 C_set_int_value <- function(x, i, v) {
     invisible(.Call(`_Travel_C_set_int_value`, x, i, v))
 }
@@ -219,10 +227,6 @@ C_reset_int <- function(x) {
 
 C_duplicate <- function(x) {
     .Call(`_Travel_C_duplicate`, x)
-}
-
-C_is_altrep <- function(x) {
-    .Call(`_Travel_C_is_altrep`, x)
 }
 
 C_allzero <- function(n) {

@@ -49,12 +49,13 @@ SEXP serialize_sequence_func(const Travel_altrep_info* altrep_info){
     return Rf_ScalarReal(altrep_info->length);
 }
 
+SEXP C_make_int_sequence_altrep_with_serialize(double n);
 // [[Rcpp::export]]
 SEXP unserialize_sequence_func(SEXP x){
-    return make_int_sequence_altrep_with_serialize(Rf_asReal(x));
+    return C_make_int_sequence_altrep_with_serialize(Rf_asReal(x));
 }
-
-SEXP make_int_sequence_altrep_with_serialize(double n)
+// [[Rcpp::export]]
+SEXP C_make_int_sequence_altrep_with_serialize(double n)
 {
     Travel_altrep_info altrep_info;
     altrep_info.length = n;
@@ -62,9 +63,9 @@ SEXP make_int_sequence_altrep_with_serialize(double n)
     altrep_info.operations.get_region = read_int_sequence_region;
     altrep_info.operations.read_blocks = read_int_sequence_block;
     altrep_info.operations.serialize = serialize_sequence_func;
-    
     SEXP pkg_name = Rf_protect(Rf_mkString(PACKAGE_NAME));
     Rcpp::Environment env = R_FindNamespace(pkg_name);
+    Rf_unprotect(1);
     altrep_info.operations.unserialize= env["unserialize_sequence_func"];
     SEXP x = Travel_make_altrep(altrep_info);
     return x;
