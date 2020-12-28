@@ -16,8 +16,10 @@ package: Travel
 ---
 
 ```{r setup, include = FALSE}
-root_dir<-FALSE
-# root_dir<-TRUE;knitr::knit("vignettes/vignette_raw.Rmd", output = "README.md")
+if(!"root_dir"%in%ls()){
+  root_dir<-FALSE
+}
+# root_dir<-TRUE;knitr::knit("vignettes/vignette.Rmd", output = "README.md")
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -280,7 +282,7 @@ Now you get a vector `x` with a crazy size, all operations of the ALTREP can be 
 
 # Known issue
 
-1. Data writing is unstable on Ubuntu
+1. Writing data back to an ALTREP object will hang on Ubuntu
 
 # Session info
 ```{r}

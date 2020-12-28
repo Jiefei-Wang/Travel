@@ -3,7 +3,7 @@ title: "vignette"
 author: 
 - name: Jiefei Wang
   affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
-date: "2020-12-22"
+date: "2020-12-28"
 output:
     BiocStyle::html_document:
         toc: true
@@ -276,6 +276,10 @@ Vcells 1863208 14.3    8388608 64.0  2630899 20.1
 ```
 Now you get a vector `x` with a crazy size, all operations of the ALTREP can be supported. Enjoy the full power of the ALTREP objects!
 
+# Known issue
+
+1. Writing data back to an ALTREP object will hang on Ubuntu
+
 # Session info
 
 ```r
@@ -287,10 +291,8 @@ sessionInfo()
 #> Matrix products: default
 #> 
 #> locale:
-#> [1] LC_COLLATE=English_United States.1252 
-#> [2] LC_CTYPE=English_United States.1252   
-#> [3] LC_MONETARY=English_United States.1252
-#> [4] LC_NUMERIC=C                          
+#> [1] LC_COLLATE=English_United States.1252  LC_CTYPE=English_United States.1252   
+#> [3] LC_MONETARY=English_United States.1252 LC_NUMERIC=C                          
 #> [5] LC_TIME=English_United States.1252    
 #> 
 #> attached base packages:
@@ -300,8 +302,10 @@ sessionInfo()
 #> [1] inline_0.3.16 Travel_0.99.0
 #> 
 #> loaded via a namespace (and not attached):
-#> [1] compiler_4.1.0 magrittr_1.5   tools_4.1.0    Rcpp_1.0.5     stringi_1.5.3 
-#> [6] knitr_1.30     stringr_1.4.0  xfun_0.19      evaluate_0.14
+#>  [1] Rcpp_1.0.5          digest_0.6.27       magrittr_1.5        evaluate_0.14      
+#>  [5] rlang_0.4.8         stringi_1.5.3       rmarkdown_2.5       BiocStyle_2.19.0   
+#>  [9] tools_4.1.0         stringr_1.4.0       xfun_0.19           yaml_2.2.1         
+#> [13] compiler_4.1.0      BiocManager_1.30.10 htmltools_0.5.0     knitr_1.30
 ```
 
 
