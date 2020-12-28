@@ -482,7 +482,7 @@ void C_test_simple_duplication()
 // [[Rcpp::export]]
 void C_test_duplication_with_changes()
 {
-    size_t n = 1024 * 1024;
+    size_t n = 1024 * 2;
     size_t n_change = 1024;
     Protect_guard guard;
     SEXP x = guard.protect(make_int_sequence_altrep(n));
@@ -490,13 +490,20 @@ void C_test_duplication_with_changes()
     Rcpp::IntegerVector pool = Rcpp::seq(0, n -1);
     std::random_shuffle(pool.begin(), pool.end());
     for(size_t i=0;i<n_change;i++){
-        x_ptr[pool[i]]=pool[i+n_change];
+        x_ptr[pool[i]]=x_ptr[pool[i]]+1;
     }
     SEXP y = guard.protect(Rf_duplicate(x));
     int* y_ptr = (int*)DATAPTR(y);
     throw_if_not(ALTREP(x));
     throw_if_not(ALTREP(y));
+    throw_if(memcmp(x_ptr,y_ptr,n*sizeof(int))!=0);
+
+    //Change the value back
     for(size_t i=0;i<n_change;i++){
+        x_ptr[pool[i]]=x_ptr[pool[i]]-1;
+    }
+    //return Rcpp::List::create(x,y);
+    for(size_t i=0;i<n;i++){
         if(i<n_change){
             throw_if(x_ptr[pool[i]]==y_ptr[pool[i]]);
         }else{

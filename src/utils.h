@@ -5,10 +5,12 @@
 #define XSTR(x) STRINGIZING(x)
 
 #include <stdexcept>
-#define throw_msg(x) throw std::runtime_error("The condition <" XSTR(x) "> Does not meet at line number "\
+#define throw_if_not_msg(x) throw std::runtime_error("The condition <" XSTR(x) "> Does not meet at line number "\
  XSTR(__LINE__)" in file <" __FILE__">")
-#define throw_if_not(x) if(!(x))throw_msg(x)
-#define throw_if(x) if(x)throw_msg(x)
+#define throw_if_msg(x) throw std::runtime_error("The condition <" XSTR(x) "> meets at line number "\
+ XSTR(__LINE__)" in file <" __FILE__">")
+#define throw_if_not(x) if(!(x))throw_if_not_msg(x)
+#define throw_if(x) if(x)throw_if_msg(x)
 #define throw_error(msg) throw std::runtime_error(msg)
 
 
