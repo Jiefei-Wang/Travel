@@ -19,6 +19,8 @@ Cache_block::Cache_block(char *ptr)
   ptr += sizeof(size_t);
   this->ptr = new char[size];
   memcpy(this->ptr, ptr, size);
+  counter = new size_t;
+  *counter = 1;
 }
 Cache_block::~Cache_block()
 {
