@@ -27,7 +27,7 @@ test_that("serialize int sequence with customized function",{
     serialized_data <- serialize(x,NULL)
     y <- unserialize(serialized_data)
     expect_equal(x,y)
-    expect_false(C_is_altrep(y))
+    expect_true(C_is_altrep(y))
 })
 
 
