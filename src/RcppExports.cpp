@@ -311,6 +311,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// C_make_double_sequence_altrep
+SEXP C_make_double_sequence_altrep(double n);
+RcppExport SEXP _Travel_C_make_double_sequence_altrep(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_make_double_sequence_altrep(n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// C_make_int_sequence_altrep_with_serialize
+SEXP C_make_int_sequence_altrep_with_serialize(double n);
+RcppExport SEXP _Travel_C_make_int_sequence_altrep_with_serialize(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_make_int_sequence_altrep_with_serialize(n));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Travel_compact_seq
 SEXP Travel_compact_seq(size_t n);
 RcppExport SEXP _Travel_Travel_compact_seq(SEXP nSEXP) {
@@ -428,17 +450,6 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
     rcpp_result_gen = Rcpp::wrap(unserialize_sequence_func(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// C_make_int_sequence_altrep_with_serialize
-SEXP C_make_int_sequence_altrep_with_serialize(double n);
-RcppExport SEXP _Travel_C_make_int_sequence_altrep_with_serialize(SEXP nSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(C_make_int_sequence_altrep_with_serialize(n));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -577,6 +588,24 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// C_test_simple_duplication
+void C_test_simple_duplication();
+RcppExport SEXP _Travel_C_test_simple_duplication() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    C_test_simple_duplication();
+    return R_NilValue;
+END_RCPP
+}
+// C_test_duplication_with_changes
+void C_test_duplication_with_changes();
+RcppExport SEXP _Travel_C_test_duplication_with_changes() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    C_test_duplication_with_changes();
+    return R_NilValue;
+END_RCPP
+}
 // C_reset_int
 void C_reset_int(SEXP x);
 RcppExport SEXP _Travel_C_reset_int(SEXP xSEXP) {
@@ -653,6 +682,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_initial_filesystem_log", (DL_FUNC) &_Travel_C_initial_filesystem_log, 0},
     {"_Travel_C_close_filesystem_log", (DL_FUNC) &_Travel_C_close_filesystem_log, 0},
     {"_Travel_C_make_int_sequence_altrep", (DL_FUNC) &_Travel_C_make_int_sequence_altrep, 1},
+    {"_Travel_C_make_double_sequence_altrep", (DL_FUNC) &_Travel_C_make_double_sequence_altrep, 1},
+    {"_Travel_C_make_int_sequence_altrep_with_serialize", (DL_FUNC) &_Travel_C_make_int_sequence_altrep_with_serialize, 1},
     {"_Travel_Travel_compact_seq", (DL_FUNC) &_Travel_Travel_compact_seq, 1},
     {"_Travel_C_get_virtual_file_list", (DL_FUNC) &_Travel_C_get_virtual_file_list, 0},
     {"_Travel_profile_int", (DL_FUNC) &_Travel_profile_int, 1},
@@ -664,7 +695,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_mySum2", (DL_FUNC) &_Travel_mySum2, 1},
     {"_Travel_mySum3", (DL_FUNC) &_Travel_mySum3, 1},
     {"_Travel_unserialize_sequence_func", (DL_FUNC) &_Travel_unserialize_sequence_func, 1},
-    {"_Travel_C_make_int_sequence_altrep_with_serialize", (DL_FUNC) &_Travel_C_make_int_sequence_altrep_with_serialize, 1},
     {"_Travel_C_test_Subset_index_basic", (DL_FUNC) &_Travel_C_test_Subset_index_basic, 0},
     {"_Travel_C_test_Subset_index_conversion", (DL_FUNC) &_Travel_C_test_Subset_index_conversion, 0},
     {"_Travel_C_test_Cache_block", (DL_FUNC) &_Travel_C_test_Cache_block, 0},
@@ -678,6 +708,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Travel_C_test_read_write_functions_with_coercion", (DL_FUNC) &_Travel_C_test_read_write_functions_with_coercion, 5},
     {"_Travel_C_test_read_write_functions_with_coercion_subset", (DL_FUNC) &_Travel_C_test_read_write_functions_with_coercion_subset, 5},
     {"_Travel_C_set_int_value", (DL_FUNC) &_Travel_C_set_int_value, 3},
+    {"_Travel_C_test_simple_duplication", (DL_FUNC) &_Travel_C_test_simple_duplication, 0},
+    {"_Travel_C_test_duplication_with_changes", (DL_FUNC) &_Travel_C_test_duplication_with_changes, 0},
     {"_Travel_C_reset_int", (DL_FUNC) &_Travel_C_reset_int, 1},
     {"_Travel_C_duplicate", (DL_FUNC) &_Travel_C_duplicate, 1},
     {"_Travel_C_allzero", (DL_FUNC) &_Travel_C_allzero, 1},

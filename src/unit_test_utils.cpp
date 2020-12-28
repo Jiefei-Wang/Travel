@@ -1,8 +1,6 @@
 #include "Rcpp.h"
-#include "Travel.h"
-#include "class_Filesystem_file_data.h"
-#include "filesystem_manager.h"
 #include "package_settings.h"
+#include "unit_test_utils.h"
 size_t read_int_sequence_region(const Travel_altrep_info *altrep_info, void *buffer, size_t offset, size_t length)
 {
     for (size_t i = 0; i < length; i++)
@@ -45,17 +43,44 @@ SEXP make_int_sequence_altrep(double n)
     return x;
 }
 
+
+size_t read_double_sequence_region(const Travel_altrep_info *altrep_info, void *buffer, size_t offset, size_t length)
+{
+    for (size_t i = 0; i < length; i++)
+    {
+        ((double *)buffer)[i] = offset + i;
+    }
+    return length;
+}
+size_t read_double_sequence_block(const Travel_altrep_info *altrep_info, void *buffer,
+                                          size_t offset, size_t length, size_t stride)
+{
+    for (size_t i = 0; i < length; i++)
+    {
+        ((double *)buffer)[i] = offset + i * stride;
+    }
+    return length;
+}
+
+
+SEXP make_double_sequence_altrep(double n)
+{
+    Travel_altrep_info altrep_info;
+    altrep_info.length = n;
+    altrep_info.type = REALSXP;
+    altrep_info.operations.get_region = read_double_sequence_region;
+    altrep_info.operations.read_blocks = read_double_sequence_block;
+    SEXP x = Travel_make_altrep(altrep_info);
+    return x;
+}
 SEXP serialize_sequence_func(const Travel_altrep_info* altrep_info){
     return Rf_ScalarReal(altrep_info->length);
 }
-
-SEXP C_make_int_sequence_altrep_with_serialize(double n);
 // [[Rcpp::export]]
 SEXP unserialize_sequence_func(SEXP x){
-    return C_make_int_sequence_altrep_with_serialize(Rf_asReal(x));
+    return make_int_sequence_altrep_with_serialize(Rf_asReal(x));
 }
-// [[Rcpp::export]]
-SEXP C_make_int_sequence_altrep_with_serialize(double n)
+SEXP make_int_sequence_altrep_with_serialize(double n)
 {
     Travel_altrep_info altrep_info;
     altrep_info.length = n;

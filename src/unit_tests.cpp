@@ -6,6 +6,7 @@
 #include "class_Unique_buffer.h"
 #include "utils.h"
 #include "unit_test_utils.h"
+#include "class_Protect_guard.h"
 /*
 =========================================================================================
                           Subset_index
@@ -274,7 +275,7 @@ void C_test_int_sub_read_source_with_subset()
                           unit test for read_with_alignment
 =========================================================================================
 */
-template<class T>
+template <class T>
 void test_read_with_alignment_internal(int type, Subset_index index)
 {
     size_t type_size = get_type_size(type);
@@ -296,7 +297,7 @@ void test_read_with_alignment_internal(int type, Subset_index index)
         buffer.reserve(read_size);
         size_t true_read_size = read_with_alignment(file_data, buffer.get(), i, read_size);
         throw_if(true_read_size != read_size);
-        throw_if(memcmp(buffer.get(), ((char*)ptr) + i, read_size));
+        throw_if(memcmp(buffer.get(), ((char *)ptr) + i, read_size));
     }
 }
 
@@ -305,7 +306,7 @@ void C_test_int_read_with_alignment()
 {
     size_t length = 1024 * 1024;
     Subset_index index(0, length);
-    test_read_with_alignment_internal<int>(INTSXP,index);
+    test_read_with_alignment_internal<int>(INTSXP, index);
 }
 
 // [[Rcpp::export]]
@@ -320,14 +321,14 @@ void C_test_int_sub_read_with_alignment()
         size_t stride = R::rnbinom(2, 0.7);
         index1.push_back(start, sub_length, stride);
     }
-    test_read_with_alignment_internal<int>(INTSXP,index1);
+    test_read_with_alignment_internal<int>(INTSXP, index1);
 }
 // [[Rcpp::export]]
 void C_test_real_read_with_alignment()
 {
     size_t length = 1024 * 1024;
     Subset_index index(0, length);
-    test_read_with_alignment_internal<double>(REALSXP,index);
+    test_read_with_alignment_internal<double>(REALSXP, index);
 }
 
 // [[Rcpp::export]]
@@ -342,42 +343,41 @@ void C_test_real_sub_read_with_alignment()
         size_t stride = R::rnbinom(2, 0.7);
         index1.push_back(start, sub_length, stride);
     }
-    test_read_with_alignment_internal<double>(REALSXP,index1);
+    test_read_with_alignment_internal<double>(REALSXP, index1);
 }
-
 
 /*
 =========================================================================================
                           unit test for general read/write functions
 =========================================================================================
 */
-template<class T>
+template <class T>
 void test_read_write_functions_internal(
     int type, size_t length, Subset_index index,
     Rcpp::NumericVector write_starts, Rcpp::NumericVector write_length,
     Rcpp::NumericVector read_starts, Rcpp::NumericVector read_length)
 {
-    Filesystem_file_data &file_data = make_int_sequence_file(type,index);
+    Filesystem_file_data &file_data = make_int_sequence_file(type, index);
     uint8_t &type_size = file_data.unit_size;
     throw_if_not(file_data.file_length == index.total_length);
     //Create the test data
     size_t data_length = file_data.file_length;
     std::unique_ptr<char[]> data(new char[type_size * data_length]);
-    T *data_ptr = (T*)data.get();
-    fill_int_seq_data(data_ptr,index);
+    T *data_ptr = (T *)data.get();
+    fill_int_seq_data(data_ptr, index);
 
     //The data that is written is the negative value of the original value in the file
     for (R_xlen_t i = 0; i < write_starts.length(); i++)
     {
         size_t elt_offset = write_starts[i];
-        size_t offset= elt_offset* type_size;
+        size_t offset = elt_offset * type_size;
         size_t size = write_length[i] * type_size;
         for (size_t j = 0; j < write_length[i]; j++)
         {
             data_ptr[elt_offset + j] = -index.get_source_index(elt_offset + j);
         }
         size_t true_write_size = general_write_func(file_data, data_ptr + elt_offset, offset, size);
-        throw_if(true_write_size!=size);
+        throw_if(true_write_size != size);
     }
     //Test the read function by reading the data from the file
     Unique_buffer buffer;
@@ -389,7 +389,7 @@ void test_read_write_functions_internal(
         buffer.reserve(size);
         char *ptr = buffer.get();
         size_t true_read_size = general_read_func(file_data, ptr, offset, size);
-        throw_if(true_read_size!=size);
+        throw_if(true_read_size != size);
         throw_if(memcmp(buffer.get(), data_ptr + elt_offset, size));
     }
     if (file_data.write_cache.size() == 0)
@@ -443,13 +443,11 @@ void C_test_read_write_functions_with_coercion_subset(
         REALSXP, total_length, index,
         write_starts, write_length,
         read_starts, read_length);
-    
-    
 }
 
 /*
 =========================================================================================
-                     Unidentified code
+                          unit test for altrep write
 =========================================================================================
 */
 // [[Rcpp::export]]
@@ -461,6 +459,60 @@ void C_set_int_value(SEXP x, size_t i, double v)
     }
     ((int *)DATAPTR(x))[i - 1] = v;
 }
+
+
+
+/*
+=========================================================================================
+                          unit test for duplication
+=========================================================================================
+*/
+// [[Rcpp::export]]
+void C_test_simple_duplication()
+{
+    size_t n = 1024 * 1024;
+    Protect_guard guard;
+    SEXP x = guard.protect(make_int_sequence_altrep(n));
+    SEXP y = guard.protect(Rf_duplicate(x));
+    throw_if_not(ALTREP(x));
+    throw_if_not(ALTREP(y));
+    throw_if_not(memcmp(DATAPTR(x), DATAPTR(y), n * sizeof(int))==0);
+}
+
+// [[Rcpp::export]]
+void C_test_duplication_with_changes()
+{
+    size_t n = 1024 * 1024;
+    size_t n_change = 1024;
+    Protect_guard guard;
+    SEXP x = guard.protect(make_int_sequence_altrep(n));
+    int* x_ptr = (int*)DATAPTR(x);
+    Rcpp::IntegerVector pool = Rcpp::seq(0, n -1);
+    std::random_shuffle(pool.begin(), pool.end());
+    for(size_t i=0;i<n_change;i++){
+        x_ptr[pool[i]]=pool[i+n_change];
+    }
+    SEXP y = guard.protect(Rf_duplicate(x));
+    int* y_ptr = (int*)DATAPTR(y);
+    throw_if_not(ALTREP(x));
+    throw_if_not(ALTREP(y));
+    for(size_t i=0;i<n_change;i++){
+        if(i<n_change){
+            throw_if(x_ptr[pool[i]]==y_ptr[pool[i]]);
+        }else{
+            throw_if(x_ptr[pool[i]]!=y_ptr[pool[i]]);
+        }
+    }
+}
+
+
+
+/*
+=========================================================================================
+                     Unidentified code
+=========================================================================================
+*/
+
 
 // [[Rcpp::export]]
 void C_reset_int(SEXP x)
@@ -482,7 +534,6 @@ SEXP C_duplicate(SEXP x)
 {
     return Rf_duplicate(x);
 }
-
 
 #include "utils.h"
 

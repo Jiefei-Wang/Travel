@@ -121,6 +121,14 @@ C_make_int_sequence_altrep <- function(n) {
     .Call(`_Travel_C_make_int_sequence_altrep`, n)
 }
 
+C_make_double_sequence_altrep <- function(n) {
+    .Call(`_Travel_C_make_double_sequence_altrep`, n)
+}
+
+C_make_int_sequence_altrep_with_serialize <- function(n) {
+    .Call(`_Travel_C_make_int_sequence_altrep_with_serialize`, n)
+}
+
 Travel_compact_seq <- function(n) {
     .Call(`_Travel_Travel_compact_seq`, n)
 }
@@ -163,10 +171,6 @@ mySum3 <- function(x) {
 
 unserialize_sequence_func <- function(x) {
     .Call(`_Travel_unserialize_sequence_func`, x)
-}
-
-C_make_int_sequence_altrep_with_serialize <- function(n) {
-    .Call(`_Travel_C_make_int_sequence_altrep_with_serialize`, n)
 }
 
 C_test_Subset_index_basic <- function() {
@@ -219,6 +223,14 @@ C_test_read_write_functions_with_coercion_subset <- function(lengths, write_star
 
 C_set_int_value <- function(x, i, v) {
     invisible(.Call(`_Travel_C_set_int_value`, x, i, v))
+}
+
+C_test_simple_duplication <- function() {
+    invisible(.Call(`_Travel_C_test_simple_duplication`))
+}
+
+C_test_duplication_with_changes <- function() {
+    invisible(.Call(`_Travel_C_test_duplication_with_changes`))
 }
 
 C_reset_int <- function(x) {

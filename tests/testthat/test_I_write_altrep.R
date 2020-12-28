@@ -15,16 +15,14 @@ if(get_OS()!="linux"){
         expect_equal(x,y)
         
         ## Check if the cache number is 0
-        files <- get_virtual_file_list()
-        expect_equal(files$cache.number, 0)
+        expect_true(nrow(C_get_altmmap_cache(x))== 0)
         
         
         ## Change the first value of x, expect creating 1 block
         C_set_int_value(x,1,-10)
         y[1] <- -10
         C_flush_altrep(x)
-        files <- get_virtual_file_list()
-        expect_equal(files$cache.number, 1)
+        expect_true(nrow(C_get_altmmap_cache(x))== 1)
         
         ## Check the value of the file
         ## Check by the variable
@@ -49,8 +47,8 @@ if(get_OS()!="linux"){
             }
         }
         C_flush_altrep(x)
-        files <- get_virtual_file_list()
-        expect_equal(files$cache.number, length(x)/files$cache.size*4)
+        expect_true(nrow(C_get_altmmap_cache(x))== n*4/4096)
+        
         
         ## Check the value of the file
         ## Check by the variable

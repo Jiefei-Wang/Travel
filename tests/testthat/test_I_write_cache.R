@@ -2,7 +2,6 @@ context("Testing the safety of the shared write cache")
 set_verbose(FALSE)
 rm(list=ls())
 gc()
-deploy_filesystem()
 
 n <- 1024*16
 

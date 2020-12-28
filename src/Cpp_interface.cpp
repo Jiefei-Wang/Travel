@@ -258,4 +258,11 @@ void C_close_filesystem_log()
 SEXP C_make_int_sequence_altrep(double n){
     return make_int_sequence_altrep(n);
 }
-
+// [[Rcpp::export]]
+SEXP C_make_double_sequence_altrep(double n){
+    return make_double_sequence_altrep(n);
+}
+// [[Rcpp::export]]
+SEXP C_make_int_sequence_altrep_with_serialize(double n){
+    return make_int_sequence_altrep_with_serialize(n);
+}

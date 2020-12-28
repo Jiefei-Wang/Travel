@@ -7,7 +7,8 @@ size_t read_int_sequence_block(const Travel_altrep_info *altrep_info, void *buff
                                           size_t offset, size_t length, size_t stride);
 Filesystem_file_data &make_int_sequence_file(int type, Subset_index index);
 SEXP make_int_sequence_altrep(double n);
-
+SEXP make_double_sequence_altrep(double n);
+SEXP make_int_sequence_altrep_with_serialize(double n);
 
 
 template <class T>
