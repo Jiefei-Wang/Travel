@@ -146,7 +146,7 @@ Filesystem_cache_index_iterator &Filesystem_cache_index_iterator::operator++()
 {
     throw_if(is_final());
     ++within_block_id;
-    if (within_block_id == block_length)
+    if (within_block_id == block_length || block_start_elt + within_block_id >= file_data.file_length)
     {
         ++block_iter;
         if (block_iter != file_data.write_cache.end())
