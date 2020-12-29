@@ -15,7 +15,7 @@ Cache_block::Cache_block(size_t size) : size(size)
 }
 Cache_block::Cache_block(char *ptr)
 {
-  size_t size = *(size_t *)ptr;
+  size = *(size_t *)ptr;
   ptr += sizeof(size_t);
   this->ptr = new char[size];
   memcpy(this->ptr, ptr, size);
