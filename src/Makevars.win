@@ -1,3 +1,3 @@
-PKG_LIBS = -L"${DokanLibrary1}lib" -ldokan1
+PKG_LIBS = -L"${DokanLibrary1}lib" -ldokan1 --out-implib
 PKG_CPPFLAGS = -I"${DokanLibrary1}include"
 CXX_STD= CXX11
