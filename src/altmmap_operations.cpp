@@ -99,7 +99,7 @@ static Rboolean altmmap_Inspect(SEXP x, int pre, int deep, int pvec,
     Rprintf("\n");
 
     Rprintf("[Index info]\n");
-    Rprintf("   %s\n", file_data.index.summarize(3).c_str());
+    Rprintf("   %s\n", file_data.index.summarize(4).c_str());
 
     Rprintf("[Defined operations]\n");
     if (file_data.altrep_info.operations.get_region != 0)

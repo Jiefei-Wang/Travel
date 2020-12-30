@@ -29,7 +29,7 @@ std::string vector_to_string(std::vector<T> &vec, size_t n_print)
     {
         result += std::to_string(vec[i]) + ",";
     }
-    result += std::to_string(vec[i]) + "]";
+    result += std::to_string(vec[i]) + (n_print<vec.size()?",...":"") + "]";
     return result;
 }
 
