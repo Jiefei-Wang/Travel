@@ -25,6 +25,7 @@ Imports:
     Rcpp
 Suggests: 
     testthat,
+    BiocStyle,
     knitr,
     rmarkdown,
     inline,
