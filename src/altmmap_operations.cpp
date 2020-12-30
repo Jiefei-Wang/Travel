@@ -378,8 +378,10 @@ static SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
             //if the element is in the subsetted vector
             if (new_index.contains_index(source_elt_offset))
             {
-                size_t dest_elt_offset = new_index.get_subset_index(source_elt_offset);
-                copier.copy(dest_elt_offset, source_elt_offset);
+                std::vector<size_t> dest_elt_offset = new_index.get_subset_index(source_elt_offset);
+                for(const auto& i:dest_elt_offset){
+                    copier.copy(i, source_elt_offset);
+                }
             }
         }
     }

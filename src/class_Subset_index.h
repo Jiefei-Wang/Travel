@@ -14,12 +14,12 @@ public:
     std::vector<size_t> starts;
     std::vector<size_t> lengths;
     std::vector<size_t> partial_lengths;
-    std::vector<size_t> strides;
+    std::vector<int64_t> strides;
 
 public:
     Subset_index() {}
-    Subset_index(size_t start, size_t length, size_t stride = 1);
-    void push_back(size_t start, size_t length, size_t stride);
+    Subset_index(size_t start, size_t length, int64_t stride = 1);
+    void push_back(size_t start, size_t length, int64_t stride);
     //Is the subset index consecutive?
     bool is_consecutive() const;
     size_t get_subset_block_offset(size_t subset_index) const;
@@ -32,7 +32,7 @@ public:
     Get the index of the element in the subset 
     from the index of the element in the source
     */
-    size_t get_subset_index(size_t source_index) const;
+    std::vector<size_t> get_subset_index(size_t source_index) const;
     //Check if the source index is contained in the subset index
     bool contains_index(size_t source_index) const;
     //turn the idx into a subset index object
@@ -47,8 +47,6 @@ public:
     void serialize(char *ptr);
     void unserialize(char *ptr);
 
-private:
-    std::string vector_to_string(std::vector<size_t> &vec, size_t n_print);
 };
 
 #endif

@@ -27,5 +27,6 @@ Suggests:
     testthat,
     knitr,
     rmarkdown,
-    inline
+    inline,
+    parallel
 VignetteBuilder: knitr

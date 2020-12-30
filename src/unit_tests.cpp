@@ -478,7 +478,7 @@ void C_test_simple_duplication()
     throw_if_not(ALTREP(y));
     throw_if_not(memcmp(DATAPTR(x), DATAPTR(y), n * sizeof(int))==0);
 }
-
+#include <random>
 // [[Rcpp::export]]
 void C_test_duplication_with_changes()
 {
@@ -488,7 +488,9 @@ void C_test_duplication_with_changes()
     SEXP x = guard.protect(make_int_sequence_altrep(n));
     int* x_ptr = (int*)DATAPTR(x);
     Rcpp::IntegerVector pool = Rcpp::seq(0, n -1);
-    std::random_shuffle(pool.begin(), pool.end());
+    std::random_device rng;
+    std::mt19937 urng(rng());
+    std::shuffle(pool.begin(), pool.end(), urng);
     for(size_t i=0;i<n_change;i++){
         x_ptr[pool[i]]=x_ptr[pool[i]]+1;
     }
