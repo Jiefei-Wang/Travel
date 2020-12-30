@@ -2,7 +2,6 @@ context("Testing filesystem writting feature with altrep")
 set_verbose(FALSE)
 rm(list=ls())
 gc()
-deploy_filesystem()
 
 ## Skip it for linux for there is a know bug
 if(get_OS()!="linux"){
