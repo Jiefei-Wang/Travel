@@ -11,6 +11,7 @@ Description:
     underlying file system and eventually handled by a customized 
     data-reading function.
 License: GPL-3
+biocViews: Infrastructure
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
