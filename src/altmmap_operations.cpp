@@ -327,7 +327,6 @@ static SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
         }
     }
 
-    Subset_index new_index;
     //If no subset method defined for the idx or
     //The method return an invalid altrep_info
     if (old_altrep_info.operations.extract_subset == NULL ||
@@ -337,7 +336,6 @@ static SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
         size_t index_length = XLENGTH(idx);
         size_t subset_index_size = Subset_index::get_index_size(idx, old_index);
         //Check if the index is an arithmetic sequence
-        new_index = Subset_index::to_subset_index(idx, old_file_data.index);
         //If the size of the raw index is less than the size of the Subset_index object,
         //we return a regular vector
         if (index_length < subset_index_size)
@@ -359,6 +357,9 @@ static SEXP altmmap_subset(SEXP x, SEXP idx, SEXP call)
             new_altrep_info = old_altrep_info;
         }
     }
+    Subset_index new_index = Subset_index::to_subset_index(idx, old_file_data.index);
+
+
 
     //Create a new virtual file
     Filesystem_file_identifier new_file_info = add_filesystem_file(old_file_data.coerced_type,

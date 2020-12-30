@@ -105,7 +105,7 @@ std::vector<size_t> Subset_index::get_subset_index(size_t source_index) const
         {
             if (cur_start == source_index)
             {
-                for (size_t j = 0; i < cur_length; j++)
+                for (size_t j = 0; j < cur_length; j++)
                 {
                     idx.push_back(cur_partial_length + j);
                 }
