@@ -160,7 +160,7 @@ It is recommended to download `DokanSetup-noVC.exe` for this is the library that
 For *Linux* and *Mac*:
 
 1. [fuse](https://github.com/libfuse/libfuse)
-2. [pkg-config]()
+2. [pkg-config](https://github.com/pkgconf/pkgconf)
 
 
 

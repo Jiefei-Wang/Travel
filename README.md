@@ -3,7 +3,7 @@ title: "vignette"
 author: 
 - name: Jiefei Wang
   affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
-date: "2020-12-28"
+date: "2021-01-08"
 output:
     BiocStyle::html_document:
         toc: true
@@ -156,7 +156,7 @@ It is recommended to download `DokanSetup-noVC.exe` for this is the library that
 For *Linux* and *Mac*:
 
 1. [fuse](https://github.com/libfuse/libfuse)
-2. [pkg-config]()
+2. [pkg-config](https://github.com/pkgconf/pkgconf)
 
 
 
@@ -302,10 +302,16 @@ sessionInfo()
 #> [1] inline_0.3.16 Travel_0.99.0
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] Rcpp_1.0.5          digest_0.6.27       magrittr_1.5        evaluate_0.14      
-#>  [5] rlang_0.4.8         stringi_1.5.3       rmarkdown_2.5       BiocStyle_2.19.0   
-#>  [9] tools_4.1.0         stringr_1.4.0       xfun_0.19           yaml_2.2.1         
-#> [13] compiler_4.1.0      BiocManager_1.30.10 htmltools_0.5.0     knitr_1.30
+#>  [1] Rcpp_1.0.5        rstudioapi_0.13   knitr_1.30        magrittr_1.5     
+#>  [5] usethis_1.6.3     devtools_2.3.2    pkgload_1.1.0     R6_2.5.0         
+#>  [9] rlang_0.4.8       fansi_0.4.1       stringr_1.4.0     tools_4.1.0      
+#> [13] pkgbuild_1.1.0    parallel_4.1.0    xfun_0.19         sessioninfo_1.1.1
+#> [17] cli_2.1.0         withr_2.3.0       htmltools_0.5.0   ellipsis_0.3.1   
+#> [21] remotes_2.2.0     yaml_2.2.1        assertthat_0.2.1  digest_0.6.27    
+#> [25] rprojroot_2.0.2   crayon_1.3.4      processx_3.4.4    callr_3.5.1      
+#> [29] fs_1.5.0          ps_1.4.0          testthat_3.0.0    evaluate_0.14    
+#> [33] memoise_1.1.0     glue_1.4.2        rmarkdown_2.5     stringi_1.5.3    
+#> [37] compiler_4.1.0    desc_1.2.0        prettyunits_1.1.1
 ```
 
 
