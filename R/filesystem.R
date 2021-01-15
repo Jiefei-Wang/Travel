@@ -1,10 +1,10 @@
 validate_path <-function(path){
     path <- normalizePath(path, mustWork = FALSE, winslash = "/")
-    is_driver_path <- regexpr("^[a-zA-Z]:/$",path)==1
+    is_drive_path <- regexpr("^[a-zA-Z]:/$",path)==1
     path <- normalizePath(path, mustWork = FALSE)
     if(dir.exists(path)){
-        if(is_driver_path){
-            stop("The driver path <", path,
+        if(is_drive_path){
+            stop("The drive path <", path,
                  "> is in used and cannot be used as a mount point")
         }
         files <- list.files(path, all.files = TRUE, recursive = TRUE)
@@ -13,8 +13,8 @@ validate_path <-function(path){
         }
         path <- normalizePath(path, mustWork = TRUE)
     }else{
-        ## Avoid the driver path(e.g. "C:/")
-        if(!is_driver_path){
+        ## No need to normalize if the path is a drive path(e.g. "C:/")
+        if(!is_drive_path){
             dir.create(path, recursive = TRUE)
             path <- normalizePath(path, mustWork = TRUE)
         }

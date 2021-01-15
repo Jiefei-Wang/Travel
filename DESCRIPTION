@@ -1,6 +1,6 @@
 Package: Travel
 Title: An utility to create an ALTREP object with a virtual pointer
-Version: 0.99.1
+Version: 0.99.2
 Authors@R: person("Jiefei", "Wang", email = "szwjf08@gmail.com",
                   role = c("aut", "cre"))
 Description: 
@@ -9,7 +9,10 @@ Description:
     mapping of a virtual file so it behaves exactly the same as a regular
     pointer. All the requests to access the pointer will be sent to the 
     underlying file system and eventually handled by a customized 
-    data-reading function.
+    data-reading function. 
+    The main purpose of the package is to reduce the memory consumption when
+    using R's vector to represent a large data. The use cases of the package 
+    include on-disk data representation, compressed vector(e.g. RLE) and etc. 
 License: GPL-3
 biocViews: Infrastructure
 Encoding: UTF-8
@@ -32,3 +35,4 @@ Suggests:
     inline,
     parallel
 VignetteBuilder: knitr
+BugReports: https://github.com/Jiefei-Wang/Travel/issues

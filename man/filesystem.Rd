@@ -34,8 +34,9 @@ if it needs one.
  
 ## Automatically determine the mountpoint
 ## and deploy the filesystem
-deploy_filesystem()
+Travel:::deploy_filesystem()
 
 ## Get mountpoint for the current filesystem
-get_mountpoint()
+Travel:::get_mountpoint()
 }
+\keyword{internal}

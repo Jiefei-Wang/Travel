@@ -27,12 +27,12 @@ wrap_altrep<-function(x){
 #' @examples  
 #' ## Automatically determine the mountpoint
 #' ## and deploy the filesystem
-#' deploy_filesystem()
+#' Travel:::deploy_filesystem()
 #' 
 #' ## Get mountpoint for the current filesystem
-#' get_mountpoint()
+#' Travel:::get_mountpoint()
+#' @keywords internal
 #' @rdname filesystem
-#' @export
 deploy_filesystem <- function(){
     if(is_filesystem_running()){
         return("The filesystem has been running")
@@ -43,13 +43,11 @@ deploy_filesystem <- function(){
 }
 
 #' @rdname filesystem
-#' @export
 get_mountpoint<- function(){
     C_get_mountpoint()
 }
 
 #' @rdname filesystem
-#' @export
 set_mountpoint <- function(path){
     if(is_filesystem_running()){
         stop("The filesystem is running, you cannot change the mountpoint")
@@ -58,14 +56,12 @@ set_mountpoint <- function(path){
 }
 
 #' @rdname filesystem
-#' @export
 run_filesystem <- function(){
     validate_path(get_mountpoint())
     C_run_filesystem_thread()
 }
 
 #' @rdname filesystem
-#' @export
 stop_filesystem <- function(){
     if(is_filesystem_running()){
         C_stop_filesystem_thread()
@@ -73,7 +69,6 @@ stop_filesystem <- function(){
 }
 
 #' @rdname filesystem
-#' @export
 is_filesystem_running<-function(){
     C_is_filesystem_running()
 }
