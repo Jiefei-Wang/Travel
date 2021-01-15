@@ -57,7 +57,7 @@ values in `x`. As long as you do not need the entire data at once, you do not
 have to put all data into your memory. A minimum ALTREP object can be made by
 defining a length function and an element retrieving function at C level, the
 function prototypes are
-```{}
+```
 R_xlen_t length(SEXP x);
 double real_elt(SEXP x, R_xlen_t i);
 ```
