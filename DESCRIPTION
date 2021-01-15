@@ -35,4 +35,6 @@ Suggests:
     inline,
     parallel
 VignetteBuilder: knitr
+URL: https://github.com/Jiefei-Wang/Travel
 BugReports: https://github.com/Jiefei-Wang/Travel/issues
+
