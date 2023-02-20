@@ -1,5 +1,6 @@
 #ifndef HEADER_CACHE_BLOCK
 #define HEADER_CACHE_BLOCK
+#include <stddef.h>
 /*
 A copy-on-write shared pointer implementation.
 It is used to keep track of the changes of a file
